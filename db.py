@@ -167,17 +167,12 @@ def init_db(existing_save=None, existing_config=None, default_player_func=None, 
         )
         conn.commit()
 
-        # Seed realistic global market listings if table is fresh
-        cursor.execute("SELECT COUNT(*) FROM market_listings")
-        if cursor.fetchone()[0] == 0:
-            seed_initial_market_listings(cursor)
-            conn.commit()
-
-        # Check if users table is empty; if so, seed demo users
+        # Check if users table is empty; if so, seed demo users first
         cursor.execute("SELECT COUNT(*) AS cnt FROM users")
         row = cursor.fetchone()
         if row and row["cnt"] == 0:
             seed_default_accounts(conn, existing_save, existing_config, default_player_func, species_by_id)
+            conn.commit()
         elif existing_save and existing_save.get("party"):
             # Update Red's save if existing_save has real party data
             cursor.execute("SELECT id FROM users WHERE username = 'Red' COLLATE NOCASE")
@@ -196,6 +191,12 @@ def init_db(existing_save=None, existing_config=None, default_player_func=None, 
                             conn.commit()
                     except Exception:
                         pass
+
+        # Seed realistic global market listings if table is fresh
+        cursor.execute("SELECT COUNT(*) FROM market_listings")
+        if cursor.fetchone()[0] == 0:
+            seed_initial_market_listings(cursor)
+            conn.commit()
 
 
 def seed_default_accounts(conn, existing_save=None, existing_config=None, default_player_func=None, species_by_id=None):
@@ -470,6 +471,10 @@ def update_user_avatar(user_id: int, avatar_model: str) -> bool:
 
 def seed_initial_market_listings(cursor):
     """Seed realistic active market listings so the market feels immediately alive."""
+    cursor.execute("SELECT id, username FROM users")
+    user_map = {row["username"].lower(): row["id"] for row in cursor.fetchall()}
+    fallback_seller_id = list(user_map.values())[0] if user_map else 1
+
     initial_items = [
         # Shiny Pokémon Listings (Diamond & Gold)
         (
@@ -534,6 +539,9 @@ def seed_initial_market_listings(cursor):
     ]
 
     for it in initial_items:
+        it_list = list(it)
+        seller_name = it_list[1]
+        it_list[0] = user_map.get(seller_name.lower(), fallback_seller_id)
         cursor.execute(
             """
             INSERT INTO market_listings (
@@ -542,7 +550,7 @@ def seed_initial_market_listings(cursor):
                 item_desc, pokemon_uid, pokemon_data
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            it
+            it_list
         )
 
     # Seed some sample audit transactions in server_hold_transactions
