@@ -1,3 +1,4 @@
+import threading
 import json
 import mimetypes
 import os
@@ -13,6 +14,11 @@ mimetypes.add_type("font/woff2", ".woff2")
 mimetypes.add_type("font/woff", ".woff")
 mimetypes.add_type("font/ttf", ".ttf")
 mimetypes.add_type("font/otf", ".otf")
+
+
+# Real-time Plaza multiplayer state
+PLAZA_LOCK = threading.Lock()
+PLAZA_PLAYERS = {}  # user_id -> dict
 
 PROJECT_VERSION = "v1.8.0"
 PROJECT_VERSION_LABEL = "v1.8.0-pokeland"
@@ -1251,6 +1257,25 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
                 return self.send_json({"authenticated": True, "user": user})
             return self.send_json({"authenticated": False, "user": None})
 
+        if parsed.path == "/api/chat/messages":
+            qs = parse_qs(parsed.query)
+            since_id = int(qs.get("since_id", [0])[0])
+            limit = min(100, int(qs.get("limit", [50])[0]))
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            user_name = user["username"] if user else None
+            msgs = db.get_chat_messages(since_id=since_id, limit=limit, user_name=user_name)
+            return self.send_json({"ok": True, "messages": msgs})
+
+        if parsed.path == "/api/hub/players":
+            now = time.time()
+            with PLAZA_LOCK:
+                dead_keys = [k for k, v in PLAZA_PLAYERS.items() if now - v.get("last_seen", 0) > 8.0]
+                for k in dead_keys:
+                    del PLAZA_PLAYERS[k]
+                players_list = list(PLAZA_PLAYERS.values())
+            return self.send_json({"ok": True, "players": players_list})
+
         if parsed.path == "/api/version":
             app_mtime = int(os.path.getmtime("public/app.js") * 1000) if os.path.exists("public/app.js") else int(time.time() * 1000)
             return self.send_json({
@@ -1336,6 +1361,102 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             body = json.loads(raw_body)
         except Exception:
             body = {}
+
+        if parsed.path == "/api/chat/send":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            sender_name = user["username"] if user else body.get("sender", "Treinador")
+            channel = str(body.get("channel", "local")).strip().lower()
+            if channel not in ["local", "global", "trade", "guild", "whisper"]:
+                channel = "local"
+            text = str(body.get("text", "")).strip()
+            if not text:
+                return self.send_json({"ok": False, "error": "Mensagem vazia."}, status=400)
+
+            # Basic HTML escaping for security
+            text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")[:280]
+            recipient = body.get("recipient")
+            if recipient:
+                recipient = str(recipient).strip()
+
+            msg = db.save_chat_message(channel, sender_name, recipient, text)
+
+            # If local message, update sender's speech bubble in Plaza in real-time
+            if channel == "local":
+                with PLAZA_LOCK:
+                    for p in PLAZA_PLAYERS.values():
+                        if p.get("name", "").lower() == sender_name.lower():
+                            p["speechText"] = text
+                            p["speechTimer"] = 110
+
+            return self.send_json({"ok": True, "message": msg})
+
+        if parsed.path == "/api/hub/presence":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            user_id = user["id"] if user else int(body.get("user_id", 1))
+            user_name = user["username"] if user else body.get("name", "Treinador")
+            avatar_model = user.get("avatar_model", "ethan_gold") if user else body.get("avatarModelId", "ethan_gold")
+
+            gx = int(body.get("gx", 7))
+            gy = int(body.get("gy", 5))
+            p_dir = int(body.get("dir", 0))
+            speech_text = str(body.get("speech_text", "")).strip()
+            client_level = int(body.get("level", 1))
+
+            mon_data = body.get("lead_mon")
+            if not mon_data:
+                boot = build_bootstrap(user=user)
+                party = boot.get("player", {}).get("party", [])
+                if party:
+                    mon_data = party[0]
+                else:
+                    mon_data = {"species_id": "pikachu", "dex_id": 25, "name": "Pikachu", "is_shiny": False, "quality": "Comum"}
+
+            mon_species = mon_data.get("species_id", "pikachu")
+            mon_dex = int(mon_data.get("dex_id", 25))
+            mon_name = mon_data.get("name", "Pikachu")
+            mon_shiny = bool(mon_data.get("is_shiny", False))
+            mon_quality = mon_data.get("quality", "Comum")
+
+            now = time.time()
+            with PLAZA_LOCK:
+                dead_keys = [k for k, v in PLAZA_PLAYERS.items() if now - v.get("last_seen", 0) > 8.0]
+                for k in dead_keys:
+                    del PLAZA_PLAYERS[k]
+
+                entry = {
+                    "id": f"player_{user_id}",
+                    "user_id": user_id,
+                    "name": user_name,
+                    "level": client_level,
+                    "avatarModelId": avatar_model,
+                    "roleLabel": f"Treinador Lv.{client_level}",
+                    "gx": gx,
+                    "gy": gy,
+                    "dir": p_dir,
+                    "monSpecies": mon_species,
+                    "monDex": mon_dex,
+                    "monName": mon_name,
+                    "monShiny": mon_shiny,
+                    "monQuality": mon_quality,
+                    "speechText": speech_text if speech_text else "",
+                    "speechTimer": 110 if speech_text else 0,
+                    "last_seen": now
+                }
+                PLAZA_PLAYERS[user_id] = entry
+                other_players = [p for p in PLAZA_PLAYERS.values() if p["user_id"] != user_id]
+
+            return self.send_json({"ok": True, "players": other_players})
+
+        if parsed.path == "/api/hub/leave":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            user_id = user["id"] if user else int(body.get("user_id", 1))
+            with PLAZA_LOCK:
+                if user_id in PLAZA_PLAYERS:
+                    del PLAZA_PLAYERS[user_id]
+            return self.send_json({"ok": True})
 
         if parsed.path == "/api/auth/login":
             username = body.get("username", "")

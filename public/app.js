@@ -506,6 +506,8 @@ function updateChatSetting(key, val) {
     STATE.chat.settings[key] = val;
     saveChatSettings(STATE.chat.settings);
     applyChatSettingsToUi();
+    STATE.chat.lastMessageId = 0;
+    startChatSyncLoop();
 }
 
 function toggleChannelTabVisibility(ch, enabled) {
@@ -517,6 +519,8 @@ function toggleChannelTabVisibility(ch, enabled) {
     STATE.chat.settings.enabledChannels[ch] = !!enabled;
     saveChatSettings(STATE.chat.settings);
     applyChatSettingsToUi();
+    STATE.chat.lastMessageId = 0;
+    startChatSyncLoop();
 }
 
 function resetChatSettingsToDefault() {
@@ -525,6 +529,8 @@ function resetChatSettingsToDefault() {
     saveChatSettings(STATE.chat.settings);
     openChatSettingsModal();
     applyChatSettingsToUi();
+    STATE.chat.lastMessageId = 0;
+    startChatSyncLoop();
     showToast("⚙️ Configurações do Chat restauradas ao padrão!");
 }
 
@@ -1399,6 +1405,7 @@ async function initGame() {
     initDraggableHudBars();
     initTibiaMapEngine();
     renderAll();
+    startChatSyncLoop();
 }
 
 function applyBootstrapData(data) {
@@ -7953,6 +7960,7 @@ function enterCentralHubMapInternal(openWindow = true, subTab = null) {
     tr.py = tr.gy * SQM_SIZE;
     tr.dir = 0;
     setTrainerSpeech("Cheguei na Cidade Central!");
+    startPlazaPresenceSync();
 
     const sum = STATE.tibia.summon;
     sum.gx = 8;
@@ -7998,6 +8006,7 @@ function leaveCentralHubMap(skipAnimation = false) {
 }
 
 function leaveCentralHubMapInternal() {
+    stopPlazaPresenceSync();
     STATE.tibia.isCentralHub = false;
     document.getElementById("menubtn-central")?.classList.remove("active");
     document.getElementById("float-panel-central")?.classList.add("is-hidden");
@@ -8110,44 +8119,154 @@ function triggerHubStationAction(stationId) {
     }
 }
 
+
+// =========================================================================
+// REAL-TIME PLAZA MULTIPLAYER PRESENCE & SYNCHRONIZATION
+// =========================================================================
+let _plazaPresenceInterval = null;
+let _isSendingPresence = false;
+
+function startPlazaPresenceSync() {
+    if (_plazaPresenceInterval) clearInterval(_plazaPresenceInterval);
+    sendPlazaPresenceHeartbeat();
+    _plazaPresenceInterval = setInterval(sendPlazaPresenceHeartbeat, 1400);
+}
+
+function stopPlazaPresenceSync() {
+    if (_plazaPresenceInterval) {
+        clearInterval(_plazaPresenceInterval);
+        _plazaPresenceInterval = null;
+    }
+    STATE.tibia.hubPlayers = [];
+    const uid = STATE.currentUser?.id || 1;
+    fetch("/api/hub/leave", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ user_id: uid })
+    }).catch(() => {});
+}
+
+async function sendPlazaPresenceHeartbeat() {
+    if (!STATE.tibia || !STATE.tibia.isCentralHub) {
+        if (_plazaPresenceInterval) {
+            clearInterval(_plazaPresenceInterval);
+            _plazaPresenceInterval = null;
+        }
+        return;
+    }
+    if (_isSendingPresence) return;
+    _isSendingPresence = true;
+    try {
+        const tr = STATE.tibia.trainer;
+        const leadMon = STATE.player?.party?.[0] || null;
+        const payload = {
+            gx: tr ? tr.gx : 7,
+            gy: tr ? tr.gy : 5,
+            dir: tr ? tr.dir : 0,
+            speech_text: tr && tr.speechTimer > 0 ? tr.speechText : "",
+            level: STATE.player?.level || 1,
+            name: STATE.player?.name || STATE.currentUser?.username || "Treinador",
+            avatarModelId: STATE.currentUser?.avatar_model || STATE.player?.avatar_model || "ethan_gold",
+            user_id: STATE.currentUser?.id || 1,
+            lead_mon: leadMon ? {
+                species_id: leadMon.species_id,
+                dex_id: leadMon.dex_id,
+                name: leadMon.name,
+                is_shiny: Boolean(leadMon.is_shiny),
+                quality: leadMon.quality || "Comum"
+            } : null
+        };
+
+        const res = await fetch("/api/hub/presence", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.ok && Array.isArray(data.players)) {
+                updatePlazaPlayersFromServer(data.players);
+            }
+        }
+    } catch (e) {
+        // silent on transient network error
+    } finally {
+        _isSendingPresence = false;
+    }
+}
+
+function updatePlazaPlayersFromServer(serverPlayers) {
+    if (!STATE.tibia || !STATE.tibia.isCentralHub) return;
+    const currentList = STATE.tibia.hubPlayers || [];
+    const updated = [];
+
+    for (const sp of serverPlayers) {
+        let existing = currentList.find(p => p.id === sp.id || (p.user_id && p.user_id === sp.user_id) || (p.name && p.name.toLowerCase() === sp.name.toLowerCase()));
+        if (existing) {
+            existing.name = sp.name;
+            existing.level = sp.level;
+            existing.avatarModelId = sp.avatarModelId;
+            existing.roleLabel = sp.roleLabel || `Treinador Lv.${sp.level}`;
+            existing.gx = sp.gx;
+            existing.gy = sp.gy;
+            existing.dir = sp.dir;
+            existing.monSpecies = sp.monSpecies;
+            existing.monDex = sp.monDex;
+            existing.monName = sp.monName;
+            existing.monShiny = sp.monShiny;
+            existing.monQuality = sp.monQuality;
+            if (sp.speechText && sp.speechText !== existing.speechText) {
+                existing.speechText = sp.speechText;
+                existing.speechTimer = sp.speechTimer || 110;
+            }
+            updated.push(existing);
+        } else {
+            getPmdManifest(getPmdSlug(sp.monSpecies));
+            const newP = {
+                ...sp,
+                px: sp.gx * SQM_SIZE,
+                py: sp.gy * SQM_SIZE,
+                monGx: Math.max(1, sp.gx - 1),
+                monGy: sp.gy,
+                monPx: Math.max(1, sp.gx - 1) * SQM_SIZE,
+                monPy: sp.gy * SQM_SIZE,
+                speechTimer: sp.speechTimer || (sp.speechText ? 110 : 0)
+            };
+            updated.push(newP);
+        }
+    }
+    STATE.tibia.hubPlayers = updated;
+
+    // Refresh Social Tab if currently open in Central Hub
+    const centralPanel = document.getElementById("float-panel-central");
+    if (centralPanel && !centralPanel.classList.contains("is-hidden") && STATE.tibia.centralSubTab === "social") {
+        const container = document.getElementById("central-hub-content");
+        if (container) renderCentralSocialTab(container);
+    }
+}
+
 function updateCentralHubSimulation(spd, runSimStep, sTick) {
     const tb = STATE.tibia;
     for (const hp of tb.hubPlayers || []) {
         if (hp.speechTimer > 0) {
             hp.speechTimer = Math.max(0, hp.speechTimer - spd);
         }
-        hp.stepTimer -= spd;
-        if (hp.stepTimer <= 0) {
-            hp.stepTimer = 45 + Math.floor(Math.random() * 55);
-            // Small social stroll around their home spot in the plaza
-            const offsets = [
-                [0, 0, 0],
-                [1, 0, 2],
-                [-1, 0, 1],
-                [0, 1, 0],
-                [0, -1, 3],
-            ];
-            const pick = offsets[Math.floor(Math.random() * offsets.length)];
-            const nx = hp.homeGx + pick[0];
-            const ny = hp.homeGy + pick[1];
-            if (isTileWalkable(nx, ny) && !(nx === tb.trainer.gx && ny === tb.trainer.gy)) {
-                hp.monGx = hp.gx;
-                hp.monGy = hp.gy;
-                hp.gx = nx;
-                hp.gy = ny;
-                hp.dir = pick[2];
-            }
-            // Occasional social chat bubble in the plaza
-            if (Math.random() < 0.28 && hp.speechTimer <= 0) {
-                hp.speechText = hp.phrases[Math.floor(Math.random() * hp.phrases.length)];
-                hp.speechTimer = 95;
-            }
-        }
 
-        hp.px += (hp.gx * SQM_SIZE - hp.px) * (0.24 * spd);
-        hp.py += (hp.gy * SQM_SIZE - hp.py) * (0.24 * spd);
-        hp.monPx += (hp.monGx * SQM_SIZE - hp.monPx) * (0.24 * spd);
-        hp.monPy += (hp.monGy * SQM_SIZE - hp.monPy) * (0.24 * spd);
+        // Smoothly interpolate real player position towards their server coordinates
+        const targetPx = (hp.gx !== undefined ? hp.gx : 7) * SQM_SIZE;
+        const targetPy = (hp.gy !== undefined ? hp.gy : 5) * SQM_SIZE;
+        if (typeof hp.px !== "number") hp.px = targetPx;
+        if (typeof hp.py !== "number") hp.py = targetPy;
+        hp.px += (targetPx - hp.px) * Math.min(1.0, 0.24 * spd);
+        hp.py += (targetPy - hp.py) * Math.min(1.0, 0.24 * spd);
+
+        // Follower mon tracks trainer slightly to the left/behind
+        const monTargetPx = hp.monGx !== undefined ? hp.monGx * SQM_SIZE : Math.max(0, targetPx - 26);
+        const monTargetPy = hp.monGy !== undefined ? hp.monGy * SQM_SIZE : targetPy;
+        if (typeof hp.monPx !== "number") hp.monPx = monTargetPx;
+        if (typeof hp.monPy !== "number") hp.monPy = monTargetPy;
+        hp.monPx += (monTargetPx - hp.monPx) * Math.min(1.0, 0.20 * spd);
+        hp.monPy += (monTargetPy - hp.monPy) * Math.min(1.0, 0.20 * spd);
     }
 }
 
@@ -9119,25 +9238,28 @@ function renderCentralEvolveTab(container) {
 
 function renderCentralSocialTab(container) {
     const players = STATE.tibia.hubPlayers || [];
-    const playersHtml = players
+    const myName = (STATE.player?.name || STATE.currentUser?.username || "Treinador").toLowerCase();
+    const otherPlayers = players.filter(p => (p.name || "").toLowerCase() !== myName);
+
+    const playersHtml = otherPlayers
         .map((hp) => {
-            const trainerAvatarSrc = getTrainerModelDataUrl(hp.avatarModelId || "goku_saiyan");
+            const trainerAvatarSrc = getTrainerModelDataUrl(hp.avatarModelId || "ethan_gold");
             return `<div class="hub-card">
                 <div class="hub-card-left">
                     <img class="hub-mon-avatar" src="${trainerAvatarSrc}" alt="${hp.name}" style="border-color:#fde047;">
                     <img class="hub-mon-avatar" src="${getSpriteUrl(hp.monDex, hp.monShiny)}" alt="${hp.monName}">
                     <div>
                         <div style="font-weight:900;font-size:12px;color:#fff;">
-                            🟢 ${hp.name} <span style="color:#94a3b8;font-size:10.5px;">(Treinador Lv.${hp.level})</span>
+                            👤 ${hp.name} <span style="color:#94a3b8;font-size:10.5px;">(Treinador Lv.${hp.level})</span>
                         </div>
                         <div style="font-size:10.5px;color:#fde047;">
-                            Parceiro: ${hp.monShiny ? "✨ Shiny " : ""}${hp.monName} (${hp.monQuality}) • ${hp.roleLabel}
+                            Parceiro: ${hp.monShiny ? "✨ Shiny " : ""}${hp.monName} (${hp.monQuality}) • ${hp.roleLabel || `Treinador Lv.${hp.level}`}
                         </div>
                     </div>
                 </div>
                 <div style="display:flex;gap:5px;">
-                    <button class="btn" onclick="selectHubPlayerOnMap('${hp.id}')">🤝 Trocar</button>
-                    <button class="btn btn-primary" onclick="challengeHubPlayerDuel('${hp.id}')">⚔️ Duelo 1v1</button>
+                    <button class="btn" onclick="quickWhisperTo('${hp.name}')" title="Enviar mensagem privada">💬 Sussurrar</button>
+                    <button class="btn btn-primary" onclick="challengeHubPlayerDuel('${hp.id}')" title="Desafiar para duelo 1v1">⚔️ Duelo 1v1</button>
                 </div>
             </div>`;
         })
@@ -9146,7 +9268,7 @@ function renderCentralSocialTab(container) {
     container.innerHTML = `
         <div class="hub-section-banner">
             <span>💬 BATE-PAPO DA PRAÇA CENTRAL (SAFFRON PLAZA)</span>
-            <span style="font-size:10px;color:#7dd3fc;">Aparece sobre o seu personagem no mapa!</span>
+            <span style="font-size:10px;color:#7dd3fc;">Aparece sobre o seu personagem no mapa para todos na Central!</span>
         </div>
         <div style="display:flex;gap:6px;">
             <input type="text" id="hub-custom-chat-input" class="zone-search" style="margin:0;flex:1;" placeholder="Digite uma mensagem para falar na Praça Central (ex: Procuro troca de Shiny!)..." onkeydown="if(event.key==='Enter') sendCustomHubChat()">
@@ -9154,9 +9276,9 @@ function renderCentralSocialTab(container) {
         </div>
 
         <div class="hub-section-banner" style="margin-top:4px;">
-            <span>👥 TREINADORES ONLINE NA CIDADE CENTRAL (${players.length} JOGADORES)</span>
+            <span>👥 TREINADORES REAIS NA PRAÇA CENTRAL (${otherPlayers.length} ONLINE)</span>
         </div>
-        ${playersHtml || '<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;background:rgba(15,23,42,0.6);border-radius:8px;border:1px dashed #334155;margin-top:8px;">Nenhum outro jogador online na Praça Central no momento.</div>'}
+        ${playersHtml || '<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;background:rgba(15,23,42,0.6);border-radius:8px;border:1px dashed #334155;margin-top:8px;">Nenhum outro jogador na Praça Central no momento.<br><span style="font-size:11px;color:#64748b;">Convide amigos ou abra uma segunda aba para testar o multiplayer em tempo real!</span></div>'}
     `;
 }
 
@@ -9306,7 +9428,18 @@ function sendPlayerHubEmote(msg) {
     spawnFloatingText(STATE.tibia.trainer.gx, STATE.tibia.trainer.gy, msg.slice(0, 18), "#fde047");
     addCombatLog(`<span style="color:#fde047;font-weight:800;">💬 [${STATE.player?.name || "Red"} na Central]: ${msg}</span>`);
 
-    
+    // Broadcast to server on local channel for all nearby players
+    fetch("/api/chat/send", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+            channel: "local",
+            text: msg
+        })
+    }).catch(() => {});
+
+    // Send instant presence heartbeat with speech_text
+    sendPlazaPresenceHeartbeat();
 }
 
 function sendCustomHubChat() {
@@ -10857,6 +10990,8 @@ function initChatSystem() {
     }
 
     applyChatSettingsToUi();
+    STATE.chat.lastMessageId = 0;
+    startChatSyncLoop();
 }
 
 function triggerAmbientCommunityChat() {
@@ -10913,6 +11048,66 @@ function quickWhisperTo(trainerName) {
     }
 }
 
+
+// =========================================================================
+// REAL-TIME MULTIPLAYER CHAT SYNCHRONIZATION
+// =========================================================================
+let _chatSyncInterval = null;
+let _isSyncingChat = false;
+
+function startChatSyncLoop() {
+    if (_chatSyncInterval) clearInterval(_chatSyncInterval);
+    syncMultiplayerChat();
+    _chatSyncInterval = setInterval(syncMultiplayerChat, 1400);
+}
+
+async function syncMultiplayerChat() {
+    if (_isSyncingChat) return;
+    _isSyncingChat = true;
+    try {
+        const sinceId = STATE.chat?.lastMessageId || 0;
+        const res = await fetch(`/api/chat/messages?since_id=${sinceId}&limit=50`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.ok && Array.isArray(data.messages) && data.messages.length > 0) {
+            const myName = (STATE.player?.name || STATE.currentUser?.username || "Treinador").toLowerCase();
+            for (const msg of data.messages) {
+                if (msg.id > (STATE.chat.lastMessageId || 0)) {
+                    STATE.chat.lastMessageId = msg.id;
+                }
+                const isMine = (msg.sender || "").toLowerCase() === myName;
+                const existing = (STATE.chat.messages || []).find(m => m.server_id === msg.id || (isMine && m.is_temp && m.text === msg.text && m.channel === msg.channel));
+                if (existing) {
+                    existing.server_id = msg.id;
+                    existing.is_temp = false;
+                    continue;
+                }
+
+                // Add real message
+                addChatMessage(msg.channel, msg.sender, msg.text, msg.recipient, false, msg.id);
+
+                // If local message and player is in Plaza, trigger their speech bubble!
+                if (msg.channel === "local" && !isMine && STATE.tibia?.isCentralHub) {
+                    const otherP = (STATE.tibia.hubPlayers || []).find(p => (p.name || "").toLowerCase() === (msg.sender || "").toLowerCase());
+                    if (otherP) {
+                        otherP.speechText = msg.text;
+                        otherP.speechTimer = 110;
+                        if (typeof spawnFloatingText === "function") {
+                            spawnFloatingText(otherP.gx, otherP.gy, msg.text.slice(0, 18), "#fde047");
+                        }
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        // silent
+    } finally {
+        _isSyncingChat = false;
+    }
+}
+
 function sendChatMessage() {
     const input = document.getElementById("chat-input-text");
     if (!input) return;
@@ -10932,7 +11127,7 @@ function sendChatMessage() {
             messageText = parts.slice(2).join(" ");
             STATE.chat.lastWhisperTarget = whisperTarget;
         } else {
-            showToast("ℹ️ Formato de Whisper: /w NomeDoTreinador Mensagem");
+            showToast("💬 Formato de Whisper: /w NomeDoTreinador Mensagem");
             return;
         }
     } else if (raw.startsWith("/r ")) {
@@ -10954,24 +11149,49 @@ function sendChatMessage() {
         targetChannel = "local";
     }
 
-    const myName = STATE.player.name || "Red";
-    addChatMessage(targetChannel, myName, messageText, whisperTarget);
+    const myName = STATE.player?.name || STATE.currentUser?.username || "Treinador";
+    input.value = "";
+
+    // Optimistically add to local chat DOM
+    const tempMsg = addChatMessage(targetChannel, myName, messageText, whisperTarget, true);
 
     if (targetChannel === "local") {
         setTrainerSpeech(messageText);
     }
 
-
-
-    input.value = "";
+    // Broadcast to server
+    fetch("/api/chat/send", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+            channel: targetChannel,
+            text: messageText,
+            recipient: whisperTarget,
+            sender: myName
+        })
+    }).then(res => res.json()).then(data => {
+        if (data.ok && data.message) {
+            if (tempMsg) {
+                tempMsg.server_id = data.message.id;
+                tempMsg.is_temp = false;
+            }
+            if (data.message.id > (STATE.chat.lastMessageId || 0)) {
+                STATE.chat.lastMessageId = data.message.id;
+            }
+        }
+    }).catch(err => {
+        console.error("Erro ao enviar chat multiplayer:", err);
+    });
 }
 
-function addChatMessage(channel, sender, text, recipient = null) {
+function addChatMessage(channel, sender, text, recipient = null, isTemp = false, serverId = null) {
     if (!STATE.chat) initChatSystem();
     const timeStr = new Date().toLocaleTimeString().substring(0, 5);
 
     const msgObj = {
         id: "msg_" + Math.random().toString(36).substring(2, 9),
+        server_id: serverId,
+        is_temp: isTemp,
         channel,
         sender,
         text,
@@ -10989,7 +11209,8 @@ function addChatMessage(channel, sender, text, recipient = null) {
         updateChatBubbleUnread();
     }
 
-    if (channel === "whisper" && sender !== (STATE.player?.name || "Red")) {
+    const myName = (STATE.player?.name || STATE.currentUser?.username || "Treinador").toLowerCase();
+    if (channel === "whisper" && (sender || "").toLowerCase() !== myName) {
         STATE.chat.lastWhisperSender = sender;
         if (STATE.chat.activeChannel !== "whisper") {
             STATE.chat.unread.whisper = (STATE.chat.unread.whisper || 0) + 1;
@@ -10998,12 +11219,12 @@ function addChatMessage(channel, sender, text, recipient = null) {
                 badge.style.display = "inline-flex";
                 badge.textContent = String(STATE.chat.unread.whisper);
             }
-            showToast(`✉️ Whisper de ${sender}: "${text.substring(0, 32)}..."`);
+            showToast(`💬 Whisper de ${sender}: "${text.substring(0, 32)}..."`);
         }
     }
 
-    // High performance optimization: append single message instead of wiping and rebuilding innerHTML
     appendChatMessageToDom(msgObj);
+    return msgObj;
 }
 
 function appendChatMessageToDom(m) {

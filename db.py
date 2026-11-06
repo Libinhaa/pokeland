@@ -1,3 +1,4 @@
+import time
 import hashlib
 import json
 import os
@@ -171,6 +172,23 @@ def init_db(existing_save=None, existing_config=None, default_player_func=None, 
             )
             """
         )
+
+        # 9. Real Multiplayer Chat Messages Table
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                channel TEXT NOT NULL,
+                sender TEXT NOT NULL,
+                recipient TEXT,
+                text TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                timestamp_ms INTEGER NOT NULL
+            )
+            """
+        )
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_chat_id ON chat_messages(id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_chat_channel ON chat_messages(channel)")
         conn.commit()
 
         # Check if users table is empty; if so, seed demo users first
@@ -966,3 +984,69 @@ def get_registered_users_list(limit: int = 200) -> list:
             result.append(u_dict)
         return result
 
+
+
+def save_chat_message(channel: str, sender: str, recipient: str or None, text: str, timestamp_ms: int = None) -> dict:
+    if not timestamp_ms:
+        timestamp_ms = int(time.time() * 1000)
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO chat_messages (channel, sender, recipient, text, created_at, timestamp_ms)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (channel, sender, recipient, text, now_str, timestamp_ms),
+        )
+        msg_id = cursor.lastrowid
+        conn.commit()
+        return {
+            "id": msg_id,
+            "channel": channel,
+            "sender": sender,
+            "recipient": recipient,
+            "text": text,
+            "created_at": now_str,
+            "timestamp_ms": timestamp_ms,
+        }
+
+
+def get_chat_messages(since_id: int = 0, limit: int = 50, user_name: str = None) -> list:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        if user_name:
+            cursor.execute(
+                """
+                SELECT id, channel, sender, recipient, text, created_at, timestamp_ms
+                FROM chat_messages
+                WHERE id > ? AND (channel != 'whisper' OR sender = ? OR recipient = ?)
+                ORDER BY id ASC
+                LIMIT ?
+                """,
+                (since_id, user_name, user_name, limit),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id, channel, sender, recipient, text, created_at, timestamp_ms
+                FROM chat_messages
+                WHERE id > ? AND channel != 'whisper'
+                ORDER BY id ASC
+                LIMIT ?
+                """,
+                (since_id, limit),
+            )
+        rows = cursor.fetchall()
+        return [
+            {
+                "id": r["id"],
+                "channel": r["channel"],
+                "sender": r["sender"],
+                "recipient": r["recipient"],
+                "text": r["text"],
+                "created_at": r["created_at"],
+                "timestamp_ms": r["timestamp_ms"],
+            }
+            for r in rows
+        ]
