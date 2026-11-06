@@ -1014,6 +1014,136 @@ function getGen8TypeIconUrl(el) {
     return `/img/ui/types/gen8/${ELEMENT_PT[key] ? key : "normal"}.png`;
 }
 
+function getMoveIconUrl(moveId, element = "normal", category = "physical") {
+    if (!moveId) return "/img/moves/tackle.png";
+    const cleanId = String(moveId).toLowerCase().trim().replace(/_/g, "-");
+    return `/img/moves/${cleanId}.png`;
+}
+window.getMoveIconUrl = getMoveIconUrl;
+
+let _activeHoverMoveId = null;
+
+function showSkillTooltip(event, moveId, slotIdx) {
+    _activeHoverMoveId = moveId;
+    const card = document.getElementById("skill-hover-card");
+    if (!card) return;
+
+    const lead = (typeof getLeadPokemon === "function") ? getLeadPokemon() : null;
+    const mv = (STATE.movesMap && STATE.movesMap[moveId]) || {
+        id: moveId,
+        name: moveId,
+        element: (lead && lead.elements?.[0]) || "normal",
+        power: 55,
+        accuracy: 100,
+        category: "physical",
+        cooldown_ms: 3000,
+        description: "Ataque padrão com dano concentrado no combate."
+    };
+
+    const elKey = String(mv.element || "normal").toLowerCase();
+    const elInfo = ELEMENT_PT[elKey] || ELEMENT_PT.normal;
+    const isAoE = (mv.power || 50) >= 65 || slotIdx >= 2;
+    const slotAutoOn = STATE.autoMovesEnabled && STATE.autoMoveSlots && STATE.autoMoveSlots[slotIdx] !== false;
+    const iconUrl = getMoveIconUrl(mv.id || moveId, elKey, mv.category);
+
+    let catLabel = "⚔️ Físico";
+    let catBg = "#b91c1c";
+    if (mv.category === "special") {
+        catLabel = "🔮 Especial";
+        catBg = "#7e22ce";
+    } else if (mv.category === "status") {
+        catLabel = "🛡️ Status";
+        catBg = "#0284c7";
+    }
+
+    const cdSec = ((mv.cooldown_ms || 3000) / 1000).toFixed(1);
+    const pwrDisplay = (mv.category === "status" || !mv.power || mv.power <= 1) ? "--" : mv.power;
+
+    card.style.setProperty("--shc-border", elInfo.bg);
+    card.style.setProperty("--shc-glow", `${elInfo.bg}44`);
+
+    card.innerHTML = `
+        <div class="shc-header">
+            <img class="shc-icon" src="${iconUrl}" alt="${mv.name}" onerror="this.onerror=null;this.src='/img/moves/tackle.png';">
+            <div class="shc-header-text">
+                <div class="shc-title">${mv.name}</div>
+                <div class="shc-badges-row">
+                    <span class="shc-badge" style="background:${elInfo.bg};color:${elInfo.fg};">${elInfo.label}</span>
+                    <span class="shc-badge" style="background:${catBg};color:#fff;">${catLabel}</span>
+                    <span class="shc-badge" style="background:rgba(255,255,255,0.12);color:#fde047;font-family:var(--font-mono);">m${slotIdx + 1}</span>
+                </div>
+            </div>
+        </div>
+        <div class="shc-stats-grid">
+            <div class="shc-stat-item">
+                <span class="shc-stat-label">⚔️ Poder:</span>
+                <span class="shc-stat-val" style="color:#fde047;">${pwrDisplay}</span>
+            </div>
+            <div class="shc-stat-item">
+                <span class="shc-stat-label">🎯 Precisão:</span>
+                <span class="shc-stat-val" style="color:#38bdf8;">${mv.accuracy || 100}%</span>
+            </div>
+            <div class="shc-stat-item">
+                <span class="shc-stat-label">⏱️ Recarga:</span>
+                <span class="shc-stat-val" style="color:#a78bfa;">${cdSec}s</span>
+            </div>
+            <div class="shc-stat-item">
+                <span class="shc-stat-label">📐 Área:</span>
+                <span class="shc-stat-val" style="color:${isAoE ? "#fde047" : "#4ade80"};">${isAoE ? "AoE 3×3" : "Alvo Único"}</span>
+            </div>
+        </div>
+        <div class="shc-desc-box">
+            ${mv.description || "Executa esta habilidade contra o alvo durante o combate."}
+        </div>
+        <div class="shc-footer">
+            <span style="color:${slotAutoOn ? "#4ade80" : "#94a3b8"};font-weight:700;">
+                ${slotAutoOn ? "⚡ Auto-Cast: ATIVO" : "⚪ Auto-Cast: MANUAL"}
+            </span>
+            <span>Atalho: [${slotIdx + 1}]</span>
+        </div>
+    `;
+
+    card.classList.remove("is-hidden");
+    positionSkillTooltip(event);
+}
+
+function updateSkillTooltipPos(event) {
+    positionSkillTooltip(event);
+}
+
+function positionSkillTooltip(event) {
+    const card = document.getElementById("skill-hover-card");
+    if (!card || card.classList.contains("is-hidden")) return;
+
+    const pad = 14;
+    const cardRect = card.getBoundingClientRect();
+    const w = cardRect.width || 330;
+    const h = cardRect.height || 185;
+
+    let x = (event.clientX || 0) - w / 2;
+    let y = (event.clientY || 0) - h - 16;
+
+    if (x < pad) x = pad;
+    if (x + w > window.innerWidth - pad) x = window.innerWidth - pad - w;
+    if (y < pad) {
+        y = (event.clientY || 0) + 22;
+    }
+
+    card.style.left = `${Math.round(x)}px`;
+    card.style.top = `${Math.round(y)}px`;
+}
+
+function hideSkillTooltip() {
+    _activeHoverMoveId = null;
+    const card = document.getElementById("skill-hover-card");
+    if (card) {
+        card.classList.add("is-hidden");
+    }
+}
+window.showSkillTooltip = showSkillTooltip;
+window.updateSkillTooltipPos = updateSkillTooltipPos;
+window.hideSkillTooltip = hideSkillTooltip;
+
 function getPmdPortraitUrl(speciesIdOrDex) {
     const slug = getPmdSlug(speciesIdOrDex);
     return `/img/pmd/${slug}/Portrait.png`;
@@ -1341,6 +1471,17 @@ function applyBootstrapData(data) {
             toggleAutoFarmMenu();
             switchAutoFarmSubmenu("offline");
         }, 500);
+    }
+    if (window.location.search.includes("test_skill_tooltip=1")) {
+        setTimeout(() => {
+            const slot = document.getElementById("move-slot-0");
+            if (slot) {
+                const rect = slot.getBoundingClientRect();
+                const lead = (typeof getLeadPokemon === "function") ? getLeadPokemon() : null;
+                const mId = (lead && lead.moves && lead.moves[0]) || "beat-up";
+                showSkillTooltip({ clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 }, mId, 0);
+            }
+        }, 800);
     }
     if (window.location.search.includes("show_transit_demo=1")) {
         setTimeout(() => {
@@ -4633,7 +4774,7 @@ function renderBattleArena(force = false) {
         }
     }
 
-    // Render Pokémon Fight Menu Move Plates (m1 - m4) with Auto-Moves Status & Active Cast Highlight
+    // Render Pokémon Fight Menu Move Plates (m1 - m4) as 4 Sleek Square Skill Action Slots
     const movesRow = document.getElementById("battle-moves-row");
     const arenaMovesKey = `${lead.uid || lead.id}_${(lead.moves || []).join(",")}_${STATE.autoMovesEnabled ? 1 : 0}_${STATE.activeCastingMoveIdx}_${JSON.stringify(STATE.autoMoveSlots)}`;
     if (movesRow && (force || arenaMovesKey !== _lastBattleArenaKey)) {
@@ -4644,28 +4785,21 @@ function renderBattleArena(force = false) {
                 const mv = STATE.movesMap[mId] || { id: mId, name: mId, element: lead.elements[0] || "normal", power: 55 };
                 const elKey = String(mv.element || "normal").toLowerCase();
                 const elInfo = ELEMENT_PT[elKey] || ELEMENT_PT.normal;
-                const isAoE = (mv.power || 50) >= 65 || idx >= 2;
-                const slotAutoOn = STATE.autoMovesEnabled && STATE.autoMoveSlots[idx] !== false;
+                const slotAutoOn = STATE.autoMovesEnabled && STATE.autoMoveSlots && STATE.autoMoveSlots[idx] !== false;
                 const isCasting = STATE.activeCastingMoveIdx === idx;
-                return `<div id="move-plate-${idx}" class="hk-slot poke-move-plate ${isCasting ? "is-casting-now" : ""}" style="--move-color:${elInfo.bg};--move-glow:${elInfo.bg}44;" onclick="STATE.activeCastingMoveIdx=${idx};executeCombatTurn('${mId}', false, ${idx})">
-                    <div class="move-plate-icon-wrap" title="Tipo: ${elInfo.label}">
-                        <img src="${getGen8TypeIconUrl(elKey)}" alt="${elInfo.label}">
-                    </div>
-                    <div class="move-plate-body">
-                        <div class="move-plate-top">
-                            <span class="move-plate-name">${mv.name}</span>
-                            <div style="display:flex;align-items:center;gap:4px;">
-                                <span class="move-auto-chip ${slotAutoOn ? "" : "is-paused"}" onclick="toggleSingleMoveAuto(${idx}, event)" title="Clique para incluir/pausar este golpe no Auto-Moves">
-                                    ${slotAutoOn ? "⚡ AUTO" : "MANUAL"}
-                                </span>
-                                <span class="move-plate-key">m${idx + 1}</span>
-                            </div>
-                        </div>
-                        <div class="move-plate-sub">
-                            <span>${elInfo.label} • PWR ${mv.power || 50}</span>
-                            <span style="color:${isAoE ? "#fde047" : "#93c5fd"};">${isAoE ? "🔥 AoE 3×3" : "🎯 Alvo"}</span>
-                        </div>
-                    </div>
+                const iconUrl = getMoveIconUrl(mId, elKey, mv.category);
+
+                return `<div id="move-slot-${idx}" class="move-skill-button ${isCasting ? "is-casting-now" : ""}" 
+                             style="--move-color:${elInfo.bg};--move-glow:${elInfo.bg}66;" 
+                             onclick="STATE.activeCastingMoveIdx=${idx};executeCombatTurn('${mId}', false, ${idx})"
+                             onmouseenter="showSkillTooltip(event, '${mId}', ${idx})"
+                             onmousemove="updateSkillTooltipPos(event)"
+                             onmouseleave="hideSkillTooltip()">
+                    <img class="move-skill-icon" src="${iconUrl}" alt="${mv.name}" onerror="this.onerror=null;this.src='/img/moves/tackle.png';">
+                    <span class="move-hotkey-badge">${idx + 1}</span>
+                    <span class="move-auto-indicator ${slotAutoOn ? "is-active" : "is-paused"}" 
+                          onclick="toggleSingleMoveAuto(${idx}, event)" 
+                          title="Auto-Cast: ${slotAutoOn ? "ATIVADO" : "MANUAL"} (Clique para alternar)">⚡</span>
                     <div class="move-cd-bar-track">
                         <div class="move-cd-bar-fill" style="width:${isCasting ? "100%" : "0%"};"></div>
                     </div>
@@ -10848,14 +10982,18 @@ function renderPartySubmenuContent(subTab, container) {
         const movesHtml = moves.map((mId, idx) => {
             const mv = STATE.movesMap[mId] || { name: mId, element: lead.elements[0] || "normal", power: 55 };
             const elInfo = ELEMENT_PT[mv.element] || ELEMENT_PT.normal;
-            return `<div class="party-move-subcard">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <strong>m${idx + 1}: ${mv.name}</strong>
-                    <span class="qual-pill" style="background:${elInfo.bg};color:${elInfo.fg};">${elInfo.label}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-top:4px;">
-                    <span>Poder: ${mv.power || 50}</span>
-                    <span>Alcance: ${idx >= 2 ? "AoE 3x3" : "Alvo Único"}</span>
+            const iconUrl = typeof getMoveIconUrl === "function" ? getMoveIconUrl(mId, mv.element, mv.category) : "";
+            return `<div class="party-move-subcard" style="display:flex;align-items:center;gap:10px;">
+                ${iconUrl ? `<img src="${iconUrl}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;border:1px solid rgba(255,255,255,0.15);" alt="${mv.name}" onerror="this.onerror=null;this.src='/img/moves/tackle.png';">` : ""}
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <strong>m${idx + 1}: ${mv.name}</strong>
+                        <span class="qual-pill" style="background:${elInfo.bg};color:${elInfo.fg};">${elInfo.label}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-top:2px;">
+                        <span>Poder: ${mv.power || 50}</span>
+                        <span>Alcance: ${idx >= 2 ? "AoE 3x3" : "Alvo Único"}</span>
+                    </div>
                 </div>
             </div>`;
         }).join("");
@@ -12182,7 +12320,7 @@ function showPokemonHoverCard(mon, event) {
     const elementsHtml = elements.map(el => {
         const elKey = String(el).toLowerCase();
         const info = (typeof ELEMENT_PT !== "undefined" && ELEMENT_PT[elKey]) || { label: el.toUpperCase(), bg: "#64748b" };
-        const iconUrl = typeof getGen8TypeIconUrl === "function" ? getGen8TypeIconUrl(elKey) : "";
+        const iconUrl = typeof getMoveIconUrl === "function" ? getMoveIconUrl(mId, elKey, mv.category) : (typeof getGen8TypeIconUrl === "function" ? getGen8TypeIconUrl(elKey) : "");
         return `<span style="background:${info.bg};color:#fff;display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:9.5px;font-weight:900;">
             ${iconUrl ? `<img src="${iconUrl}" style="width:12px;height:12px;object-fit:contain;">` : ""} ${info.label}
         </span>`;
@@ -12192,7 +12330,7 @@ function showPokemonHoverCard(mon, event) {
     const movesHtml = equippedMoves.map((mId, mIdx) => {
         const mv = (STATE.movesMap && STATE.movesMap[mId]) || { name: mId, element: elements[0] || "normal", power: 55 };
         const elKey = String(mv.element || "normal").toLowerCase();
-        const iconUrl = typeof getGen8TypeIconUrl === "function" ? getGen8TypeIconUrl(elKey) : "";
+        const iconUrl = typeof getMoveIconUrl === "function" ? getMoveIconUrl(mId, elKey, mv.category) : (typeof getGen8TypeIconUrl === "function" ? getGen8TypeIconUrl(elKey) : "");
         return `
             <div class="phc-move-item">
                 ${iconUrl ? `<img src="${iconUrl}" class="phc-move-icon">` : ""}
