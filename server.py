@@ -1252,10 +1252,12 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             return self.send_json({"ok": True, "active": res["active"], "sold": res["sold"]})
 
         if parsed.path == "/api/admin/feedback":
-            token = get_auth_token(self)
-            user = db.get_user_by_session(token) if token else None
             feedbacks = db.get_tester_feedback_list(limit=100)
             return self.send_json({"ok": True, "feedbacks": feedbacks})
+
+        if parsed.path == "/api/admin/users":
+            users = db.get_registered_users_list(limit=200)
+            return self.send_json({"ok": True, "users": users, "total": len(users)})
 
         if parsed.path == "/api/market/admin/hold":
             token = get_auth_token(self)

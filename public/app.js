@@ -1579,6 +1579,7 @@ function switchTab(tabName) {
     if (tabName === "bag" && typeof renderBagModal === "function") renderBagModal();
     if (tabName === "shop" && typeof renderGoldShop === "function") renderGoldShop();
     if (tabName === "cashshop" && typeof renderCashShop === "function") renderCashShop();
+    if (tabName === "admin") { refreshAdminBadges(); }
     if (tabName === "market") {
         if (typeof switchMarketSubmenu === "function") switchMarketSubmenu(typeof CURRENT_MARKET_SUB !== "undefined" ? CURRENT_MARKET_SUB : "browse");
         if (typeof syncMarketAdminVisibility === "function") syncMarketAdminVisibility();
@@ -10493,32 +10494,270 @@ function renderShopModal(catId = "all") {
     }
 }
 
+let _cachedAdminFeedbacks = [];
+let _cachedAdminUsers = [];
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function openAdminDashboardWithTab(subTab = "feedbacks") {
+    switchTab("admin");
+    switchAdminSubmenu(subTab);
+}
+
 function switchAdminSubmenu(subTab) {
     document.querySelectorAll(".admin-submenu-pill").forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.adminSub === subTab);
     });
     const presetsPanel = document.querySelector("#tab-admin .floating-modal-content > .panel:first-child");
-    const adminGridPanels = document.querySelectorAll("#tab-admin .admin-grid > .panel");
+    const adminGrid = document.querySelector("#tab-admin .admin-grid");
+    const feedbacksPanel = document.getElementById("admin-feedbacks-panel");
+    const usersPanel = document.getElementById("admin-users-panel");
 
-    if (presetsPanel && adminGridPanels.length >= 2) {
-        if (subTab === "presets") {
-            presetsPanel.style.display = "block";
-            adminGridPanels[0].style.display = "none";
-            adminGridPanels[1].style.display = "none";
-        } else if (subTab === "rates") {
-            presetsPanel.style.display = "none";
-            adminGridPanels[0].style.display = "block";
-            adminGridPanels[1].style.display = "none";
-        } else if (subTab === "cb") {
-            presetsPanel.style.display = "none";
-            adminGridPanels[0].style.display = "none";
-            adminGridPanels[1].style.display = "block";
-        } else {
-            presetsPanel.style.display = "block";
-            adminGridPanels[0].style.display = "block";
-            adminGridPanels[1].style.display = "block";
+    // Hide all panels
+    if (presetsPanel) presetsPanel.style.display = "none";
+    if (adminGrid) adminGrid.style.display = "none";
+    if (feedbacksPanel) feedbacksPanel.style.display = "none";
+    if (usersPanel) usersPanel.style.display = "none";
+
+    const adminGridPanels = adminGrid ? adminGrid.querySelectorAll(".panel") : [];
+
+    if (subTab === "presets") {
+        if (presetsPanel) presetsPanel.style.display = "block";
+    } else if (subTab === "rates") {
+        if (adminGrid) {
+            adminGrid.style.display = "grid";
+            if (adminGridPanels[0]) adminGridPanels[0].style.display = "block";
+            if (adminGridPanels[1]) adminGridPanels[1].style.display = "none";
+        }
+    } else if (subTab === "cb") {
+        if (adminGrid) {
+            adminGrid.style.display = "grid";
+            if (adminGridPanels[0]) adminGridPanels[0].style.display = "none";
+            if (adminGridPanels[1]) adminGridPanels[1].style.display = "block";
+        }
+    } else if (subTab === "feedbacks") {
+        if (feedbacksPanel) {
+            feedbacksPanel.style.display = "block";
+            loadAdminFeedbacks();
+        }
+    } else if (subTab === "users") {
+        if (usersPanel) {
+            usersPanel.style.display = "block";
+            loadAdminUsers();
         }
     }
+}
+
+async function refreshAdminBadges() {
+    try {
+        const [fbRes, userRes] = await Promise.all([
+            fetch("/api/admin/feedback"),
+            fetch("/api/admin/users")
+        ]);
+        if (fbRes.ok) {
+            const fbData = await fbRes.json();
+            if (fbData.ok && fbData.feedbacks) {
+                _cachedAdminFeedbacks = fbData.feedbacks;
+                const badge = document.getElementById("admin-feedbacks-badge");
+                if (badge) badge.textContent = fbData.feedbacks.length;
+                const stat = document.getElementById("admin-fb-stat-total");
+                if (stat) stat.textContent = `${fbData.feedbacks.length} enviados`;
+            }
+        }
+        if (userRes.ok) {
+            const userData = await userRes.json();
+            if (userData.ok && userData.users) {
+                _cachedAdminUsers = userData.users;
+                const badge = document.getElementById("admin-users-badge");
+                if (badge) badge.textContent = userData.users.length;
+                const stat = document.getElementById("admin-users-stat-total");
+                if (stat) stat.textContent = `${userData.users.length} contas`;
+            }
+        }
+    } catch (err) {
+        console.warn("refreshAdminBadges error:", err);
+    }
+}
+
+async function loadAdminFeedbacks(forceToast = false) {
+    const container = document.getElementById("admin-fb-list-container");
+    if (!container) return;
+    if (_cachedAdminFeedbacks.length === 0) {
+        container.innerHTML = `<div style="text-align:center;color:#9ca3af;padding:30px 0;">Carregando feedbacks...</div>`;
+    }
+    try {
+        const res = await fetch("/api/admin/feedback");
+        const data = await res.json();
+        if (data.ok && data.feedbacks) {
+            _cachedAdminFeedbacks = data.feedbacks;
+            const badge = document.getElementById("admin-feedbacks-badge");
+            if (badge) badge.textContent = data.feedbacks.length;
+            const stat = document.getElementById("admin-fb-stat-total");
+            if (stat) stat.textContent = `${data.feedbacks.length} enviados`;
+            filterAdminFeedbacks();
+            if (forceToast) showToast(`✅ ${data.feedbacks.length} feedbacks atualizados.`);
+        } else {
+            container.innerHTML = `<div style="text-align:center;color:#ef4444;padding:20px;">Falha ao carregar feedbacks.</div>`;
+        }
+    } catch (e) {
+        console.error("loadAdminFeedbacks error:", e);
+        container.innerHTML = `<div style="text-align:center;color:#ef4444;padding:20px;">Erro de conexão ao carregar feedbacks.</div>`;
+    }
+}
+
+function filterAdminFeedbacks() {
+    const search = (document.getElementById("admin-fb-search")?.value || "").toLowerCase().trim();
+    const cat = document.getElementById("admin-fb-cat-filter")?.value || "all";
+
+    const filtered = _cachedAdminFeedbacks.filter((fb) => {
+        const matchCat = (cat === "all") || (fb.category === cat);
+        const matchSearch = !search ||
+            (fb.username || "").toLowerCase().includes(search) ||
+            (fb.message || "").toLowerCase().includes(search) ||
+            (fb.player_summary || "").toLowerCase().includes(search);
+        return matchCat && matchSearch;
+    });
+
+    renderAdminFeedbacks(filtered);
+}
+
+function renderAdminFeedbacks(list) {
+    const container = document.getElementById("admin-fb-list-container");
+    if (!container) return;
+
+    if (!list || list.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center;color:#9ca3af;padding:40px 10px;background:#0d1117;border-radius:8px;border:1px dashed #30363d;">
+                <div style="font-size:32px;margin-bottom:8px;">📬</div>
+                <div style="font-weight:700;font-size:14px;color:#e2e8f0;">Nenhum feedback encontrado</div>
+                <div style="font-size:12px;color:#64748b;margin-top:4px;">Nenhum feedback corresponde aos filtros selecionados no momento.</div>
+            </div>
+        `;
+        return;
+    }
+
+    const catLabels = {
+        bug: { label: "🐞 BUG", bg: "rgba(239, 68, 68, 0.15)", border: "#ef4444", text: "#fca5a5" },
+        suggestion: { label: "💡 SUGESTÃO", bg: "rgba(59, 130, 246, 0.15)", border: "#3b82f6", text: "#93c5fd" },
+        balance: { label: "⚖️ BALANCEAMENTO", bg: "rgba(234, 179, 8, 0.15)", border: "#eab308", text: "#fde047" },
+        visual: { label: "🎨 VISUAL", bg: "rgba(168, 85, 247, 0.15)", border: "#a855f7", text: "#d8b4fe" },
+        praise: { label: "⭐ ELOGIO", bg: "rgba(16, 185, 129, 0.15)", border: "#10b981", text: "#6ee7b7" }
+    };
+
+    container.innerHTML = list.map((fb) => {
+        const catCfg = catLabels[fb.category] || { label: (fb.category || "GERAL").toUpperCase(), bg: "rgba(100,116,139,0.15)", border: "#64748b", text: "#cbd5e1" };
+        const stars = "★".repeat(Math.max(1, Math.min(5, fb.rating || 5))) + "☆".repeat(5 - Math.max(1, Math.min(5, fb.rating || 5)));
+        
+        return `
+            <div style="background:#0d1117;border:1px solid #30363d;border-left:4px solid ${catCfg.border};border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-weight:800;color:#f8fafc;font-size:13.5px;">👤 ${escapeHtml(fb.username || "Anônimo")}</span>
+                        <span style="font-size:10.5px;padding:2px 8px;border-radius:6px;background:${catCfg.bg};border:1px solid ${catCfg.border};color:${catCfg.text};font-weight:700;">${catCfg.label}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span style="color:#f59e0b;font-size:14px;letter-spacing:1px;" title="Avaliação: ${fb.rating}/5">${stars}</span>
+                        <span style="font-size:11.5px;color:#64748b;">🕒 ${fb.created_at || "Recente"}</span>
+                    </div>
+                </div>
+
+                <div style="font-size:13px;line-height:1.5;color:#e2e8f0;background:rgba(255,255,255,0.02);padding:10px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);word-break:break-word;">
+                    ${escapeHtml(fb.message || "")}
+                </div>
+
+                ${fb.player_summary ? `
+                <div style="font-size:11px;color:#64748b;font-family:monospace;background:rgba(0,0,0,0.3);padding:6px 10px;border-radius:4px;display:flex;align-items:center;gap:6px;overflow-x:auto;">
+                    <span>⚙️ Info da Sessão:</span>
+                    <span style="color:#94a3b8;">${escapeHtml(fb.player_summary)}</span>
+                </div>
+                ` : ""}
+            </div>
+        `;
+    }).join("");
+}
+
+async function loadAdminUsers(forceToast = false) {
+    const tbody = document.getElementById("admin-users-tbody");
+    if (!tbody) return;
+    if (_cachedAdminUsers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:24px;">Carregando contas cadastradas...</td></tr>`;
+    }
+    try {
+        const res = await fetch("/api/admin/users");
+        const data = await res.json();
+        if (data.ok && data.users) {
+            _cachedAdminUsers = data.users;
+            const badge = document.getElementById("admin-users-badge");
+            if (badge) badge.textContent = data.users.length;
+            const stat = document.getElementById("admin-users-stat-total");
+            if (stat) stat.textContent = `${data.users.length} contas`;
+            filterAdminUsers();
+            if (forceToast) showToast(`✅ ${data.users.length} contas carregadas com sucesso.`);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#ef4444;padding:20px;">Falha ao carregar lista de usuários.</td></tr>`;
+        }
+    } catch (e) {
+        console.error("loadAdminUsers error:", e);
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#ef4444;padding:20px;">Erro de conexão ao carregar usuários.</td></tr>`;
+    }
+}
+
+function filterAdminUsers() {
+    const search = (document.getElementById("admin-users-search")?.value || "").toLowerCase().trim();
+    const filtered = _cachedAdminUsers.filter((u) => {
+        if (!search) return true;
+        return (u.username || "").toLowerCase().includes(search) ||
+               String(u.id) === search ||
+               (u.role || "").toLowerCase().includes(search);
+    });
+    renderAdminUsers(filtered);
+}
+
+function renderAdminUsers(list) {
+    const tbody = document.getElementById("admin-users-tbody");
+    if (!tbody) return;
+
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:30px;">Nenhuma conta encontrada com o termo pesquisado.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = list.map((u) => {
+        const skin = u.avatar_model || "ethan_gold";
+        const rolePill = u.role === "admin"
+            ? `<span style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid #ef4444;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700;">ADMIN</span>`
+            : `<span style="background:rgba(100,116,139,0.2);color:#94a3b8;border:1px solid #475569;padding:2px 7px;border-radius:4px;font-size:10.5px;">PLAYER</span>`;
+
+        return `
+            <tr style="border-bottom:1px solid #21262d;">
+                <td style="padding:10px 12px;color:#64748b;font-weight:600;">#${u.id}</td>
+                <td style="padding:10px 12px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <img src="/img/trainers/${skin}.png" alt="${skin}" style="width:28px;height:28px;image-rendering:pixelated;object-fit:contain;background:rgba(255,255,255,0.05);border-radius:4px;border:1px solid #30363d;" onerror="this.src='/img/trainers/ethan_gold.png'">
+                        <div>
+                            <div style="font-weight:700;color:#f3f4f6;">${escapeHtml(u.username)}</div>
+                            <div style="font-size:10.5px;color:#64748b;">skin: ${skin}</div>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding:10px 12px;">${rolePill}</td>
+                <td style="padding:10px 12px;color:#fde047;font-weight:700;">Lv. ${u.level || 1}</td>
+                <td style="padding:10px 12px;color:#fbbf24;">💰 ${(u.gold || 0).toLocaleString()}</td>
+                <td style="padding:10px 12px;color:#38bdf8;">💎 ${(u.diamonds || 0).toLocaleString()}</td>
+                <td style="padding:10px 12px;color:#e2e8f0;">🎒 ${u.party_count || 0}/6</td>
+                <td style="padding:10px 12px;color:#64748b;font-size:11.5px;">${u.created_at || "—"}</td>
+                <td style="padding:10px 12px;color:#64748b;font-size:11.5px;">${u.last_login || "—"}</td>
+            </tr>
+        `;
+    }).join("");
 }
 
 // =========================================================

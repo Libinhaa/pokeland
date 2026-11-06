@@ -1569,6 +1569,8 @@
                     <button class="admin-submenu-pill active" data-admin-sub="presets" onclick="switchAdminSubmenu('presets')">🚀 Presets Rápidos</button>
                     <button class="admin-submenu-pill" data-admin-sub="rates" onclick="switchAdminSubmenu('rates')">⚙️ Multiplicadores & Taxas</button>
                     <button class="admin-submenu-pill" data-admin-sub="cb" onclick="switchAdminSubmenu('cb')">🧬 Gerador /cb</button>
+                    <button class="admin-submenu-pill" data-admin-sub="feedbacks" onclick="switchAdminSubmenu('feedbacks')">🐞 Feedbacks & Reports (<span id="admin-feedbacks-badge">0</span>)</button>
+                    <button class="admin-submenu-pill" data-admin-sub="users" onclick="switchAdminSubmenu('users')">👥 Contas Registradas (<span id="admin-users-badge">0</span>)</button>
                 </div>
                 <div class="floating-modal-content">
                     <div class="panel" style="margin-bottom:18px;">
@@ -1683,6 +1685,90 @@
                             <div style="margin-top:12px;">
                                 <button class="btn btn-pink" onclick="spawnCustomPokemonToParty()">✨ Gerar Pokémon na Minha PokéBar!</button>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB SUBSECTION: FEEDBACKS DOS JOGADORES -->
+                    <div id="admin-feedbacks-panel" class="panel" style="display:none;margin-top:4px;">
+                        <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                            <div>
+                                <div class="panel-title" style="display:flex;align-items:center;gap:8px;">
+                                    <span>🐞 Central de Feedbacks & Bug Reports</span>
+                                    <span class="badge" id="admin-fb-stat-total" style="background:#3b82f6;color:#fff;font-size:11px;padding:2px 8px;border-radius:12px;">0 enviados</span>
+                                </div>
+                                <p style="font-size:12px;color:#9ca3af;margin-top:2px;">Feedbacks, relatórios de bugs e sugestões enviados em tempo real pelos jogadores do teste alpha.</p>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <button class="btn btn-primary" onclick="loadAdminFeedbacks(true)" style="padding:6px 12px;font-size:12px;">🔄 Atualizar Feedbacks</button>
+                            </div>
+                        </div>
+
+                        <!-- Filter Bar -->
+                        <div style="display:flex;gap:10px;align-items:center;margin:12px 0 16px 0;flex-wrap:wrap;background:rgba(15,23,42,0.6);padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+                            <div style="flex:1;min-width:200px;">
+                                <input type="text" id="admin-fb-search" placeholder="🔍 Filtrar por treinador, texto ou detalhe..." oninput="filterAdminFeedbacks()" style="width:100%;padding:7px 10px;font-size:12.5px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#f3f4f6;">
+                            </div>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <label style="font-size:12px;color:#9ca3af;">Categoria:</label>
+                                <select id="admin-fb-cat-filter" onchange="filterAdminFeedbacks()" style="padding:6px 10px;font-size:12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#f3f4f6;">
+                                    <option value="all">Todas as Categorias</option>
+                                    <option value="bug">🐞 Bug / Erro</option>
+                                    <option value="suggestion">💡 Sugestão</option>
+                                    <option value="balance">⚖️ Balanceamento</option>
+                                    <option value="visual">🎨 Visual / Sprite</option>
+                                    <option value="praise">⭐ Elogio / Outro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Feedbacks Container -->
+                        <div id="admin-fb-list-container" style="max-height:560px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;">
+                            <div style="text-align:center;color:#9ca3af;padding:30px 0;">Carregando feedbacks...</div>
+                        </div>
+                    </div>
+
+                    <!-- TAB SUBSECTION: CONTAS REGISTRADAS -->
+                    <div id="admin-users-panel" class="panel" style="display:none;margin-top:4px;">
+                        <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                            <div>
+                                <div class="panel-title" style="display:flex;align-items:center;gap:8px;">
+                                    <span>👥 Treinadores & Contas Registradas</span>
+                                    <span class="badge" id="admin-users-stat-total" style="background:#10b981;color:#fff;font-size:11px;padding:2px 8px;border-radius:12px;">0 contas</span>
+                                </div>
+                                <p style="font-size:12px;color:#9ca3af;margin-top:2px;">Contas gravadas permanentemente no banco SQLite (Volume Railway <code>pokeland-data</code> montado em <code>/app/data</code>).</p>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <button class="btn btn-primary" onclick="loadAdminUsers(true)" style="padding:6px 12px;font-size:12px;">🔄 Atualizar Contas</button>
+                            </div>
+                        </div>
+
+                        <!-- Filter Bar -->
+                        <div style="display:flex;gap:10px;align-items:center;margin:12px 0 16px 0;flex-wrap:wrap;background:rgba(15,23,42,0.6);padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+                            <div style="flex:1;min-width:200px;">
+                                <input type="text" id="admin-users-search" placeholder="🔍 Buscar por nome do treinador ou ID..." oninput="filterAdminUsers()" style="width:100%;padding:7px 10px;font-size:12.5px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#f3f4f6;">
+                            </div>
+                        </div>
+
+                        <!-- Users Table Container -->
+                        <div style="max-height:560px;overflow-x:auto;overflow-y:auto;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+                            <table style="width:100%;border-collapse:collapse;font-size:12.5px;text-align:left;" id="admin-users-table">
+                                <thead style="background:#161b22;color:#9ca3af;position:sticky;top:0;z-index:2;">
+                                    <tr>
+                                        <th style="padding:10px 12px;">ID</th>
+                                        <th style="padding:10px 12px;">Treinador / Skin</th>
+                                        <th style="padding:10px 12px;">Cargo</th>
+                                        <th style="padding:10px 12px;">Nível</th>
+                                        <th style="padding:10px 12px;">Ouro</th>
+                                        <th style="padding:10px 12px;">Diamantes</th>
+                                        <th style="padding:10px 12px;">Time</th>
+                                        <th style="padding:10px 12px;">Cadastrado em</th>
+                                        <th style="padding:10px 12px;">Último Login</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-tbody" style="background:#0d1117;">
+                                    <tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:24px;">Carregando contas cadastradas...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -2518,9 +2604,12 @@
                     ℹ️ Detalhes da sua sessão (posição no mapa, nível, time ativo e navegador) serão anexados automaticamente para facilitar a análise.
                 </div>
 
-                <div class="chat-settings-footer-actions">
-                    <button class="tibia-btn poke-cmd-btn" onclick="closeFeedbackModal()">Cancelar</button>
-                    <button class="tibia-btn poke-cmd-btn is-gold" id="btn-submit-feedback" onclick="submitTesterFeedback()">Enviar Feedback</button>
+                <div class="chat-settings-footer-actions" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                    <button class="tibia-btn poke-cmd-btn" style="border-color:#38bdf8;color:#38bdf8;" onclick="closeFeedbackModal(); openAdminDashboardWithTab('feedbacks');" title="Abrir Painel Admin de Feedbacks Recebidos">📋 Ver Feedbacks (ADM)</button>
+                    <div style="display:flex;gap:8px;">
+                        <button class="tibia-btn poke-cmd-btn" onclick="closeFeedbackModal()">Cancelar</button>
+                        <button class="tibia-btn poke-cmd-btn is-gold" id="btn-submit-feedback" onclick="submitTesterFeedback()">Enviar Feedback</button>
+                    </div>
                 </div>
             </div>
         </div>

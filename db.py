@@ -915,3 +915,48 @@ def get_tester_feedback_list(limit: int = 100) -> list:
         )
         rows = cursor.fetchall()
         return [dict(r) for r in rows]
+
+
+def get_registered_users_list(limit: int = 200) -> list:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT u.id, u.username, u.avatar_model, u.created_at, u.last_login, u.role, p.player_data, p.updated_at
+            FROM users u
+            LEFT JOIN player_saves p ON u.id = p.user_id
+            ORDER BY u.id DESC
+            LIMIT ?
+            """,
+            (limit,)
+        )
+        rows = cursor.fetchall()
+        result = []
+        for r in rows:
+            u_dict = {
+                "id": r["id"],
+                "username": r["username"],
+                "avatar_model": r["avatar_model"] or "ethan_gold",
+                "created_at": r["created_at"],
+                "last_login": r["last_login"],
+                "role": r["role"] or "player",
+                "level": 1,
+                "gold": 0,
+                "diamonds": 0,
+                "party_count": 0,
+                "has_save": False,
+                "save_updated_at": r["updated_at"],
+            }
+            if r["player_data"]:
+                try:
+                    pdata = json.loads(r["player_data"])
+                    u_dict["level"] = pdata.get("level", 1)
+                    u_dict["gold"] = pdata.get("gold", 0)
+                    u_dict["diamonds"] = pdata.get("diamonds", 0)
+                    u_dict["party_count"] = len(pdata.get("party", []))
+                    u_dict["has_save"] = True
+                except Exception:
+                    pass
+            result.append(u_dict)
+        return result
+
