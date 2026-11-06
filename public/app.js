@@ -10753,12 +10753,13 @@ function renderAdminUsers(list) {
             ? `<span style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid #ef4444;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700;">ADMIN</span>`
             : `<span style="background:rgba(100,116,139,0.2);color:#94a3b8;border:1px solid #475569;padding:2px 7px;border-radius:4px;font-size:10.5px;">PLAYER</span>`;
 
+        const portrait = (typeof getTrainerModelDataUrl === "function") ? getTrainerModelDataUrl(skin) : "/img/trainers/hgss_ethan.png";
         return `
             <tr style="border-bottom:1px solid #21262d;">
                 <td style="padding:10px 12px;color:#64748b;font-weight:600;">#${u.id}</td>
                 <td style="padding:10px 12px;">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <img src="/img/trainers/${skin}.png" alt="${skin}" style="width:28px;height:28px;image-rendering:pixelated;object-fit:contain;background:rgba(255,255,255,0.05);border-radius:4px;border:1px solid #30363d;" onerror="this.src='/img/trainers/ethan_gold.png'">
+                        <img src="${portrait}" alt="${skin}" style="width:32px;height:32px;image-rendering:pixelated;object-fit:contain;background:rgba(255,255,255,0.05);border-radius:4px;border:1px solid #30363d;" onerror="this.src=\'/img/trainers/hgss_ethan.png\'">
                         <div>
                             <div style="font-weight:700;color:#f3f4f6;">${escapeHtml(u.username)}</div>
                             <div style="font-size:10.5px;color:#64748b;">skin: ${skin}</div>
