@@ -2496,7 +2496,7 @@
   },
   "offline_farm": {
     "enabled": true,
-    "last_active": 1793939218343,
+    "last_active": 1793968406022,
     "assigned_zone_id": null,
     "auto_catch": true,
     "ball_id": "capsule_ultra",
