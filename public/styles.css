@@ -10430,3 +10430,15 @@ body:not(.is-hud-editing-mode) .topbar-drag-grip {
 .ru-sacrifice-card * {
     pointer-events: none;
 }
+
+
+.oras-type-pill {
+    height: 18px;
+    width: auto;
+    max-width: 50px;
+    vertical-align: middle;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+    border-radius: 3px;
+    display: inline-block;
+}

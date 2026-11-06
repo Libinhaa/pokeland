@@ -837,12 +837,42 @@ function getCachedImage(url) {
     return img;
 }
 
-function getPixelBallSvgDataUri(capId) {
-    if (typeof getItemSpriteUrl === "function") {
-        return getItemSpriteUrl(capId);
+function getItemSpriteUrl(itemId, item = null) {
+    if (!itemId) return "/img/items/poke-ball.png";
+    const clean = String(itemId).toLowerCase().trim();
+    
+    // Check Pokéball mappings
+    if (clean.includes("ball") || clean.startsWith("capsule_")) {
+        let b = clean.replace("capsule_", "").replace("ball_", "");
+        if (b === "basic" || b === "poke") b = "poke";
+        if (b === "super" || b === "great") b = "great";
+        if (b === "hyper" || b === "ultra") b = "ultra";
+        return `/img/items/${b}-ball.png`;
     }
-    const clean = String(capId || "capsule_basic").replace("capsule_", "").replace("ball_", "");
-    return `/img/items/${clean}-ball.png`;
+    
+    // Check Evolution Stones
+    if (clean.startsWith("stone_")) {
+        const st = clean.replace("stone_", "");
+        return `/img/items/${st}-stone.png`;
+    }
+    
+    // Direct item file
+    const itemClean = clean.replace(/^item_/, "").replace(/_/g, "-");
+    return `/img/items/${itemClean}.png`;
+}
+window.getItemSpriteUrl = getItemSpriteUrl;
+
+function getPokemonBoxIconUrl(speciesIdOrDex) {
+    let dex = 1;
+    if (typeof speciesIdOrDex === "number") dex = speciesIdOrDex;
+    else if (typeof speciesIdOrDex === "string" && !isNaN(parseInt(speciesIdOrDex))) dex = parseInt(speciesIdOrDex);
+    else if (STATE.speciesById && STATE.speciesById[speciesIdOrDex]) dex = STATE.speciesById[speciesIdOrDex].dex_id || 1;
+    return `/img/pokemon/icons/${dex}.png`;
+}
+window.getPokemonBoxIconUrl = getPokemonBoxIconUrl;
+
+function getPixelBallSvgDataUri(capId) {
+    return getItemSpriteUrl(capId);
 }
 
 function changeGbaSpriteVersion(newVer) {
@@ -1009,9 +1039,26 @@ function classifyMythicalGrade(mon) {
     };
 }
 
-function getGen8TypeIconUrl(el) {
+function getOrasTypeIconUrl(el) {
     const key = String(el || "normal").toLowerCase().trim();
-    return `/img/ui/types/gen8/${ELEMENT_PT[key] ? key : "normal"}.png`;
+    return `/img/ui/types/oras/${ELEMENT_PT[key] ? key : "normal"}.png`;
+}
+window.getOrasTypeIconUrl = getOrasTypeIconUrl;
+
+function getOrasStatusIconUrl(status) {
+    const s = String(status || "").toLowerCase().trim();
+    if (s === "burn" || s === "brn") return "/img/ui/types/oras/status_brn.png";
+    if (s === "paralysis" || s === "par") return "/img/ui/types/oras/status_par.png";
+    if (s === "sleep" || s === "slp") return "/img/ui/types/oras/status_slp.png";
+    if (s === "freeze" || s === "frz") return "/img/ui/types/oras/status_frz.png";
+    if (s === "poison" || s === "psn") return "/img/ui/types/oras/status_psn.png";
+    if (s === "faint" || s === "fnt") return "/img/ui/types/oras/status_fnt.png";
+    return "";
+}
+window.getOrasStatusIconUrl = getOrasStatusIconUrl;
+
+function getGen8TypeIconUrl(el) {
+    return getOrasTypeIconUrl(el);
 }
 
 function getMoveIconUrl(moveId, element = "normal", category = "physical") {
@@ -1161,10 +1208,10 @@ function getRmmzIconHtml(iconIndex, extraClass = "rmmz-icon") {
 function renderTypeBadges(elements) {
     return (elements || ["normal"])
         .map((el) => {
-            const key = String(el || "normal").toLowerCase();
+            const key = String(el || "normal").toLowerCase().trim();
             const info = ELEMENT_PT[key] || ELEMENT_PT.normal;
-            const iconUrl = getGen8TypeIconUrl(key);
-            return `<span class="el-badge" style="background:${info.bg};color:${info.fg};"><img class="el-badge-icon" src="${iconUrl}" alt="${info.label}" onerror="this.style.display='none'"><span>${info.label}</span></span>`;
+            const iconUrl = getOrasTypeIconUrl(key);
+            return `<img class="oras-type-pill" src="${iconUrl}" alt="${info.label}" title="${info.label}" style="height:18px;vertical-align:middle;image-rendering:pixelated;margin-right:3px;border-radius:2px;" onerror="this.onerror=null;this.src='/img/ui/types/gen8/${key}.png'">`;
         })
         .join("");
 }
@@ -3178,6 +3225,149 @@ function sortBagInventory() {
     if (typeof scheduleStateSave === "function") scheduleStateSave(1500);
 }
 window.sortBagInventory = sortBagInventory;
+
+let CURRENT_BAG_SUB = "all";
+
+function switchBagSubmenu(subTab) {
+    CURRENT_BAG_SUB = subTab || "all";
+    document.querySelectorAll(".bag-submenu-pill").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.bagSub === CURRENT_BAG_SUB);
+    });
+    renderBagModal();
+}
+window.switchBagSubmenu = switchBagSubmenu;
+
+function filterBagItems() {
+    renderBagModal();
+}
+window.filterBagItems = filterBagItems;
+
+function renderBagModal() {
+    const pane = document.getElementById("tab-bag");
+    if (!pane) return;
+    
+    // Labels
+    const capLbl = document.getElementById("bag-capacity-label");
+    const goldLbl = document.getElementById("bag-gold-label");
+    const diaLbl = document.getElementById("bag-diamond-label");
+    
+    const inv = STATE.player.inventory || {};
+    const usedSlots = Object.keys(inv).filter(k => inv[k] > 0).length;
+    if (capLbl) capLbl.textContent = `🎒 ${usedSlots} / 400 slots`;
+    if (goldLbl) goldLbl.textContent = `$${(STATE.player.gold || 0).toLocaleString()}`;
+    if (diaLbl) diaLbl.textContent = `💎 ${STATE.player.diamonds || 0}`;
+    
+    const container = document.getElementById("bag-items-grid-container");
+    if (!container) return;
+    
+    const searchVal = (document.getElementById("bag-search-input")?.value || "").toLowerCase().trim();
+    
+    let entries = Object.entries(inv).filter(([, qty]) => qty > 0);
+    
+    // Filter by submenu
+    if (CURRENT_BAG_SUB === "balls") {
+        entries = entries.filter(([id]) => id.includes("ball") || id.startsWith("capsule_"));
+    } else if (CURRENT_BAG_SUB === "potions") {
+        entries = entries.filter(([id]) => id.includes("potion") || id.includes("revive") || id.includes("heal") || id.includes("antidote") || id.includes("candy"));
+    } else if (CURRENT_BAG_SUB === "stones") {
+        entries = entries.filter(([id]) => id.includes("stone"));
+    } else if (CURRENT_BAG_SUB === "valuable") {
+        entries = entries.filter(([id]) => !id.includes("ball") && !id.startsWith("capsule_") && !id.includes("potion") && !id.includes("revive") && !id.includes("stone"));
+    } else if (CURRENT_BAG_SUB === "pokemon") {
+        entries = entries.filter(([id]) => id.startsWith("capsule_"));
+    }
+    
+    // Filter by search text
+    if (searchVal) {
+        entries = entries.filter(([id]) => {
+            const item = STATE.itemsMap[id] || { name: id };
+            return id.toLowerCase().includes(searchVal) || (item.name && item.name.toLowerCase().includes(searchVal));
+        });
+    }
+    
+    if (entries.length === 0) {
+        container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;font-size:13px;">
+            Nenhum item encontrado nesta categoria da mochila.
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = entries.map(([itemId, qty]) => {
+        const item = STATE.itemsMap[itemId] || { name: itemId, type: "material", sell_price: 5 };
+        const sprite = getItemSpriteUrl(itemId, item);
+        const isConsumable = itemId.includes("potion") || itemId.includes("revive") || itemId.includes("candy") || itemId.includes("heal");
+        return `
+            <div class="shop-card" style="display:flex;flex-direction:column;justify-content:space-between;background:rgba(15,23,42,0.85);border:1px solid #334155;border-radius:8px;padding:10px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <img src="${sprite}" alt="${item.name}" style="width:36px;height:36px;object-fit:contain;image-rendering:pixelated;" onerror="this.onerror=null;this.src='/img/items/poke-ball.png';">
+                    <div style="flex:1;min-width:0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:12.5px;color:#f8fafc;">
+                            <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</span>
+                            <span style="color:#34d399;font-size:12px;margin-left:6px;">x${qty}</span>
+                        </div>
+                        <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
+                            ${item.type || "Item"} • Venda NPC: $${item.sell_price || 5}/un
+                        </div>
+                    </div>
+                </div>
+                ${isConsumable ? `
+                    <div style="margin-top:8px;display:flex;gap:6px;">
+                        <button class="btn btn-green btn-xs" style="flex:1;font-size:11px;padding:3px 6px;" onclick="useInventoryConsumable('${itemId}')">✨ Usar</button>
+                    </div>
+                ` : ""}
+            </div>
+        `;
+    }).join("");
+}
+window.renderBagModal = renderBagModal;
+
+function useInventoryConsumable(itemId) {
+    if (!STATE.player.inventory[itemId] || STATE.player.inventory[itemId] <= 0) {
+        showToast("❌ Você não possui este item.");
+        return;
+    }
+    const lead = getLeadPokemon();
+    if (!lead) {
+        showToast("❌ Nenhum Pokémon ativo no time!");
+        return;
+    }
+    
+    if (itemId.includes("potion")) {
+        const maxHp = lead.max_hp || 100;
+        if (lead.hp >= maxHp) {
+            showToast("ℹ️ O Pokémon líder já está com HP cheio!");
+            return;
+        }
+        let healAmt = 50;
+        if (itemId.includes("super")) healAmt = 120;
+        else if (itemId.includes("hyper")) healAmt = 300;
+        else if (itemId.includes("max") || itemId.includes("full")) healAmt = maxHp;
+        
+        lead.hp = Math.min(maxHp, lead.hp + healAmt);
+        STATE.player.inventory[itemId]--;
+        if (typeof playSfx === "function") playSfx("heal");
+        showToast(`💖 ${lead.name} recuperou +${healAmt} HP!`);
+    } else if (itemId.includes("revive")) {
+        const deadMon = STATE.player.party.find(m => (m.hp || 0) <= 0);
+        if (!deadMon) {
+            showToast("ℹ️ Todos os Pokémon do time estão conscientes!");
+            return;
+        }
+        const maxHp = deadMon.max_hp || 100;
+        deadMon.hp = itemId.includes("max") ? maxHp : Math.floor(maxHp / 2);
+        STATE.player.inventory[itemId]--;
+        if (typeof playSfx === "function") playSfx("revive");
+        showToast(`🌟 ${deadMon.name} foi revivido!`);
+    } else {
+        showToast(`✨ Item ${itemId} utilizado!`);
+        STATE.player.inventory[itemId]--;
+    }
+    
+    scheduleStateSave(1000);
+    renderAll();
+    renderBagModal();
+}
+window.useInventoryConsumable = useInventoryConsumable;
 
 // ====================================================
 // TIBIA REAL-TIME SQM SIMULATION & RENDERING LOOP
@@ -12548,10 +12738,8 @@ function showPokemonHoverCard(mon, event) {
     const elementsHtml = elements.map(el => {
         const elKey = String(el).toLowerCase();
         const info = (typeof ELEMENT_PT !== "undefined" && ELEMENT_PT[elKey]) || { label: el.toUpperCase(), bg: "#64748b" };
-        const iconUrl = typeof getMoveIconUrl === "function" ? getMoveIconUrl(mId, elKey, mv.category) : (typeof getGen8TypeIconUrl === "function" ? getGen8TypeIconUrl(elKey) : "");
-        return `<span style="background:${info.bg};color:#fff;display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:9.5px;font-weight:900;">
-            ${iconUrl ? `<img src="${iconUrl}" style="width:12px;height:12px;object-fit:contain;">` : ""} ${info.label}
-        </span>`;
+        const iconUrl = typeof getOrasTypeIconUrl === "function" ? getOrasTypeIconUrl(elKey) : `/img/ui/types/oras/${elKey}.png`;
+        return `<img class="oras-type-pill" src="${iconUrl}" alt="${info.label}" title="${info.label}" style="height:18px;vertical-align:middle;image-rendering:pixelated;margin-right:4px;" onerror="this.onerror=null;this.src='/img/ui/types/gen8/${elKey}.png'">`;
     }).join(" ");
 
     const equippedMoves = (mon.moves && mon.moves.length > 0 ? mon.moves : (sp.learn_moves || ["tackle"])).slice(0, 4);
