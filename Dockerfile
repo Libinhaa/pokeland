@@ -6,7 +6,7 @@ WORKDIR /app
 COPY . /app
 
 # Ensure SQLite storage directory exists
-RUN mkdir -p /app/data
+RUN cp -r /app/data /app/data_defaults && mkdir -p /app/data
 
 EXPOSE 8080
 ENV PORT=8080

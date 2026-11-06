@@ -1,0 +1,251 @@
+{
+  "starter": {
+    "initial_gold": 500,
+    "trainer_level": 1,
+    "creature_level": 5,
+    "species_ids": [
+      "bulbasaur",
+      "charmander",
+      "squirtle",
+      "treecko",
+      "torchic",
+      "mudkip"
+    ],
+    "items": {
+      "310": 1,
+      "311": 100,
+      "capsule_basic": 30,
+      "potion_great": 500,
+      "revive_basic": 5
+    }
+  },
+  "progression": {
+    "yield_per_level": 0.15,
+    "exp_bands": [
+      {
+        "level": 100,
+        "multiplier": 2
+      },
+      {
+        "level": 150,
+        "multiplier": 4
+      },
+      {
+        "level": 200,
+        "multiplier": 10
+      },
+      {
+        "level": 500,
+        "multiplier": 20
+      }
+    ],
+    "trainer_exp": {
+      "after_level": 400,
+      "multiplier": 2
+    }
+  },
+  "exp_rate": 1,
+  "gold_rate": 1,
+  "drop_rate": 1,
+  "capture_rate": 1,
+  "shiny_rate": 1,
+  "exp_scale": 54,
+  "monster_respawn_seconds": 12,
+  "movement": {
+    "base_speed": 4,
+    "speed_range": 0.1,
+    "level_cap": 100,
+    "hunt_base_speed": 3.5
+  },
+  "active_events": [],
+  "promotional_banner": {
+    "active": true,
+    "image_url": "img/ui/hunt-maps/promotional-banner-1792237545954.png",
+    "show_store_cta": true,
+    "cta_target": "founder_pack"
+  },
+  "main_menu": {
+    "items": {
+      "active-events": {
+        "icon_url": "img/ui/menu-custom/menu-active-events-icon-1790097882055.png"
+      },
+      "activities": {
+        "icon_url": "img/ui/menu-custom/menu-activities-icon-1785576016765.png"
+      },
+      "arena-defense": {
+        "icon_url": "img/ui/menu-custom/menu-arena-defense-icon-1791560538904.png"
+      },
+      "arena-pvp": {
+        "icon_url": "img/ui/menu-custom/menu-arena-pvp-icon-1784596226319.png"
+      },
+      "auto-helper": {
+        "icon_url": "img/ui/menu-custom/menu-auto-helper-icon-1784596346468.png"
+      },
+      "automation": {
+        "icon_url": "img/ui/menu-custom/menu-automation-icon-1784596343693.png"
+      },
+      "battle-pass": {
+        "icon_url": "img/ui/menu-custom/menu-battle-pass-icon-1784596275577.png"
+      },
+      "beta-goals": {
+        "icon_url": "img/ui/menu-custom/menu-beta-goals-icon-1785128887365.png"
+      },
+      "breeding": {
+        "icon_url": "img/ui/menu-custom/menu-breeding-icon-1784702436027.png"
+      },
+      "capture-records": {
+        "icon_url": "img/ui/menu-custom/menu-capture-records-icon-1784596208135.png"
+      },
+      "city": {
+        "icon_url": "img/ui/menu-custom/menu-city-icon-1787707735113.png"
+      },
+      "daily-gift": {
+        "icon_url": "img/ui/menu-custom/menu-daily-gift-icon-1784596249618.png"
+      },
+      "discord": {
+        "icon_url": "img/ui/menu-custom/menu-discord-icon-1789299657581.png"
+      },
+      "encyclopedia": {
+        "icon_url": "img/ui/menu-custom/menu-encyclopedia-icon-1784596190494.png"
+      },
+      "event-calendar": {
+        "icon_url": "img/ui/menu-custom/menu-event-calendar-icon-1786860640712.png"
+      },
+      "events": {
+        "title": "Eventos",
+        "icon_url": "img/ui/menu-custom/menu-events-icon-1784596246755.png"
+      },
+      "expedition": {
+        "icon_url": "img/ui/menu-custom/menu-expedition-icon-1790097875051.png"
+      },
+      "friends": {
+        "icon_url": "img/ui/menu-custom/menu-friends-icon-1784596300464.png"
+      },
+      "gacha": {
+        "icon_url": "img/ui/menu-custom/menu-gacha-icon-1786860644491.png"
+      },
+      "game-admin": {
+        "icon_url": "img/ui/menu-custom/menu-game-admin-icon-1784702445546.png"
+      },
+      "genetic-vault": {
+        "icon_url": "img/ui/menu-custom/menu-genetic-vault-icon-1791560531440.png"
+      },
+      "guild": {
+        "icon_url": "img/ui/menu-custom/menu-guild-icon-1786860649076.png"
+      },
+      "halloween": {
+        "icon_url": "img/ui/menu-custom/menu-halloween-icon-1792199044023.png"
+      },
+      "hunt-analyzer": {
+        "icon_url": "img/ui/menu-custom/menu-hunt-analyzer-icon-1784596350893.png"
+      },
+      "hunts": {
+        "icon_url": "img/ui/menu-custom/menu-hunts-icon-1784596200219.png"
+      },
+      "inventory": {
+        "icon_url": "img/ui/menu-custom/menu-inventory-icon-1784596187096.png"
+      },
+      "market": {
+        "icon_url": "img/ui/menu-custom/menu-market-icon-1787708228443.png"
+      },
+      "mentorship": {
+        "icon_url": "img/ui/menu-custom/menu-mentorship-icon-1792278087156.png"
+      },
+      "mini-view": {
+        "icon_url": "img/ui/menu-custom/menu-mini-view-icon-1785128896921.png"
+      },
+      "npc-shop": {
+        "icon_url": "img/ui/menu-custom/menu-npc-shop-icon-1787708169550.png"
+      },
+      "offline-farm": {
+        "title": "Farm Off",
+        "icon_url": "img/ui/menu-custom/menu-offline-farm-icon-1784768466259.png"
+      },
+      "player": {
+        "icon_url": "img/ui/menu-custom/menu-player-icon-1785576000010.png"
+      },
+      "premium": {
+        "title": "Loja",
+        "icon_url": "img/ui/menu-custom/menu-premium-icon-1784596234750.png"
+      },
+      "private-message": {
+        "icon_url": "img/ui/menu-custom/menu-private-message-icon-1784596238625.png"
+      },
+      "professions": {
+        "icon_url": "img/ui/menu-custom/menu-professions-icon-1787710452076.png"
+      },
+      "profile": {
+        "icon_url": "img/ui/menu-custom/menu-profile-icon-1786860635794.png"
+      },
+      "promotion": {
+        "icon_url": "img/ui/menu-custom/menu-promotion-icon-1784596212656.png"
+      },
+      "quests": {
+        "icon_url": "img/ui/menu-custom/menu-quests-icon-1784596221173.png"
+      },
+      "rampage": {
+        "icon_url": "img/ui/menu-custom/menu-rampage-icon-1788639042999.png"
+      },
+      "ranking": {
+        "icon_url": "img/ui/menu-custom/menu-ranking-icon-1784596305137.png"
+      },
+      "settings": {
+        "icon_url": "img/ui/menu-custom/menu-settings-icon-1784596242666.png"
+      },
+      "shared-stones": {
+        "icon_url": "img/ui/menu-custom/menu-shared-stones-icon-1788639099048.png"
+      },
+      "shiny-captures": {
+        "icon_url": "img/ui/menu-custom/menu-shiny-captures-icon-1784832164393.png"
+      },
+      "social": {
+        "icon_url": "img/ui/menu-custom/menu-social-icon-1784596288576.png"
+      },
+      "species-goals": {
+        "icon_url": "img/ui/menu-custom/menu-species-goals-icon-1784596283679.png"
+      },
+      "storage": {
+        "icon_url": "img/ui/menu-custom/menu-storage-icon-1787708278951.png"
+      },
+      "streamer-referral": {
+        "title": "Parceiro",
+        "icon_url": "img/ui/menu-custom/menu-streamer-referral-icon-1784664049634.png"
+      },
+      "streamers-active": {
+        "icon_url": "img/ui/menu-custom/menu-streamers-active-icon-1788639117693.png"
+      },
+      "tactics": {
+        "icon_url": "img/ui/menu-custom/menu-tactics-icon-1792420197501.png"
+      },
+      "team": {
+        "icon_url": "img/ui/menu-custom/menu-team-icon-1784596183777.png"
+      },
+      "tournaments": {
+        "icon_url": "img/ui/menu-custom/menu-tournaments-icon-1792199058574.png"
+      },
+      "world-boss": {
+        "icon_url": "img/ui/menu-custom/menu-world-boss-icon-1784596230432.png"
+      },
+      "world-boss-live-raid": {
+        "icon_url": "img/ui/menu-custom/menu-world-boss-live-raid-icon-1788639087522.png"
+      }
+    },
+    "layout_version": 2,
+    "reward_badges_enabled": true,
+    "settings_standalone": true,
+    "missions_grouping_enabled": true
+  },
+  "chat_staff_only": false,
+  "beta_goals_enabled": true,
+  "market": {
+    "gold_listing_fee_rate": 0.05,
+    "diamond_listing_fee_rate": 0,
+    "listing_duration_hours": 72,
+    "min_price_gold": 10,
+    "min_price_diamonds": 0,
+    "blocked_item_ids": null
+  },
+  "server_time": "2026-10-27T04:16:51.2310131Z",
+  "event_polls_enabled": true,
+  "gba_sprite_version": "pmd"
+}

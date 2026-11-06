@@ -172,6 +172,21 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
+# Ensure static game data exists even if a persistent volume is mounted over DATA_DIR
+DATA_DEFAULTS = os.path.join(BASE_DIR, "data_defaults")
+if os.path.exists(DATA_DEFAULTS):
+    for fname in os.listdir(DATA_DEFAULTS):
+        if fname.endswith(".json") and fname not in ["savegame.json", "custom_config.json", "species_overrides.json"]:
+            src = os.path.join(DATA_DEFAULTS, fname)
+            dst = os.path.join(DATA_DIR, fname)
+            if not os.path.exists(dst) or os.path.getsize(dst) == 0:
+                try:
+                    import shutil
+                    shutil.copy2(src, dst)
+                    print(f">> [POKELAND PERSISTENCE] Restored static data: {fname} -> {dst}")
+                except Exception as err:
+                    print(f">> Error restoring {fname}:", err)
+
 RAW_SPECIES = load_json(os.path.join(DATA_DIR, "species.json"), {"data": []})["data"]
 RAW_ITEMS = load_json(os.path.join(DATA_DIR, "items.json"), {"data": []})["data"]
 RAW_WORLDS = load_json(os.path.join(DATA_DIR, "worlds.json"), {"data": []})["data"]
@@ -547,7 +562,15 @@ def default_player(species_by_id):
 
 
 def create_initial_player_save(username, starter_sid, avatar_model, species_by_id):
-    starter_species = species_by_id.get(starter_sid) or species_by_id.get("charmander")
+    starter_species = species_by_id.get(starter_sid) or species_by_id.get("charmander") or (list(species_by_id.values())[0] if species_by_id else None)
+    if not starter_species or not isinstance(starter_species, dict):
+        starter_species = {
+            "id": "charmander",
+            "name": "Charmander",
+            "types": ["fire"],
+            "base_stats": {"hp": 39, "atk": 52, "def": 43, "spa": 60, "spd": 50, "spe": 65},
+            "moves": ["scratch", "growl", "ember"]
+        }
     starter_instance = make_pokemon_instance(starter_species, level=12, is_shiny=False, quality="Raro", custom_mult=1.35)
 
     return {
