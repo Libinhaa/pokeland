@@ -1477,6 +1477,23 @@ function applyBootstrapData(data) {
             if (typeof switchMarketSubmenu === "function") switchMarketSubmenu("admin");
         }, 450);
     }
+    if (window.location.search.includes("open_admin_feedbacks=1")) {
+        setTimeout(() => {
+            switchTab("admin");
+            if (typeof switchAdminSubmenu === "function") switchAdminSubmenu("feedbacks");
+        }, 400);
+    }
+    if (window.location.search.includes("open_admin_users=1")) {
+        setTimeout(() => {
+            switchTab("admin");
+            if (typeof switchAdminSubmenu === "function") switchAdminSubmenu("users");
+        }, 400);
+    }
+    if (window.location.search.includes("open_admin=1")) {
+        setTimeout(() => {
+            switchTab("admin");
+        }, 400);
+    }
     if (window.location.search.includes("open_settings=1")) {
         setTimeout(() => {
             openSettingsModal();
