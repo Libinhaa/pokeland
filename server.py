@@ -1224,9 +1224,9 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         if cookie_token is not None:
             if cookie_token == "":
-                self.send_header("Set-Cookie", "pokepixel_session=; Path=/; Max-Age=0; SameSite=Lax")
+                self.send_header("Set-Cookie", "pokepixel_session=; Path=/; Max-Age=0; SameSite=Lax; Secure")
             else:
-                self.send_header("Set-Cookie", f"pokepixel_session={cookie_token}; Path=/; Max-Age=2592000; SameSite=Lax")
+                self.send_header("Set-Cookie", f"pokepixel_session={cookie_token}; Path=/; Max-Age=2592000; SameSite=Lax; Secure")
         self.end_headers()
         self.wfile.write(body)
 
@@ -1237,21 +1237,12 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             self.path = "/login.html"
             return super().do_GET()
 
-        # HOMEPAGE & MANDATORY LOGIN RULE:
-        # A página de login é a homepage oficial do jogo.
-        # É estritamente obrigatório fazer login para acessar o jogo.
+        # SPA ENTRYPOINT:
+        # Client-side (app.js) handles authentication from localStorage and redirects to /login.html
+        # if the trainer has not authenticated.
         if parsed.path in ["/", "/index.html", "/game", "/game.html"]:
-            token = get_auth_token(self)
-            user = db.get_user_by_session(token) if token else None
-            is_bypass = "bypass_login=1" in parsed.query
-            if not user and not is_bypass:
-                self.send_response(302)
-                self.send_header("Location", "/login.html")
-                self.end_headers()
-                return
-            if parsed.path in ["/game", "/game.html"]:
-                self.path = "/index.html"
-                return super().do_GET()
+            self.path = "/index.html"
+            return super().do_GET()
 
         if parsed.path == "/api/auth/me":
             token = get_auth_token(self)

@@ -1,9 +1,9 @@
 {
   "name": "Red",
   "level": 35,
-  "exp": 4578,
+  "exp": 4593,
   "exp_next": 5000,
-  "gold": 48008,
+  "gold": 48011,
   "diamonds": 285,
   "has_master_key": false,
   "party": [
@@ -17,7 +17,7 @@
         "dark"
       ],
       "level": 78,
-      "exp": 4697,
+      "exp": 4735,
       "exp_next": 17918,
       "hp": 476,
       "max_hp": 489,
@@ -62,7 +62,7 @@
         "fire"
       ],
       "level": 13,
-      "exp": 3166,
+      "exp": 3185,
       "exp_next": 4262,
       "hp": 47,
       "max_hp": 47,
@@ -126,7 +126,7 @@
         "flying"
       ],
       "level": 80,
-      "exp": 4597,
+      "exp": 4616,
       "exp_next": 18541,
       "hp": 492,
       "max_hp": 492,
@@ -172,7 +172,7 @@
         "flying"
       ],
       "level": 75,
-      "exp": 4597,
+      "exp": 4616,
       "exp_next": 16994,
       "hp": 487,
       "max_hp": 488,
@@ -218,7 +218,7 @@
         "psychic"
       ],
       "level": 85,
-      "exp": 4597,
+      "exp": 4616,
       "exp_next": 20122,
       "hp": 751,
       "max_hp": 751,
@@ -264,7 +264,7 @@
         "poison"
       ],
       "level": 72,
-      "exp": 4597,
+      "exp": 4616,
       "exp_next": 16083,
       "hp": 300,
       "max_hp": 300,
@@ -2474,8 +2474,8 @@
     "stone_grass": 5,
     "stone_electric": 5,
     "shiny_stone": 5,
-    "reference_water_gem": 38,
-    "reference_magikarp_fin": 6,
+    "reference_water_gem": 41,
+    "reference_magikarp_fin": 7,
     "reference_water_pendant": 2
   },
   "pokedex_caught": [
@@ -2489,14 +2489,14 @@
     "gardevoir"
   ],
   "stats": {
-    "total_kills": 44,
+    "total_kills": 45,
     "total_captures": 44,
     "shinies_found": 1,
     "pvp_wins": 0
   },
   "offline_farm": {
     "enabled": true,
-    "last_active": 1793922111476,
+    "last_active": 1793939218343,
     "assigned_zone_id": null,
     "auto_catch": true,
     "ball_id": "capsule_ultra",

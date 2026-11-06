@@ -1306,6 +1306,18 @@ async function logoutTrainer() {
 }
 
 async function initGame() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryToken = urlParams.get("token");
+        if (queryToken) {
+            localStorage.setItem("pokepixel_auth_token", queryToken);
+            urlParams.delete("token");
+            const newQuery = urlParams.toString();
+            const newUrl = window.location.pathname + (newQuery ? "?" + newQuery : "");
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    } catch (e) {}
+
     const token = localStorage.getItem("pokepixel_auth_token");
     const isBypass = window.location.search.includes("bypass_login=1") ||
                      window.location.search.includes("show_transit_demo=1") ||
@@ -1318,11 +1330,30 @@ async function initGame() {
     }
 
     const headers = getAuthHeaders();
-    const [res, colRes] = await Promise.all([
-        fetch("/api/bootstrap", { headers }),
-        fetch("/data/MapColliders.json").catch(() => null),
-    ]);
-    const data = await res.json();
+    let data = null;
+    let colRes = null;
+    try {
+        const [res, col] = await Promise.all([
+            fetch("/api/bootstrap", { headers }),
+            fetch("/data/MapColliders.json").catch(() => null),
+        ]);
+        colRes = col;
+        if (res && res.ok) {
+            data = await res.json();
+        }
+    } catch (err) {
+        console.error("Erro ao carregar dados do jogo:", err);
+    }
+
+    if (!data || !data.species || !data.player) {
+        console.warn("Sessão inválida ou erro no bootstrap. Redirecionando para login...");
+        if (!isBypass) {
+            localStorage.removeItem("pokepixel_auth_token");
+            window.location.href = "/login.html";
+            return;
+        }
+    }
+
     if (colRes && colRes.ok) {
         try {
             STATE.mapColliders = await colRes.json();
@@ -9783,7 +9814,7 @@ function populateTrainerAvatarSelect() {
     const sel = document.getElementById("trainer-avatar-select");
     if (!sel) return;
     const currentId = getActiveTrainerModelId();
-    if (sel.options.length !== ANIME_TRAINER_MODELS.length) {
+    if (!sel.options || sel.options.length !== ANIME_TRAINER_MODELS.length) {
         sel.innerHTML = ANIME_TRAINER_MODELS.map(
             (m, idx) => `<option value="${m.id}">#${idx + 1} ${m.name} (${m.anime})</option>`
         ).join("");
