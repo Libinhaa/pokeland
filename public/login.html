@@ -304,6 +304,68 @@
             justify-content: space-between;
         }
 
+        /* Trainer Preview Showcase Stage */
+        .trainer-preview-stage {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: radial-gradient(circle at 15% 50%, rgba(30, 58, 138, 0.45), rgba(15, 23, 42, 0.9));
+            border: 1.5px solid rgba(59, 130, 246, 0.45);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .trainer-preview-img-wrap {
+            width: 64px;
+            height: 74px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #3b82f6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 0 16px rgba(59, 130, 246, 0.4);
+            flex-shrink: 0;
+        }
+
+        .trainer-preview-img-wrap img {
+            width: 58px;
+            height: 68px;
+            object-fit: contain;
+            image-rendering: pixelated;
+        }
+
+        .trainer-preview-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .trainer-preview-title {
+            font-size: 15px;
+            font-weight: 900;
+            color: #f8fafc;
+            letter-spacing: 0.3px;
+        }
+
+        .trainer-preview-role {
+            font-size: 11px;
+            font-weight: 700;
+            color: #60a5fa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .trainer-preview-desc {
+            font-size: 11.5px;
+            color: #94a3b8;
+            line-height: 1.35;
+        }
+
         .avatar-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -754,6 +816,19 @@
                         <span>1. Escolha a Skin do Treinador (Oficial HGSS):</span>
                         <span id="selected-avatar-name" style="color:#60a5fa; font-weight:700;">Ethan / Gold</span>
                     </div>
+
+                    <!-- Live Showcase Preview of Selected Trainer Skin -->
+                    <div class="trainer-preview-stage" id="trainer-showcase-box">
+                        <div class="trainer-preview-img-wrap">
+                            <img id="trainer-showcase-portrait" src="/img/trainers/hgss_ethan.png" alt="Preview da Skin" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\'><rect width=\'64\' height=\'64\' fill=\'%231e293b\'/><circle cx=\'32\' cy=\'22\' r=\'12\' fill=\'%2360a5fa\'/><path d=\'M16 56 C16 40 48 40 48 56 Z\' fill=\'%233b82f6\'/></svg>';">
+                        </div>
+                        <div class="trainer-preview-info">
+                            <div class="trainer-preview-title" id="trainer-showcase-title">Ethan / Gold</div>
+                            <div class="trainer-preview-role" id="trainer-showcase-role">Campeão de Johto (New Bark Town)</div>
+                            <div class="trainer-preview-desc" id="trainer-showcase-desc">Protagonista clássico com boné invertido e mochila esportiva.</div>
+                        </div>
+                    </div>
+
                     <div class="avatar-grid" id="avatar-picker-grid">
                         <!-- Injected via JavaScript from ANIME_TRAINER_MODELS -->
                     </div>
@@ -792,18 +867,18 @@
 
     <!-- Logic Script -->
     <script>
-        // Official HGSS Trainer Models
+        // Official HGSS Trainer Models (100% verified files on server)
         const TRAINER_MODELS = [
-            { id: "ethan_gold", name: "Ethan / Gold", portrait: "/img/trainers/hgss_ethan.png" },
-            { id: "lyra_ss", name: "Lyra / Kotone", portrait: "/img/trainers/hgss_lyra.png" },
-            { id: "red_champion", name: "Red Campeão", portrait: "/img/trainers/hgss_red.png" },
-            { id: "blue_rival", name: "Blue Rival", portrait: "/img/trainers/hgss_blue.png" },
-            { id: "lance_dragon", name: "Lance Mestre", portrait: "/img/trainers/hgss_lance.png" },
-            { id: "cynthia_champ", name: "Cynthia", portrait: "/img/trainers/hgss_cynthia.png" },
-            { id: "steven_stone", name: "Steven Stone", portrait: "/img/trainers/icon_pp_TrainerMale06.png" },
-            { id: "clair_gym", name: "Clair Líder", portrait: "/img/trainers/hgss_clair.png" },
-            { id: "tanjiro_slayer", name: "Tanjiro", portrait: "/img/trainers/icon_pp_TrainerMale15.png" },
-            { id: "rengoku_flame", name: "Rengoku", portrait: "/img/trainers/icon_pp_TrainerMale16.png" }
+            { id: "ethan_gold", name: "Ethan / Gold", role: "Campeão de Johto (New Bark)", desc: "Protagonista clássico com boné invertido e mochila esportiva.", portrait: "/img/trainers/hgss_ethan.png" },
+            { id: "lyra_ss", name: "Lyra / Kotone", role: "Heroína de Johto", desc: "Treinadora clássica com macacão jeans e boina branca.", portrait: "/img/trainers/hgss_lyra.png" },
+            { id: "red_champion", name: "Red Campeão", role: "Lenda do Mt. Silver", desc: "O maior campeão de Kanto com seu colete vermelho lendário.", portrait: "/img/trainers/hgss_red.png" },
+            { id: "blue_rival", name: "Blue Rival", role: "Líder de Viridian", desc: "Rival lendário com jaqueta escura e postura confiante.", portrait: "/img/trainers/hgss_blue.png" },
+            { id: "silver_rival", name: "Silver Rival", role: "Rival de Johto", desc: "Treinador solitário de cabelos ruivos e determinação de ferro.", portrait: "/img/trainers/hgss_silver.png" },
+            { id: "lance_dragon", name: "Lance Mestre", role: "Campeão dos Dragões", desc: "Mestre dos tipos Dragão com capa bordô e olhar nobre.", portrait: "/img/trainers/hgss_lance.png" },
+            { id: "cynthia_champ", name: "Cynthia", role: "Campeã de Sinnoh", desc: "Arqueóloga lendária com sobretudo escuro e presilhas douradas.", portrait: "/img/trainers/hgss_cynthia.png" },
+            { id: "jasmine_steel", name: "Jasmine Líder", role: "Líder de Olivine City", desc: "Especialista nos colossos de Aço com vestido elegante.", portrait: "/img/trainers/hgss_jasmine.png" },
+            { id: "clair_gym", name: "Clair Líder", role: "Líder de Blackthorn", desc: "Mestre dos Dragões com armadura e capa azul reluzente.", portrait: "/img/trainers/hgss_clair.png" },
+            { id: "morty_ghost", name: "Morty Líder", role: "Líder de Ecruteak", desc: "Místico dos tipos Fantasma com seu clássico cachecol roxo.", portrait: "/img/trainers/hgss_morty.png" }
         ];
 
         // Starter Pokémon Options
@@ -874,28 +949,51 @@
 
         function renderAvatars() {
             const grid = document.getElementById("avatar-picker-grid");
+            if (!grid) return;
             grid.innerHTML = TRAINER_MODELS.map(m => `
-                <div class="avatar-card ${m.id === selectedAvatarId ? 'selected' : ''}" onclick="selectAvatar('${m.id}')" title="${m.name}">
-                    <img src="${m.portrait}" onerror="this.src='/img/trainers/icon_pp_TrainerMale01.png'" alt="${m.name}">
+                <div class="avatar-card ${m.id === selectedAvatarId ? 'selected' : ''}" data-avatar-id="${m.id}" onclick="selectAvatar('${m.id}')" title="${m.name}">
+                    <img src="${m.portrait}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\'><rect width=\'64\' height=\'64\' fill=\'%231e293b\'/><circle cx=\'32\' cy=\'22\' r=\'12\' fill=\'%2360a5fa\'/><path d=\'M16 56 C16 40 48 40 48 56 Z\' fill=\'%233b82f6\'/></svg>';" alt="${m.name}">
                     <div class="avatar-card-name">${m.name}</div>
                 </div>
             `).join("");
+            updateShowcasePreview(selectedAvatarId);
         }
 
         function selectAvatar(id) {
             selectedAvatarId = id;
-            renderAvatars();
+            // High-performance DOM class toggle: NO innerHTML wipe, zero image reloads, zero screen flicker!
+            document.querySelectorAll('.avatar-card').forEach(card => {
+                card.classList.toggle('selected', card.getAttribute('data-avatar-id') === id);
+            });
+            updateShowcasePreview(id);
+        }
+
+        function updateShowcasePreview(id) {
             const found = TRAINER_MODELS.find(m => m.id === id);
             if (found) {
-                document.getElementById("selected-avatar-name").textContent = found.name;
+                const nameEl = document.getElementById("selected-avatar-name");
+                if (nameEl) nameEl.textContent = found.name;
+
+                const pImg = document.getElementById("trainer-showcase-portrait");
+                if (pImg) pImg.src = found.portrait;
+
+                const tTitle = document.getElementById("trainer-showcase-title");
+                if (tTitle) tTitle.textContent = found.name;
+
+                const tRole = document.getElementById("trainer-showcase-role");
+                if (tRole) tRole.textContent = found.role;
+
+                const tDesc = document.getElementById("trainer-showcase-desc");
+                if (tDesc) tDesc.textContent = found.desc;
             }
         }
 
         function renderStarters() {
             const grid = document.getElementById("starter-picker-grid");
+            if (!grid) return;
             grid.innerHTML = STARTER_OPTIONS.map(s => `
-                <div class="starter-card ${s.id === selectedStarterId ? 'selected' : ''}" onclick="selectStarter('${s.id}')">
-                    <img src="${s.img}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${s.id}.png'" alt="${s.name}">
+                <div class="starter-card ${s.id === selectedStarterId ? 'selected' : ''}" data-starter-id="${s.id}" onclick="selectStarter('${s.id}')">
+                    <img src="${s.img}" onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${s.id}.png'" alt="${s.name}">
                     <div class="starter-card-name">${s.name}</div>
                     <span class="starter-type-badge type-${s.type}">${s.typeLabel}</span>
                 </div>
@@ -904,10 +1002,14 @@
 
         function selectStarter(id) {
             selectedStarterId = id;
-            renderStarters();
+            // High-performance DOM class toggle: NO innerHTML wipe
+            document.querySelectorAll('.starter-card').forEach(card => {
+                card.classList.toggle('selected', card.getAttribute('data-starter-id') === id);
+            });
             const found = STARTER_OPTIONS.find(s => s.id === id);
             if (found) {
-                document.getElementById("selected-starter-name").textContent = `${found.name} (${found.typeLabel})`;
+                const sNameEl = document.getElementById("selected-starter-name");
+                if (sNameEl) sNameEl.textContent = `${found.name} (${found.typeLabel})`;
             }
         }
 

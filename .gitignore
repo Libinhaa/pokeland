@@ -16,11 +16,21 @@ pokepixel.db*
 !server.py
 !db.py
 
-# Ignore other temp text dumps
-*.txt
+# Ignore root dumps and root screenshots only
+/*.png
+/*.txt
 !requirements.txt
-*.png
 scratch/
+
+# Explicitly ensure all game assets in public are tracked
+!public/**/*.png
+!public/**/*.webp
+!public/**/*.jpg
+!public/**/*.svg
+!public/**/*.json
+!public/**/*.js
+!public/**/*.css
+!public/**/*.html
 
 # OS and Editor
 .DS_Store
