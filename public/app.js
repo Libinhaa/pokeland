@@ -1324,6 +1324,18 @@ function applyBootstrapData(data) {
             triggerOfflineSimulation(hours);
         }, 500);
     }
+    if (window.location.search.includes("open_autofarm_survival=1")) {
+        setTimeout(() => {
+            toggleAutoFarmMenu();
+            switchAutoFarmSubmenu("survival");
+        }, 500);
+    }
+    if (window.location.search.includes("open_autofarm_autosell=1")) {
+        setTimeout(() => {
+            toggleAutoFarmMenu();
+            switchAutoFarmSubmenu("autosell");
+        }, 500);
+    }
     if (window.location.search.includes("open_autofarm_offline=1")) {
         setTimeout(() => {
             toggleAutoFarmMenu();
@@ -3088,9 +3100,28 @@ function updateTibiaSimulation(timeScale = 1.0) {
                 const eDmg = Math.max(1, Math.floor((((2 * m.level) / 5 + 2) * 40 * (m.atk / Math.max(10, lead.stats.def))) / 48));
                 lead.hp = Math.max(0, lead.hp - eDmg);
                 spawnFloatingText(sum.gx, sum.gy, `-${eDmg}`, "#f87171");
-                if (lead.hp <= 0) {
-                    addCombatLog(`<span style="color:#f87171;">💫 Seu ${lead.name} desmaiou! Nurse Joy curou seu time automaticamente.</span>`);
-                    healFullParty();
+
+                // Auto-Farm Survival Engine
+                if (lead.hp > 0) {
+                    if (typeof checkAndExecuteAutoHeal === "function") checkAndExecuteAutoHeal();
+                } else {
+                    let revived = false;
+                    if (typeof checkAndExecuteAutoRevive === "function") {
+                        revived = checkAndExecuteAutoRevive();
+                    }
+                    if (!revived) {
+                        const party = STATE.player?.party || [];
+                        const healthyMonIdx = party.findIndex(p => p.hp > 0);
+                        if (healthyMonIdx > 0 && typeof swapTeamOrder === "function") {
+                            const nextMon = party[healthyMonIdx];
+                            swapTeamOrder(healthyMonIdx, 0);
+                            addCombatLog(`<span style="color:#f59e0b;font-weight:700;">🔄 [AUTO-TROCA] ${lead.name} desmaiou! Trocando para ${nextMon.name}!</span>`);
+                            showToast(`🔄 Trocando para ${nextMon.name}!`);
+                        } else {
+                            addCombatLog(`<span style="color:#f87171;">💫 Seu time desmaiou! Nurse Joy curou seu time na Central.</span>`);
+                            healFullParty();
+                        }
+                    }
                 }
                 renderTibiaPokebar();
             }
@@ -4973,7 +5004,13 @@ function handleMonsterKilledToCorpse(enemy) {
                 sprite_url: itemObj.sprite_url || "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/stardust.png",
             });
             if (STATE.tibia.autoLoot) {
-                STATE.player.inventory[d.item_id] = (STATE.player.inventory[d.item_id] || 0) + qty;
+                let wasDropSold = false;
+                if (typeof checkAndExecuteAutoSellDrop === "function") {
+                    wasDropSold = checkAndExecuteAutoSellDrop(d.item_id, qty);
+                }
+                if (!wasDropSold) {
+                    STATE.player.inventory[d.item_id] = (STATE.player.inventory[d.item_id] || 0) + qty;
+                }
             }
             droppedNames.push(`${qty}x ${itemObj.name}`);
         }
@@ -5233,15 +5270,24 @@ function finalizeTibiaCapture(targetInfo, cap, chancePct, roll, isSuccess) {
             );
         }
 
-        if (STATE.player.party.length < 6) {
-            STATE.player.party.push(newMon);
-        } else {
-            STATE.player.pc_box.push(newMon);
-        }
         if (!STATE.player.pokedex_caught.includes(targetInfo.species_id)) {
             STATE.player.pokedex_caught.push(targetInfo.species_id);
         }
         STATE.player.stats.total_captures = (STATE.player.stats.total_captures || 0) + 1;
+
+        // Auto-Sell Pokémon Engine
+        let wasAutoSold = false;
+        if (typeof checkAndExecuteAutoSellPokemon === "function") {
+            wasAutoSold = checkAndExecuteAutoSellPokemon(newMon);
+        }
+
+        if (!wasAutoSold) {
+            if (STATE.player.party.length < 6) {
+                STATE.player.party.push(newMon);
+            } else {
+                STATE.player.pc_box.push(newMon);
+            }
+        }
 
         spawnFloatingText(targetInfo.gx, targetInfo.gy, "GOTCHA! ✨", "#4ade80");
         spawnPokePixelCombatPopup(targetInfo.gx, targetInfo.gy, "GOTCHA! 🌟", "heal");
@@ -5274,13 +5320,419 @@ function toggleAutoFarmMenu() {
     syncAutoFarmUi();
 }
 
+
+// ====================================================
+// CENTRAL DE AUTO-FARM ENGINE: NOVAS REGRAS & MÓDULOS
+// (Auto-Caça, Auto-Ataque, Auto-Captura, Auto-Loot,
+//  Auto-Cura, Auto-Reviver, Auto-Venda Pokémon, Auto-Venda Drops)
+// ====================================================
+
+STATE.autoHealEnabled = false;
+STATE.autoHealThreshold = 0.50;
+STATE.autoHealPreference = "best";
+STATE.autoReviveEnabled = false;
+STATE.autoRevivePreference = "best";
+STATE.autoSellPokemonEnabled = false;
+STATE.autoSellPokemonFilter = "common_only";
+STATE.autoSellKeepNewDex = true;
+STATE.autoSellDropsEnabled = false;
+STATE._lastAutoHealTime = 0;
+STATE._lastAutoReviveTime = 0;
+
+function toggleAutoHeal(forceVal) {
+    if (typeof forceVal === "boolean") {
+        STATE.autoHealEnabled = forceVal;
+    } else {
+        STATE.autoHealEnabled = !STATE.autoHealEnabled;
+    }
+    syncAutoFarmUi();
+    syncAutoFarmSurvivalUi();
+    saveAutoFarmPreferences();
+    showToast(STATE.autoHealEnabled ? "🩹 Auto-Cura ATIVADA (Usará poções ao atingir vida baixa)!" : "⚪ Auto-Cura DESATIVADA.");
+}
+
+function changeAutoHealThreshold(val) {
+    STATE.autoHealThreshold = parseFloat(val) || 0.50;
+    saveAutoFarmPreferences();
+    const pct = Math.round(STATE.autoHealThreshold * 100);
+    showToast(`🩹 Limiar de Auto-Cura definido para < ${pct}% HP.`);
+}
+
+function changeAutoHealPreference(val) {
+    STATE.autoHealPreference = val || "best";
+    saveAutoFarmPreferences();
+    showToast(`🩹 Poção de Auto-Cura: ${STATE.autoHealPreference === "best" ? "Melhor Disponível" : "Mais Econômica"}.`);
+}
+
+function checkAndExecuteAutoHeal() {
+    if (!STATE.autoHealEnabled) return false;
+    const lead = (typeof getLeadPokemon === "function") ? getLeadPokemon() : null;
+    if (!lead || lead.hp <= 0) return false;
+
+    const threshold = STATE.autoHealThreshold || 0.50;
+    const hpRatio = lead.hp / lead.max_hp;
+    if (hpRatio > threshold) return false;
+
+    const now = Date.now();
+    if (now - (STATE._lastAutoHealTime || 0) < 1200) return false;
+
+    const inv = STATE.player?.inventory || {};
+    const pref = STATE.autoHealPreference || "best";
+
+    const potionTiers = [
+        { id: "potion_max", name: "Max Potion", healPct: 1.0 },
+        { id: "potion_full", name: "Restauração Total", healPct: 1.0 },
+        { id: "potion_ultimate", name: "Ultimate Potion", healPct: 0.8 },
+        { id: "potion_hyper", name: "Hyper Potion", healPct: 0.6 },
+        { id: "potion_ultra", name: "Ultra Potion", healPct: 0.45 },
+        { id: "potion_great", name: "Great Potion", healPct: 0.35 },
+        { id: "potion_small", name: "Small Potion", healPct: 0.25 },
+        { id: "potion", name: "Poção Básica", healPct: 0.25 }
+    ];
+
+    let chosen = null;
+    if (pref === "cheap") {
+        for (let i = potionTiers.length - 1; i >= 0; i--) {
+            if ((inv[potionTiers[i].id] || 0) > 0) {
+                chosen = potionTiers[i];
+                break;
+            }
+        }
+    } else {
+        for (const pt of potionTiers) {
+            if ((inv[pt.id] || 0) > 0) {
+                chosen = pt;
+                break;
+            }
+        }
+    }
+
+    if (!chosen) {
+        if (now - (STATE._lastOutOfPotionsToast || 0) > 20000) {
+            STATE._lastOutOfPotionsToast = now;
+            showToast("⚠️ Auto-Cura: Você não possui poções na bolsa! Compre no PokéMart.");
+        }
+        return false;
+    }
+
+    inv[chosen.id] -= 1;
+    if (inv[chosen.id] <= 0) delete inv[chosen.id];
+
+    STATE._lastAutoHealTime = now;
+    const healAmt = Math.max(25, Math.min(lead.max_hp - lead.hp, Math.floor(lead.max_hp * chosen.healPct)));
+    lead.hp = Math.min(lead.max_hp, lead.hp + healAmt);
+
+    const sum = STATE.tibia?.summon || { gx: 10, gy: 10 };
+    if (typeof spawnFloatingText === "function") {
+        spawnFloatingText(sum.gx, sum.gy, `+${healAmt} HP`, "#4ade80");
+    }
+    if (typeof spawnPokePixelCombatPopup === "function") {
+        spawnPokePixelCombatPopup(sum.gx, sum.gy, "AUTO-CURA! 🧪", "heal");
+    }
+    if (typeof addCombatLog === "function") {
+        addCombatLog(`<span style="color:#4ade80;font-weight:800;">🧪 [AUTO-CURA] Usou ${chosen.name} em ${lead.name} (+${healAmt} HP)! (${lead.hp}/${lead.max_hp} HP)</span>`);
+    }
+
+    if (typeof renderTibiaPokebar === "function") renderTibiaPokebar();
+    if (typeof syncAutoFarmSurvivalUi === "function") syncAutoFarmSurvivalUi();
+    if (typeof scheduleStateSave === "function") scheduleStateSave(1500);
+    return true;
+}
+
+function toggleAutoRevive(forceVal) {
+    if (typeof forceVal === "boolean") {
+        STATE.autoReviveEnabled = forceVal;
+    } else {
+        STATE.autoReviveEnabled = !STATE.autoReviveEnabled;
+    }
+    syncAutoFarmUi();
+    syncAutoFarmSurvivalUi();
+    saveAutoFarmPreferences();
+    showToast(STATE.autoReviveEnabled ? "💫 Auto-Reviver ATIVADO (Reviverá Pokémon desmaiados)!" : "⚪ Auto-Reviver DESATIVADO.");
+}
+
+function changeAutoRevivePreference(val) {
+    STATE.autoRevivePreference = val || "best";
+    saveAutoFarmPreferences();
+    showToast(`💫 Revive de Auto-Reviver: ${STATE.autoRevivePreference === "best" ? "Max Revive (100% HP)" : "Revive Padrão (50% HP)"}.`);
+}
+
+function checkAndExecuteAutoRevive() {
+    if (!STATE.autoReviveEnabled) return false;
+    const lead = (typeof getLeadPokemon === "function") ? getLeadPokemon() : null;
+    if (!lead || lead.hp > 0) return false;
+
+    const now = Date.now();
+    if (now - (STATE._lastAutoReviveTime || 0) < 1500) return false;
+
+    const inv = STATE.player?.inventory || {};
+    const pref = STATE.autoRevivePreference || "best";
+
+    const reviveTiers = [
+        { id: "revive_max", name: "Max Revive", revivePct: 1.0 },
+        { id: "item_max_revive", name: "Max Revive", revivePct: 1.0 },
+        { id: "revive_basic", name: "Revive", revivePct: 0.5 },
+        { id: "item_revive", name: "Revive", revivePct: 0.5 },
+        { id: "revive", name: "Revive", revivePct: 0.5 },
+        { id: "revive_minor", name: "Minor Revive", revivePct: 0.35 }
+    ];
+
+    let chosen = null;
+    if (pref === "cheap") {
+        for (let i = reviveTiers.length - 1; i >= 0; i--) {
+            if ((inv[reviveTiers[i].id] || 0) > 0) {
+                chosen = reviveTiers[i];
+                break;
+            }
+        }
+    } else {
+        for (const rt of reviveTiers) {
+            if ((inv[rt.id] || 0) > 0) {
+                chosen = rt;
+                break;
+            }
+        }
+    }
+
+    if (!chosen) {
+        if (now - (STATE._lastOutOfRevivesToast || 0) > 20000) {
+            STATE._lastOutOfRevivesToast = now;
+            showToast("⚠️ Auto-Reviver: Sem Revives na bolsa! Compre no PokéMart.");
+        }
+        return false;
+    }
+
+    inv[chosen.id] -= 1;
+    if (inv[chosen.id] <= 0) delete inv[chosen.id];
+
+    STATE._lastAutoReviveTime = now;
+    lead.hp = Math.max(1, Math.floor(lead.max_hp * chosen.revivePct));
+
+    const sum = STATE.tibia?.summon || { gx: 10, gy: 10 };
+    if (typeof spawnFloatingText === "function") {
+        spawnFloatingText(sum.gx, sum.gy, "REVIVIDO! ✨", "#38bdf8");
+    }
+    if (typeof spawnPokePixelCombatPopup === "function") {
+        spawnPokePixelCombatPopup(sum.gx, sum.gy, "REVIVIDO! 💫", "heal");
+    }
+    if (typeof addCombatLog === "function") {
+        addCombatLog(`<span style="color:#38bdf8;font-weight:900;">✨ [AUTO-REVIVER] ${lead.name} foi revivido com ${chosen.name} (${lead.hp}/${lead.max_hp} HP)!</span>`);
+    }
+    showToast(`✨ ${lead.name} foi revivido automaticamente (${lead.hp}/${lead.max_hp} HP)!`);
+
+    if (typeof renderTibiaPokebar === "function") renderTibiaPokebar();
+    if (typeof syncAutoFarmSurvivalUi === "function") syncAutoFarmSurvivalUi();
+    if (typeof scheduleStateSave === "function") scheduleStateSave(1500);
+    return true;
+}
+
+function toggleAutoSellPokemon(forceVal) {
+    if (typeof forceVal === "boolean") {
+        STATE.autoSellPokemonEnabled = forceVal;
+    } else {
+        STATE.autoSellPokemonEnabled = !STATE.autoSellPokemonEnabled;
+    }
+    syncAutoFarmUi();
+    syncAutoFarmAutoSellUi();
+    saveAutoFarmPreferences();
+    showToast(STATE.autoSellPokemonEnabled ? "🪙 Auto-Venda de Pokémon ATIVADA (Liquida capturas comuns por Ouro)!" : "⚪ Auto-Venda de Pokémon DESATIVADA.");
+}
+
+function changeAutoSellPokemonFilter(val) {
+    STATE.autoSellPokemonFilter = val || "common_only";
+    saveAutoFarmPreferences();
+    const lbl = val === "common_only" ? "Apenas Comuns" : val === "common_uncommon" ? "Comuns e Incomuns" : "Comuns, Incomuns e Raros";
+    showToast(`🪙 Filtro de Auto-Venda: ${lbl}.`);
+}
+
+function changeAutoSellKeepNewDex(checked) {
+    STATE.autoSellKeepNewDex = !!checked;
+    saveAutoFarmPreferences();
+    showToast(STATE.autoSellKeepNewDex ? "📖 Preservar Pokédex: ON (Espécies novas nunca são vendidas)" : "⚠️ Preservar Pokédex: OFF");
+}
+
+function checkAndExecuteAutoSellPokemon(newMon) {
+    if (!STATE.autoSellPokemonEnabled || !newMon) return false;
+
+    // Strict Safety Locks:
+    // 1. NEVER sell Shinies
+    if (newMon.is_shiny) return false;
+
+    // 2. NEVER sell Mythical or Legendary
+    const q = (newMon.quality || "Comum").toLowerCase();
+    if (q.startsWith("mítico") || q.startsWith("mitico") || q === "lendário" || q === "lendario") return false;
+
+    // 3. Protect new Pokédex species if requested
+    if (STATE.autoSellKeepNewDex && !STATE.player?.pokedex_caught?.includes(newMon.species_id)) {
+        return false;
+    }
+
+    // 4. Check user filter
+    const filter = STATE.autoSellPokemonFilter || "common_only";
+    let shouldSell = false;
+    if (filter === "common_only") {
+        shouldSell = (q === "comum");
+    } else if (filter === "common_uncommon") {
+        shouldSell = (q === "comum" || q === "incomum");
+    } else if (filter === "all_non_special") {
+        shouldSell = (q === "comum" || q === "incomum" || q === "raro");
+    }
+
+    if (!shouldSell) return false;
+
+    // Calculate value
+    const gold = (typeof calculatePokemonGoldValue === "function")
+        ? calculatePokemonGoldValue(newMon)
+        : Math.max(15, 25 + (newMon.level || 1) * 12);
+
+    STATE.player.gold = (STATE.player.gold || 0) + gold;
+    STATE.player.stats = STATE.player.stats || {};
+    STATE.player.stats.auto_sold_mons = (STATE.player.stats.auto_sold_mons || 0) + 1;
+    STATE.player.stats.auto_sold_gold = (STATE.player.stats.auto_sold_gold || 0) + gold;
+
+    const tr = STATE.tibia?.trainer || { gx: 10, gy: 10 };
+    if (typeof spawnFloatingText === "function") {
+        spawnFloatingText(tr.gx, tr.gy, `+$${gold.toLocaleString()}`, "#facc15");
+    }
+    if (typeof spawnPokePixelCombatPopup === "function") {
+        spawnPokePixelCombatPopup(tr.gx, tr.gy, `+$${gold.toLocaleString()}`, "gold");
+    }
+    if (typeof addCombatLog === "function") {
+        addCombatLog(`<span style="color:#facc15;font-weight:900;">💰 [AUTO-VENDA] ${newMon.name} (${newMon.quality || "Comum"} • Lv.${newMon.level}) vendido automaticamente por +$${gold.toLocaleString()} Ouro!</span>`);
+    }
+    showToast(`💰 Auto-Venda: +$${gold.toLocaleString()} (${newMon.name})`);
+
+    syncAutoFarmAutoSellUi();
+    if (typeof scheduleStateSave === "function") scheduleStateSave(1500);
+    return true;
+}
+
+function toggleAutoSellDrops(forceVal) {
+    if (typeof forceVal === "boolean") {
+        STATE.autoSellDropsEnabled = forceVal;
+    } else {
+        STATE.autoSellDropsEnabled = !STATE.autoSellDropsEnabled;
+    }
+    syncAutoFarmUi();
+    syncAutoFarmAutoSellUi();
+    saveAutoFarmPreferences();
+    showToast(STATE.autoSellDropsEnabled ? "📦 Auto-Venda de Drops ATIVADA (Liquida materiais de monstros por Ouro)!" : "⚪ Auto-Venda de Drops DESATIVADA.");
+}
+
+function isProtectedDropItem(itemId) {
+    if (!itemId) return true;
+    const low = itemId.toLowerCase();
+    return (
+        low.startsWith("capsule_") ||
+        low.startsWith("stone_") ||
+        low.includes("potion") ||
+        low.includes("revive") ||
+        low === "master_key" ||
+        low === "rare_candy" ||
+        low.startsWith("candy_")
+    );
+}
+
+function checkAndExecuteAutoSellDrop(itemId, qty = 1) {
+    if (!STATE.autoSellDropsEnabled) return false;
+    if (isProtectedDropItem(itemId)) return false;
+
+    const itemObj = (STATE.itemsMap && STATE.itemsMap[itemId]) || { name: itemId, price: 20 };
+    const unitSell = itemObj.sell_price || Math.max(5, Math.floor((itemObj.price || 20) / 2));
+    const totalEarned = unitSell * qty;
+
+    STATE.player.gold = (STATE.player.gold || 0) + totalEarned;
+    STATE.player.stats = STATE.player.stats || {};
+    STATE.player.stats.auto_sold_drops_gold = (STATE.player.stats.auto_sold_drops_gold || 0) + totalEarned;
+
+    if (typeof addCombatLog === "function") {
+        addCombatLog(`<span style="color:#fbbf24;">🪙 [AUTO-VENDA DROP] ${qty}x ${itemObj.name} vendidos por +$${totalEarned.toLocaleString()} Ouro!</span>`);
+    }
+    syncAutoFarmAutoSellUi();
+    return true;
+}
+
+function syncAutoFarmSurvivalUi() {
+    const inv = STATE.player?.inventory || {};
+    const potionCount = Object.keys(inv).filter(k => k.includes("potion")).reduce((acc, k) => acc + (inv[k] || 0), 0);
+    const reviveCount = Object.keys(inv).filter(k => k.includes("revive")).reduce((acc, k) => acc + (inv[k] || 0), 0);
+
+    const pBadge = document.getElementById("autoheal-stock-badge");
+    if (pBadge) pBadge.textContent = `${potionCount}x disponíveis`;
+
+    const rBadge = document.getElementById("autorevive-stock-badge");
+    if (rBadge) rBadge.textContent = `${reviveCount}x disponíveis`;
+
+    const btnHeal = document.getElementById("btn-toggle-autoheal");
+    if (btnHeal) {
+        btnHeal.classList.toggle("is-on", !!STATE.autoHealEnabled);
+        const txt = btnHeal.querySelector(".switch-text");
+        if (txt) txt.textContent = STATE.autoHealEnabled ? "ON" : "OFF";
+    }
+
+    const btnRevive = document.getElementById("btn-toggle-autorevive");
+    if (btnRevive) {
+        btnRevive.classList.toggle("is-on", !!STATE.autoReviveEnabled);
+        const txt = btnRevive.querySelector(".switch-text");
+        if (txt) txt.textContent = STATE.autoReviveEnabled ? "ON" : "OFF";
+    }
+
+    const thSel = document.getElementById("autoheal-threshold");
+    if (thSel && STATE.autoHealThreshold != null) {
+        const val = Number(STATE.autoHealThreshold).toFixed(2);
+        thSel.value = val;
+        if (!thSel.value) {
+            thSel.value = String(Number(STATE.autoHealThreshold));
+        }
+    }
+
+    const hpPref = document.getElementById("autoheal-preference");
+    if (hpPref && STATE.autoHealPreference) hpPref.value = STATE.autoHealPreference;
+
+    const rvPref = document.getElementById("autorevive-preference");
+    if (rvPref && STATE.autoRevivePreference) rvPref.value = STATE.autoRevivePreference;
+}
+
+function syncAutoFarmAutoSellUi() {
+    const btnPk = document.getElementById("btn-toggle-autosell-pokemon");
+    if (btnPk) {
+        btnPk.classList.toggle("is-on", !!STATE.autoSellPokemonEnabled);
+        const txt = btnPk.querySelector(".switch-text");
+        if (txt) txt.textContent = STATE.autoSellPokemonEnabled ? "ON" : "OFF";
+    }
+
+    const btnDr = document.getElementById("btn-toggle-autosell-drops");
+    if (btnDr) {
+        btnDr.classList.toggle("is-on", !!STATE.autoSellDropsEnabled);
+        const txt = btnDr.querySelector(".switch-text");
+        if (txt) txt.textContent = STATE.autoSellDropsEnabled ? "ON" : "OFF";
+    }
+
+    const filterSel = document.getElementById("autosell-pokemon-filter");
+    if (filterSel && STATE.autoSellPokemonFilter) filterSel.value = STATE.autoSellPokemonFilter;
+
+    const keepDex = document.getElementById("autosell-keep-new-dex");
+    if (keepDex) keepDex.checked = (STATE.autoSellKeepNewDex !== false);
+
+    const statMons = document.getElementById("stat-autosold-mons");
+    if (statMons) statMons.textContent = `${STATE.player?.stats?.auto_sold_mons || 0} monstrinhos`;
+
+    const statGold = document.getElementById("stat-autosold-drops-gold");
+    if (statGold) statGold.textContent = `$${(STATE.player?.stats?.auto_sold_drops_gold || 0).toLocaleString()}`;
+}
+
 function syncAutoFarmUi() {
     const huntOn = !!STATE.autoHuntEnabled;
     const movesOn = !!STATE.autoMovesEnabled;
     const catchOn = !!STATE.autoCatchEnabled;
     const lootOn = !!(STATE.tibia && STATE.tibia.autoLoot);
+    const healOn = !!STATE.autoHealEnabled;
+    const reviveOn = !!STATE.autoReviveEnabled;
+    const sellPkOn = !!STATE.autoSellPokemonEnabled;
+    const sellDropsOn = !!STATE.autoSellDropsEnabled;
 
-    const activeCount = (huntOn ? 1 : 0) + (movesOn ? 1 : 0) + (catchOn ? 1 : 0) + (lootOn ? 1 : 0);
+    const activeCount = (huntOn ? 1 : 0) + (movesOn ? 1 : 0) + (catchOn ? 1 : 0) + (lootOn ? 1 : 0) +
+                        (healOn ? 1 : 0) + (reviveOn ? 1 : 0) + (sellPkOn ? 1 : 0) + (sellDropsOn ? 1 : 0);
     const anyActive = activeCount > 0;
 
     // 1. Top Menubar Unified Auto-Farm Trigger
@@ -5291,15 +5743,19 @@ function syncAutoFarmUi() {
         topBtn.classList.toggle("is-active", anyActive);
     }
     if (topBadge) {
-        topBadge.textContent = anyActive ? `ON (${activeCount}/4)` : "OFF";
+        topBadge.textContent = anyActive ? `ON (${activeCount}/8)` : "OFF";
         topBadge.className = anyActive ? "autofarm-status-badge is-active" : "autofarm-status-badge";
     }
 
     // 2. Auto-Farm Window Master Summary
     const summaryEl = document.getElementById("autofarm-active-summary");
     if (summaryEl) {
-        summaryEl.textContent = `${activeCount} de 4 módulos em execução`;
+        summaryEl.textContent = `${activeCount} de 8 rotinas em execução`;
     }
+
+    // Sync child views
+    if (typeof syncAutoFarmSurvivalUi === "function") syncAutoFarmSurvivalUi();
+    if (typeof syncAutoFarmAutoSellUi === "function") syncAutoFarmAutoSellUi();
 
     // 3. Auto-Caça (Cavebot) Card
     const cardHunt = document.getElementById("card-autohunt");
@@ -5446,6 +5902,7 @@ function updateAutoHuntSpeed() {
 
         // 4. STRICT: Only attack when Trainer has arrived NEAR the monster (<= 2.0 SQMs)
         if (distToTarget <= 2.0) {
+            if (typeof checkAndExecuteAutoHeal === "function") checkAndExecuteAutoHeal();
             const moves = lead.moves && lead.moves.length > 0 ? lead.moves : ["tackle"];
             const moveId = moves[spellIdx % moves.length];
             spellIdx += 1;
@@ -5558,13 +6015,20 @@ function setAllAutoFarm(enable) {
     if (!enable) STATE.activeCastingMoveIdx = -1;
 
     STATE.autoCatchEnabled = enable;
-    STATE.tibia.autoLoot = enable;
+    if (STATE.tibia) STATE.tibia.autoLoot = enable;
+
+    STATE.autoHealEnabled = enable;
+    STATE.autoReviveEnabled = enable;
+    STATE.autoSellPokemonEnabled = enable;
+    STATE.autoSellDropsEnabled = enable;
 
     syncAutoFarmUi();
+    if (typeof syncAutoFarmSurvivalUi === "function") syncAutoFarmSurvivalUi();
+    if (typeof syncAutoFarmAutoSellUi === "function") syncAutoFarmAutoSellUi();
     renderBattleArena();
     saveAutoFarmPreferences();
     if (enable) {
-        showToast("⚡ Auto-Farm ATIVADO: Todos os 4 módulos estão em execução!");
+        showToast("⚡ Auto-Farm ATIVADO: Todas as 8 rotinas estão em execução (Caça, Ataque, Catch, Loot, Cura, Revive, Venda Mon & Venda Drops)!");
         processAutoCatchQueue();
     } else {
         showToast("⏹️ Auto-Farm PAUSADO: Todas as rotinas automáticas foram desligadas.");
@@ -5574,22 +6038,52 @@ function setAllAutoFarm(enable) {
 function applyAutoFarmPreset(presetKey) {
     if (presetKey === "full_hunt") {
         setAllAutoFarm(true);
+        STATE.autoCatchMode = "always";
+        STATE.autoCatchBall = "best";
+        STATE.autoHealThreshold = 0.50;
+        STATE.autoSellPokemonFilter = "common_only";
+        syncAutoFarmUi();
+        saveAutoFarmPreferences();
+        showToast("🔥 Preset 'Caçador Completo' ativado: Todas as 8 rotinas ligadas!");
+    } else if (presetKey === "survival_afk") {
+        STATE.autoHuntEnabled = true;
+        updateAutoHuntSpeed();
+        STATE.autoMovesEnabled = true;
+        STATE.autoCatchEnabled = true;
+        if (STATE.tibia) STATE.tibia.autoLoot = true;
+        STATE.autoHealEnabled = true;
+        STATE.autoHealThreshold = 0.70; // 70% threshold for max safety
+        STATE.autoReviveEnabled = true;
+        STATE.autoSellPokemonEnabled = true;
+        STATE.autoSellPokemonFilter = "common_only";
+        STATE.autoSellDropsEnabled = true;
+        syncAutoFarmUi();
+        saveAutoFarmPreferences();
+        showToast("🛡️ Preset 'Sobrevivência AFK' ativado: Auto-Cura em 70% HP + Auto-Revive + Auto-Venda ON!");
     } else if (presetKey === "leveling") {
         STATE.autoHuntEnabled = true;
         updateAutoHuntSpeed();
         STATE.autoMovesEnabled = true;
         STATE.autoCatchEnabled = false;
-        STATE.tibia.autoLoot = true;
+        if (STATE.tibia) STATE.tibia.autoLoot = true;
+        STATE.autoHealEnabled = true;
+        STATE.autoReviveEnabled = true;
+        STATE.autoSellPokemonEnabled = false;
+        STATE.autoSellDropsEnabled = true;
         syncAutoFarmUi();
         saveAutoFarmPreferences();
-        showToast("⚔️ Preset 'Treinar EXP' ativado: Caça, Ataque e Coleta ON (Captura OFF).");
+        showToast("⚔️ Preset 'Treinar EXP' ativado: Caça, Ataque, Cura, Revive e Coleta ON (Captura OFF).");
     } else if (presetKey === "shiny_hunt") {
         STATE.autoHuntEnabled = true;
         updateAutoHuntSpeed();
         STATE.autoMovesEnabled = true;
         STATE.autoCatchEnabled = true;
         STATE.autoCatchMode = "shiny_or_new";
-        STATE.tibia.autoLoot = true;
+        if (STATE.tibia) STATE.tibia.autoLoot = true;
+        STATE.autoHealEnabled = true;
+        STATE.autoReviveEnabled = true;
+        STATE.autoSellPokemonEnabled = false;
+        STATE.autoSellDropsEnabled = false;
         syncAutoFarmUi();
         saveAutoFarmPreferences();
         showToast("✨ Preset 'Caçador de Shinies' ativado: Lança bolas apenas em Shinies e Novos!");
@@ -5615,10 +6109,23 @@ function loadAutoFarmPreferences() {
             if (typeof data.autoHuntEnabled === "boolean") STATE.autoHuntEnabled = data.autoHuntEnabled;
             if (typeof data.autoMovesEnabled === "boolean") STATE.autoMovesEnabled = data.autoMovesEnabled;
             if (typeof data.autoCatchEnabled === "boolean") STATE.autoCatchEnabled = data.autoCatchEnabled;
-            if (typeof data.autoLoot === "boolean") STATE.tibia.autoLoot = data.autoLoot;
+            if (typeof data.autoLoot === "boolean" && STATE.tibia) STATE.tibia.autoLoot = data.autoLoot;
             if (data.autoCatchMode) STATE.autoCatchMode = data.autoCatchMode;
             if (data.autoCatchBall) STATE.autoCatchBall = data.autoCatchBall;
             if (data.autoHuntSpeedMs) STATE.autoHuntSpeedMs = data.autoHuntSpeedMs;
+
+            if (typeof data.autoHealEnabled === "boolean") STATE.autoHealEnabled = data.autoHealEnabled;
+            if (typeof data.autoHealThreshold === "number") STATE.autoHealThreshold = data.autoHealThreshold;
+            if (data.autoHealPreference) STATE.autoHealPreference = data.autoHealPreference;
+
+            if (typeof data.autoReviveEnabled === "boolean") STATE.autoReviveEnabled = data.autoReviveEnabled;
+            if (data.autoRevivePreference) STATE.autoRevivePreference = data.autoRevivePreference;
+
+            if (typeof data.autoSellPokemonEnabled === "boolean") STATE.autoSellPokemonEnabled = data.autoSellPokemonEnabled;
+            if (data.autoSellPokemonFilter) STATE.autoSellPokemonFilter = data.autoSellPokemonFilter;
+            if (typeof data.autoSellKeepNewDex === "boolean") STATE.autoSellKeepNewDex = data.autoSellKeepNewDex;
+
+            if (typeof data.autoSellDropsEnabled === "boolean") STATE.autoSellDropsEnabled = data.autoSellDropsEnabled;
         }
     } catch (e) {}
 }
@@ -5634,7 +6141,16 @@ function saveAutoFarmPreferences() {
                 autoCatchMode: STATE.autoCatchMode,
                 autoCatchBall: STATE.autoCatchBall,
                 autoHuntSpeedMs: STATE.autoHuntSpeedMs,
-                autoLoot: STATE.tibia.autoLoot,
+                autoLoot: STATE.tibia ? STATE.tibia.autoLoot : true,
+                autoHealEnabled: STATE.autoHealEnabled,
+                autoHealThreshold: STATE.autoHealThreshold,
+                autoHealPreference: STATE.autoHealPreference,
+                autoReviveEnabled: STATE.autoReviveEnabled,
+                autoRevivePreference: STATE.autoRevivePreference,
+                autoSellPokemonEnabled: STATE.autoSellPokemonEnabled,
+                autoSellPokemonFilter: STATE.autoSellPokemonFilter,
+                autoSellKeepNewDex: STATE.autoSellKeepNewDex,
+                autoSellDropsEnabled: STATE.autoSellDropsEnabled,
             })
         );
     } catch (e) {}
@@ -10429,11 +10945,21 @@ function switchAutoFarmSubmenu(subTab) {
     });
 
     const grid = document.querySelector(".autofarm-modules-grid");
+    const survival = document.getElementById("autofarm-survival-view");
+    const autosell = document.getElementById("autofarm-autosell-view");
     const presets = document.querySelector(".autofarm-presets-bar");
     const visual = document.querySelector(".autofarm-visual-settings");
     const offline = document.getElementById("autofarm-offline-view");
 
     if (grid) grid.style.display = subTab === "modules" ? "flex" : "none";
+    if (survival) {
+        survival.style.display = subTab === "survival" ? "flex" : "none";
+        if (subTab === "survival" && typeof syncAutoFarmSurvivalUi === "function") syncAutoFarmSurvivalUi();
+    }
+    if (autosell) {
+        autosell.style.display = subTab === "autosell" ? "flex" : "none";
+        if (subTab === "autosell" && typeof syncAutoFarmAutoSellUi === "function") syncAutoFarmAutoSellUi();
+    }
     if (presets) presets.style.display = subTab === "presets" ? "flex" : "none";
     if (visual) visual.style.display = subTab === "visual" ? "block" : "none";
     if (offline) {

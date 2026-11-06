@@ -702,9 +702,14 @@ def calculate_offline_progress(player, config, species_by_id, enriched_zones, fo
 
     # Drops calculation
     items_dropped = []
+    sold_drops_gold = 0
     berry_count = kills // 25
     if berry_count > 0:
-        items_dropped.append({"item_id": "item_oran_berry", "name": "Oran Berry", "qty": berry_count, "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/oran-berry.png"})
+        if offline_cfg.get("auto_sell_drops", False):
+            sold_drops_gold += berry_count * 15
+            earned_gold += berry_count * 15
+        else:
+            items_dropped.append({"item_id": "item_oran_berry", "name": "Oran Berry", "qty": berry_count, "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/oran-berry.png"})
     stone_count = kills // 220
     if stone_count > 0:
         items_dropped.append({"item_id": "stone_water" if "water" in sp.get("elements", []) else "stone_fire", "name": "Pedra Elemental", "qty": stone_count, "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/water-stone.png"})
@@ -741,6 +746,11 @@ def calculate_offline_progress(player, config, species_by_id, enriched_zones, fo
                     successful_catches += 1
 
             shiny_chance = config.get("shiny_chance", 0.0039)
+            auto_sell_pk = offline_cfg.get("auto_sell_pokemon", False)
+            sell_filter = offline_cfg.get("auto_sell_filter", "common_only")
+            sold_pokemon_count = 0
+            sold_pokemon_gold = 0
+
             for _ in range(successful_catches):
                 is_sh = random.random() < shiny_chance
                 qualities = ["Comum", "Incomum", "Raro", "Épico", "Lendário", "Mítico"]
@@ -750,7 +760,22 @@ def calculate_offline_progress(player, config, species_by_id, enriched_zones, fo
                 q_pick = random.choices(qualities, weights=weights, k=1)[0]
                 catch_lvl = max(1, min(100, zone_level + random.randint(-1, 3)))
                 mon_inst = make_pokemon_instance(sp, level=catch_lvl, is_shiny=is_sh, quality=q_pick)
-                catches.append(mon_inst)
+
+                should_sell = False
+                if auto_sell_pk and not is_sh and q_pick not in ["Mítico", "Lendário"]:
+                    if sell_filter == "common_only" and q_pick == "Comum":
+                        should_sell = True
+                    elif sell_filter == "common_uncommon" and q_pick in ["Comum", "Incomum"]:
+                        should_sell = True
+
+                if should_sell:
+                    val = int((25 + catch_lvl * 12) * (1.5 if q_pick == "Incomum" else 1.0))
+                    sold_pokemon_gold += val
+                    sold_pokemon_count += 1
+                else:
+                    catches.append(mon_inst)
+
+            earned_gold += sold_pokemon_gold
 
     hours = int(eff_seconds // 3600)
     minutes = int((eff_seconds % 3600) // 60)
@@ -776,6 +801,9 @@ def calculate_offline_progress(player, config, species_by_id, enriched_zones, fo
         "items": items_dropped,
         "catches": catches,
         "balls_consumed": balls_used,
+        "sold_pokemon_count": sold_pokemon_count if 'sold_pokemon_count' in locals() else 0,
+        "sold_pokemon_gold": sold_pokemon_gold if 'sold_pokemon_gold' in locals() else 0,
+        "sold_drops_gold": sold_drops_gold if 'sold_drops_gold' in locals() else 0,
     }
 
 
@@ -1466,7 +1494,7 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             player = boot["player"]
             config = boot["config"]
             off_cfg = player.setdefault("offline_farm", {})
-            for k in ["enabled", "assigned_zone_id", "auto_catch", "ball_id", "catch_filter", "efficiency_level", "max_offline_hours"]:
+            for k in ["enabled", "assigned_zone_id", "auto_catch", "ball_id", "catch_filter", "efficiency_level", "max_offline_hours", "auto_heal", "auto_revive", "auto_sell_pokemon", "auto_sell_filter", "auto_sell_drops"]:
                 if k in body:
                     off_cfg[k] = body[k]
             if user:

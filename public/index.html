@@ -681,17 +681,18 @@
                         </div>
                     </div>
                     <div class="poke-window-submenu-bar">
-                        <button class="autofarm-submenu-pill active" data-autofarm-sub="modules" onclick="switchAutoFarmSubmenu('modules')">⚡ Módulos</button>
+                        <button class="autofarm-submenu-pill active" data-autofarm-sub="modules" onclick="switchAutoFarmSubmenu('modules')">⚡ Caça & Combate</button>
+                        <button class="autofarm-submenu-pill" data-autofarm-sub="survival" onclick="switchAutoFarmSubmenu('survival')">🩹 Cura & Revive</button>
+                        <button class="autofarm-submenu-pill" data-autofarm-sub="autosell" onclick="switchAutoFarmSubmenu('autosell')">💰 Auto-Venda</button>
                         <button class="autofarm-submenu-pill" data-autofarm-sub="offline" onclick="switchAutoFarmSubmenu('offline')">💤 Farm Offline</button>
                         <button class="autofarm-submenu-pill" data-autofarm-sub="presets" onclick="switchAutoFarmSubmenu('presets')">💾 Presets</button>
-                        <button class="autofarm-submenu-pill" data-autofarm-sub="visual" onclick="switchAutoFarmSubmenu('visual')">🎨 Visual</button>
                     </div>
                     <div class="tibia-win-body autofarm-body">
                         <!-- Master Control Header -->
                         <div class="autofarm-master-banner">
                             <div class="autofarm-master-info">
                                 <span class="autofarm-master-title">⚡ Automação Global</span>
-                                <span class="autofarm-master-sub" id="autofarm-active-summary">0 de 4 módulos ativos</span>
+                                <span class="autofarm-master-sub" id="autofarm-active-summary">0 de 8 rotinas ativas</span>
                             </div>
                             <div class="autofarm-master-actions">
                                 <button class="tibia-btn poke-cmd-btn is-green" onclick="setAllAutoFarm(true)" title="Ativar todos os módulos de caça, combate, captura e coleta">⚡ Ligar Tudo</button>
@@ -812,6 +813,153 @@
 
                         </div>
 
+                        <!-- View 2: Sobrevivência (Auto-Heal & Auto-Revive) -->
+                        <div class="autofarm-survival-view" id="autofarm-survival-view" style="display:none;flex-direction:column;gap:10px;">
+                            <!-- Module 5: Auto-Cura (Auto-Heal) -->
+                            <div class="autofarm-card" id="card-autoheal">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">🩹</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Auto-Cura (Poções)</div>
+                                            <div class="autofarm-mod-desc">Usa poções da bolsa automaticamente ao atingir vida baixa</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-toggle-autoheal" class="autofarm-switch-btn" onclick="toggleAutoHeal()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">OFF</span>
+                                    </button>
+                                </div>
+                                <div class="autofarm-card-options" style="flex-direction:column;gap:6px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <label>Gatilho de Vida (HP):</label>
+                                        <select id="autoheal-threshold" class="poke-select is-gold" onchange="changeAutoHealThreshold(this.value)">
+                                            <option value="0.30">🔴 Abaixo de 30% HP (Econômico)</option>
+                                            <option value="0.50" selected>🟡 Abaixo de 50% HP (Balanceado)</option>
+                                            <option value="0.70">🟢 Abaixo de 70% HP (Segurança Máxima)</option>
+                                        </select>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <label>Poção Preferida:</label>
+                                        <select id="autoheal-preference" class="poke-select is-ball" onchange="changeAutoHealPreference(this.value)">
+                                            <option value="best" selected>✨ Melhor Disponível (Max / Hyper / Super)</option>
+                                            <option value="cheap">🪙 Econômica (Poção Básica Primeiro)</option>
+                                        </select>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(15,23,42,0.6);border-radius:6px;border:1px solid rgba(255,255,255,0.06);font-size:11px;">
+                                        <span style="color:#94a3b8;">Estoque de Poções na Bolsa:</span>
+                                        <span id="autoheal-stock-badge" style="color:#4ade80;font-weight:700;">0x disponíveis</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Module 6: Auto-Reviver (Auto-Revive) -->
+                            <div class="autofarm-card" id="card-autorevive">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">💫</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Auto-Reviver (Revives)</div>
+                                            <div class="autofarm-mod-desc">Revive o Pokémon ativo automaticamente ao desmaiar em combate</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-toggle-autorevive" class="autofarm-switch-btn" onclick="toggleAutoRevive()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">OFF</span>
+                                    </button>
+                                </div>
+                                <div class="autofarm-card-options" style="flex-direction:column;gap:6px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <label>Revive Preferido:</label>
+                                        <select id="autorevive-preference" class="poke-select is-gold" onchange="changeAutoRevivePreference(this.value)">
+                                            <option value="best" selected>✨ Max Revive (100% HP)</option>
+                                            <option value="cheap">🪙 Revive Padrão (50% HP)</option>
+                                        </select>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(15,23,42,0.6);border-radius:6px;border:1px solid rgba(255,255,255,0.06);font-size:11px;">
+                                        <span style="color:#94a3b8;">Estoque de Revives na Bolsa:</span>
+                                        <span id="autorevive-stock-badge" style="color:#38bdf8;font-weight:700;">0x disponíveis</span>
+                                    </div>
+                                    <div style="font-size:10.5px;color:#64748b;line-height:1.4;">
+                                        ℹ️ Se os Revives acabarem, o sistema troca automaticamente para o próximo Pokémon saudável da equipe ou recebe socorro na Central.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- View 3: Auto-Venda (Pokémon & Drops) -->
+                        <div class="autofarm-autosell-view" id="autofarm-autosell-view" style="display:none;flex-direction:column;gap:10px;">
+                            <!-- Safety Banner -->
+                            <div style="background:rgba(16,185,129,0.12);border:1px solid #10b981;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:#a7f3d0;">
+                                <span style="font-size:18px;">🛡️</span>
+                                <div>
+                                    <strong style="color:#34d399;">TRAVA DE SEGURANÇA TOTAL ATIVA:</strong>
+                                    Shinies, Míticos, Lendários, Pokébolas e Pedras Evolutivas NUNCA são vendidos automaticamente!
+                                </div>
+                            </div>
+
+                            <!-- Module 7: Auto-Venda de Pokémon Capturados -->
+                            <div class="autofarm-card" id="card-autosell-pokemon">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">🪙</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Auto-Venda de Pokémon</div>
+                                            <div class="autofarm-mod-desc">Converte capturas comuns em Ouro direto ao capturar</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-toggle-autosell-pokemon" class="autofarm-switch-btn" onclick="toggleAutoSellPokemon()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">OFF</span>
+                                    </button>
+                                </div>
+                                <div class="autofarm-card-options" style="flex-direction:column;gap:6px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <label>Filtro de Venda:</label>
+                                        <select id="autosell-pokemon-filter" class="poke-select is-gold" onchange="changeAutoSellPokemonFilter(this.value)">
+                                            <option value="common_only" selected>⚪ Apenas Comuns (Não-Shinies)</option>
+                                            <option value="common_uncommon">🟢 Comuns e Incomuns (Não-Shinies)</option>
+                                            <option value="all_non_special">🔵 Comuns, Incomuns e Raros (Não-Shinies)</option>
+                                        </select>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+                                        <input type="checkbox" id="autosell-keep-new-dex" checked onchange="changeAutoSellKeepNewDex(this.checked)" style="width:16px;height:16px;accent-color:#f59e0b;">
+                                        <label for="autosell-keep-new-dex" style="font-size:11px;color:#cbd5e1;cursor:pointer;">Preservar espécies novas para a Pokédex (nunca vende se for novo registro)</label>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(15,23,42,0.6);border-radius:6px;border:1px solid rgba(255,255,255,0.06);font-size:11px;">
+                                        <span style="color:#94a3b8;">Pokémon Vendidos Automaticamente:</span>
+                                        <span id="stat-autosold-mons" style="color:#fde047;font-weight:700;">0 monstrinhos</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Module 8: Auto-Venda de Drops & Materiais -->
+                            <div class="autofarm-card" id="card-autosell-drops">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">📦</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Auto-Venda de Drops & Loot</div>
+                                            <div class="autofarm-mod-desc">Converte materiais de monstros (chifres, penas, cascos) em Ouro</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-toggle-autosell-drops" class="autofarm-switch-btn" onclick="toggleAutoSellDrops()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">OFF</span>
+                                    </button>
+                                </div>
+                                <div class="autofarm-card-options" style="flex-direction:column;gap:6px;">
+                                    <div style="font-size:11px;color:#94a3b8;line-height:1.4;">
+                                        Loot comum e materiais caídos de monstros são liquidados instantaneamente na Loja pelo valor tabelado, mantendo sua mochila limpa e seu cofre cheio!
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(15,23,42,0.6);border-radius:6px;border:1px solid rgba(255,255,255,0.06);font-size:11px;">
+                                        <span style="color:#94a3b8;">Ouro Obtido por Auto-Venda de Drops:</span>
+                                        <span id="stat-autosold-drops-gold" style="color:#facc15;font-weight:700;">$0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Offline Farm View (Expedição Desconectado) -->
                         <div class="autofarm-offline-view" id="autofarm-offline-view" style="display:none;">
                             <!-- Master status banner -->
@@ -918,6 +1066,7 @@
                             <span class="presets-title">Presets Rápidos:</span>
                             <div class="presets-buttons">
                                 <button class="tibia-btn poke-cmd-btn" onclick="applyAutoFarmPreset('full_hunt')">🔥 Caçador Completo</button>
+                                <button class="tibia-btn poke-cmd-btn is-green" onclick="applyAutoFarmPreset('survival_afk')">🛡️ Sobrevivência AFK</button>
                                 <button class="tibia-btn poke-cmd-btn" onclick="applyAutoFarmPreset('leveling')">⚔️ Treinar EXP</button>
                                 <button class="tibia-btn poke-cmd-btn" onclick="applyAutoFarmPreset('shiny_hunt')">✨ Somente Shinies</button>
                             </div>
