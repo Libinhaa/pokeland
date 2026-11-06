@@ -143,7 +143,7 @@ function renderBagModal() {
             <div class="bag-item-card">
                 <div class="bag-item-header">
                     <div class="bag-item-icon-box">
-                        <img src="${sprite}" alt="${item.name}" style="max-width:28px;max-height:28px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/potion.png';">
+                        <img src="${sprite}" alt="${item.name}" style="max-width:28px;max-height:28px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='/img/items/potion.png';">
                     </div>
                     <div class="bag-item-title-box">
                         <div class="bag-item-name" title="${item.name}">${item.name}</div>
@@ -240,19 +240,109 @@ function openMarketSellPokemonFromBag(uid) {
 }
 
 function getItemSpriteUrl(itemId, item) {
-    if (item && item.sprite_url) return item.sprite_url;
-    if (itemId.startsWith("capsule_") || itemId.includes("ball")) {
-        const ballName = itemId.replace("capsule_", "").replace("ball_", "").replace("_", "-");
-        return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${ballName}-ball.png`;
+    if (item && item.sprite_url && !item.sprite_url.includes("raw.githubusercontent.com")) {
+        return item.sprite_url;
     }
-    if (itemId.startsWith("stone_")) {
-        const stoneName = itemId.replace("stone_", "");
-        return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${stoneName}-stone.png`;
+    const cleanId = String(itemId || "").toLowerCase().trim();
+    
+    // Direct canonical local asset map (Zero external dependencies)
+    const directMap = {
+        "capsule_basic": "/img/items/poke-ball.png",
+        "poke-ball": "/img/items/poke-ball.png",
+        "capsule_great": "/img/items/great-ball.png",
+        "great-ball": "/img/items/great-ball.png",
+        "capsule_super": "/img/items/safari-ball.png",
+        "safari-ball": "/img/items/safari-ball.png",
+        "capsule_ultra": "/img/items/ultra-ball.png",
+        "ultra-ball": "/img/items/ultra-ball.png",
+        "capsule_master": "/img/items/master-ball.png",
+        "master-ball": "/img/items/master-ball.png",
+        "capsule_net": "/img/items/net-ball.png",
+        "net-ball": "/img/items/net-ball.png",
+        "capsule_dusk": "/img/items/dusk-ball.png",
+        "dusk-ball": "/img/items/dusk-ball.png",
+        "capsule_fast": "/img/items/fast-ball.png",
+        "fast-ball": "/img/items/fast-ball.png",
+        "capsule_heavy": "/img/items/heavy-ball.png",
+        "heavy-ball": "/img/items/heavy-ball.png",
+        "capsule_repeat": "/img/items/repeat-ball.png",
+        "repeat-ball": "/img/items/repeat-ball.png",
+        "capsule_premier": "/img/items/premier-ball.png",
+        "premier-ball": "/img/items/premier-ball.png",
+        "capsule_quick": "/img/items/quick-ball.png",
+        "quick-ball": "/img/items/quick-ball.png",
+        "capsule_moon": "/img/items/moon-ball.png",
+        "moon-ball": "/img/items/moon-ball.png",
+        "capsule_tale": "/img/items/heal-ball.png",
+        "heal-ball": "/img/items/heal-ball.png",
+        "capsule_tinker": "/img/items/timer-ball.png",
+        "timer-ball": "/img/items/timer-ball.png",
+        "capsule_yume": "/img/items/dream-ball.png",
+        "dream-ball": "/img/items/dream-ball.png",
+        "capsule_safari": "/img/items/safari-ball.png",
+        "capsule_magu": "/img/items/magu-ball.png",
+        "capsule_janguru": "/img/items/janguru-ball.png",
+        "capsule_sora": "/img/items/dive-ball.png",
+        "dive-ball": "/img/items/dive-ball.png",
+        "capsule_old": "/img/items/luxury-ball.png",
+        "luxury-ball": "/img/items/luxury-ball.png",
+        "cs_pixel_ball": "/img/items/pixel-ball.png",
+        "potion": "/img/items/potion.png",
+        "item_potion": "/img/items/potion.png",
+        "super_potion": "/img/items/super-potion.png",
+        "item_super_potion": "/img/items/super-potion.png",
+        "hyper_potion": "/img/items/hyper-potion.png",
+        "item_hyper_potion": "/img/items/hyper-potion.png",
+        "max_potion": "/img/items/max-potion.png",
+        "item_max_potion": "/img/items/max-potion.png",
+        "revive": "/img/items/revive.png",
+        "item_revive": "/img/items/revive.png",
+        "max_revive": "/img/items/max-revive.png",
+        "item_max_revive": "/img/items/max-revive.png",
+        "candy_rare": "/img/items/rare-candy.png",
+        "item_rare_candy": "/img/items/rare-candy.png",
+        "item_exp_candy_m": "/img/items/exp-candy-m.png",
+        "escape_rope": "/img/items/escape-rope.png",
+        "item_escape_rope": "/img/items/escape-rope.png",
+        "super_repel": "/img/items/super-repel.png",
+        "item_super_repel": "/img/items/super-repel.png",
+        "oran_berry": "/img/items/oran-berry.png",
+        "item_oran_berry": "/img/items/oran-berry.png",
+        "cs_vip_pass": "/img/items/vip-pass.png",
+        "cs_master_key": "/img/items/master-key.png",
+        "cs_shiny_charm": "/img/items/shiny-stone.png",
+        "cs_exp_booster": "/img/items/exp-candy-m.png",
+        "cs_mythic_egg": "/img/items/dream-ball.png",
+        "cs_iv_reset": "/img/items/dawn-stone.png",
+        "cs_champion_skin": "/img/trainers/hgss_red.png",
+        "stone_fire": "/img/items/fire-stone.png",
+        "stone_water": "/img/items/water-stone.png",
+        "stone_grass": "/img/items/leaf-stone.png",
+        "stone_electric": "/img/items/thunder-stone.png",
+        "stone_ice": "/img/items/dawn-stone.png",
+        "stone_sun": "/img/items/sun-stone.png",
+        "stone_moon": "/img/items/moon-stone.png",
+        "stone_dark": "/img/items/dusk-stone.png",
+        "stone_psychic": "/img/items/moon-stone.png",
+        "stone_fairy": "/img/items/shiny-stone.png",
+        "shiny_stone": "/img/items/shiny-stone.png",
+        "stone_rock": "/img/items/hard-stone.png",
+        "stone_steel": "/img/items/metal-coat.png",
+        "stone_dragon": "/img/items/dragon-scale.png",
+        "stone_ghost": "/img/items/dusk-stone.png",
+        "stone_normal": "/img/items/oval-stone.png"
+    };
+
+    if (directMap[cleanId]) return directMap[cleanId];
+    if (cleanId.startsWith("stone_")) {
+        const raw = cleanId.replace("stone_", "");
+        return `/img/items/${raw}-stone.png`;
     }
-    if (itemId.includes("potion")) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/potion.png";
-    if (itemId.includes("revive")) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/revive.png";
-    if (itemId.includes("candy")) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png";
-    return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
+    if (cleanId.startsWith("capsule_") || cleanId.includes("ball")) {
+        const raw = cleanId.replace("capsule_", "").replace("ball_", "");
+        return `/img/items/${raw}-ball.png`;
+    }
+    return "/img/items/poke-ball.png";
 }
 
 function useBagItem(itemId) {
@@ -403,7 +493,7 @@ function renderGoldShop() {
             <div class="gold-shop-card">
                 <div class="shop-card-top">
                     <div class="shop-card-icon">
-                        <img src="${iconUrl}" alt="${it.name}" style="max-width:32px;max-height:32px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';">
+                        <img src="${iconUrl}" alt="${it.name}" style="max-width:32px;max-height:32px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='/img/items/poke-ball.png';">
                     </div>
                     <div class="shop-card-meta">
                         <div class="shop-card-name">${it.name}</div>
@@ -737,7 +827,7 @@ function renderMarketListings(listings) {
         } else {
             const itemSprite = getItemSpriteUrl(l.item_id || "item", { sprite_url: null });
             iconHtml = `
-                <img src="${itemSprite}" alt="${l.title}" style="max-width:32px;max-height:32px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';">
+                <img src="${itemSprite}" alt="${l.title}" style="max-width:32px;max-height:32px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='/img/items/poke-ball.png';">
             `;
             metaHtml = `
                 <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">

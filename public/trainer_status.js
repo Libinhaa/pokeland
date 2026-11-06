@@ -5,25 +5,25 @@
 let CURRENT_STATUS_SUB = "trainer";
 
 const KANTO_BADGES = [
-    { id: "boulder", name: "Boulder Badge", city: "Pewter City", leader: "Brock", type: "Pedra", icon: "🗿", color: "#78716c", unlocked: true },
-    { id: "cascade", name: "Cascade Badge", city: "Cerulean City", leader: "Misty", type: "Água", icon: "💧", color: "#38bdf8", unlocked: true },
-    { id: "thunder", name: "Thunder Badge", city: "Vermilion City", leader: "Lt. Surge", type: "Elétrico", icon: "⚡", color: "#facc15", unlocked: true },
-    { id: "rainbow", name: "Rainbow Badge", city: "Celadon City", leader: "Erika", type: "Planta", icon: "🌈", color: "#4ade80", unlocked: true },
-    { id: "soul", name: "Soul Badge", city: "Fuchsia City", leader: "Koga", type: "Veneno", icon: "💜", color: "#c084fc", unlocked: true },
-    { id: "marsh", name: "Marsh Badge", city: "Saffron City", leader: "Sabrina", type: "Psíquico", icon: "🔮", color: "#f472b6", unlocked: true },
-    { id: "volcano", name: "Volcano Badge", city: "Cinnabar Island", leader: "Blaine", type: "Fogo", icon: "🔥", color: "#fb923c", unlocked: true },
-    { id: "earth", name: "Earth Badge", city: "Viridian City", leader: "Giovanni", type: "Terra", icon: "🌍", color: "#a16207", unlocked: true },
+    { id: "boulder", name: "Boulder Badge", city: "Pewter City", leader: "Brock", type: "Pedra", sprite: "/img/badges/badge_boulder.png", color: "#78716c", unlocked: true },
+    { id: "cascade", name: "Cascade Badge", city: "Cerulean City", leader: "Misty", type: "Água", sprite: "/img/badges/badge_cascade.png", color: "#38bdf8", unlocked: true },
+    { id: "thunder", name: "Thunder Badge", city: "Vermilion City", leader: "Lt. Surge", type: "Elétrico", sprite: "/img/badges/badge_thunder.png", color: "#facc15", unlocked: true },
+    { id: "rainbow", name: "Rainbow Badge", city: "Celadon City", leader: "Erika", type: "Planta", sprite: "/img/badges/badge_rainbow.png", color: "#4ade80", unlocked: true },
+    { id: "soul", name: "Soul Badge", city: "Fuchsia City", leader: "Koga", type: "Veneno", sprite: "/img/badges/badge_soul.png", color: "#c084fc", unlocked: true },
+    { id: "marsh", name: "Marsh Badge", city: "Saffron City", leader: "Sabrina", type: "Psíquico", sprite: "/img/badges/badge_marsh.png", color: "#f472b6", unlocked: true },
+    { id: "volcano", name: "Volcano Badge", city: "Cinnabar Island", leader: "Blaine", type: "Fogo", sprite: "/img/badges/badge_volcano.png", color: "#fb923c", unlocked: true },
+    { id: "earth", name: "Earth Badge", city: "Viridian City", leader: "Giovanni", type: "Terra", sprite: "/img/badges/badge_earth.png", color: "#a16207", unlocked: true },
 ];
 
 const JOHTO_BADGES = [
-    { id: "zephyr", name: "Zephyr Badge", city: "Violet City", leader: "Falkner", type: "Voador", icon: "🪶", color: "#93c5fd", unlocked: true },
-    { id: "hive", name: "Hive Badge", city: "Azalea Town", leader: "Bugsy", type: "Inseto", icon: "🪲", color: "#a3e635", unlocked: true },
-    { id: "plain", name: "Plain Badge", city: "Goldenrod City", leader: "Whitney", type: "Normal", icon: "💎", color: "#e2e8f0", unlocked: true },
-    { id: "fog", name: "Fog Badge", city: "Ecruteak City", leader: "Morty", type: "Fantasma", icon: "👻", color: "#818cf8", unlocked: true },
-    { id: "storm", name: "Storm Badge", city: "Cianwood City", leader: "Chuck", type: "Lutador", icon: "🥊", color: "#f87171", unlocked: false },
-    { id: "mineral", name: "Mineral Badge", city: "Olivine City", leader: "Jasmine", type: "Aço", icon: "🛡️", color: "#94a3b8", unlocked: false },
-    { id: "glacier", name: "Glacier Badge", city: "Mahogany Town", leader: "Pryce", type: "Gelo", icon: "❄️", color: "#67e8f9", unlocked: false },
-    { id: "rising", name: "Rising Badge", city: "Blackthorn City", leader: "Clair", type: "Dragão", icon: "🐉", color: "#6366f1", unlocked: false },
+    { id: "zephyr", name: "Zephyr Badge", city: "Violet City", leader: "Falkner", type: "Voador", sprite: "/img/badges/badge_zephyr.png", color: "#93c5fd", unlocked: true },
+    { id: "hive", name: "Hive Badge", city: "Azalea Town", leader: "Bugsy", type: "Inseto", sprite: "/img/badges/badge_hive.png", color: "#a3e635", unlocked: true },
+    { id: "plain", name: "Plain Badge", city: "Goldenrod City", leader: "Whitney", type: "Normal", sprite: "/img/badges/badge_plain.png", color: "#e2e8f0", unlocked: true },
+    { id: "fog", name: "Fog Badge", city: "Ecruteak City", leader: "Morty", type: "Fantasma", sprite: "/img/badges/badge_fog.png", color: "#818cf8", unlocked: true },
+    { id: "storm", name: "Storm Badge", city: "Cianwood City", leader: "Chuck", type: "Lutador", sprite: "/img/badges/badge_storm.png", color: "#f87171", unlocked: false },
+    { id: "mineral", name: "Mineral Badge", city: "Olivine City", leader: "Jasmine", type: "Aço", sprite: "/img/badges/badge_mineral.png", color: "#94a3b8", unlocked: false },
+    { id: "glacier", name: "Glacier Badge", city: "Mahogany Town", leader: "Pryce", type: "Gelo", sprite: "/img/badges/badge_glacier.png", color: "#67e8f9", unlocked: false },
+    { id: "rising", name: "Rising Badge", city: "Blackthorn City", leader: "Clair", type: "Dragão", sprite: "/img/badges/badge_rising.png", color: "#6366f1", unlocked: false },
 ];
 
 function switchStatusSubmenu(subTab) {
@@ -86,7 +86,7 @@ function renderTrainerProfileSection() {
         <div class="status-trainer-hero-card">
             <div class="trainer-avatar-col">
                 <div class="trainer-avatar-big-box">
-                    <img id="status-hero-avatar-img" src="${heroAvatarSrc}" alt="Trainer" style="image-rendering:pixelated;width:76px;height:76px;object-fit:contain;" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/red.png';">
+                    <img id="status-hero-avatar-img" src="${heroAvatarSrc}" alt="Trainer" style="image-rendering:pixelated;width:76px;height:76px;object-fit:contain;" onerror="this.onerror=null;this.src='/img/trainers/hgss_ethan.png';">
                     <span class="trainer-online-badge">ONLINE</span>
                 </div>
                 <button class="btn btn-blue" onclick="openTrainerAvatarSelector()" style="width:100%;margin-top:8px;font-size:11px;padding:6px;">
@@ -249,8 +249,8 @@ function renderTrainerBadgesSection() {
 
     const kantoHtml = KANTO_BADGES.map(b => `
         <div class="badge-slot-card ${b.unlocked ? 'is-unlocked' : 'is-locked'}">
-            <div class="badge-icon-box" style="border-color:${b.color};box-shadow: 0 0 12px ${b.color}44;">
-                <span style="font-size:24px;">${b.icon}</span>
+            <div class="badge-icon-box" style="border-color:${b.color};box-shadow: 0 0 14px ${b.color}55;">
+                <img src="${b.sprite || `/img/badges/badge_${b.id}.png`}" class="badge-pixel-img" style="width:36px;height:36px;image-rendering:pixelated;object-fit:contain;" alt="${b.name}">
             </div>
             <div class="badge-name">${b.name}</div>
             <div class="badge-sub">${b.city} • ${b.leader}</div>
@@ -260,8 +260,8 @@ function renderTrainerBadgesSection() {
 
     const johtoHtml = JOHTO_BADGES.map(b => `
         <div class="badge-slot-card ${b.unlocked ? 'is-unlocked' : 'is-locked'}">
-            <div class="badge-icon-box" style="border-color:${b.color};box-shadow: 0 0 12px ${b.color}44;">
-                <span style="font-size:24px;">${b.icon}</span>
+            <div class="badge-icon-box" style="border-color:${b.color};box-shadow: 0 0 14px ${b.color}55;">
+                <img src="${b.sprite || `/img/badges/badge_${b.id}.png`}" class="badge-pixel-img" style="width:36px;height:36px;image-rendering:pixelated;object-fit:contain;" alt="${b.name}">
             </div>
             <div class="badge-name">${b.name}</div>
             <div class="badge-sub">${b.city} • ${b.leader}</div>

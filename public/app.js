@@ -838,30 +838,11 @@ function getCachedImage(url) {
 }
 
 function getPixelBallSvgDataUri(capId) {
-    const colors = {
-        capsule_basic: "#ef4444",
-        capsule_great: "#3b82f6",
-        capsule_super: "#10b981",
-        capsule_ultra: "#eab308",
-        "e834a843-486a-4f38-95c4-cfda5febe4a5": "#ec4899",
-        capsule_master: "#9333ea",
-        capsule_net: "#06b6d4",
-        capsule_dusk: "#16a34a",
-        capsule_magu: "#dc2626",
-        capsule_janguru: "#15803d",
-    };
-    const topCol = colors[capId] || "#ef4444";
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
-        <rect x="4" y="1" width="8" height="2" fill="#111"/>
-        <rect x="2" y="3" width="12" height="5" fill="${topCol}"/>
-        <rect x="1" y="5" width="14" height="3" fill="${topCol}"/>
-        <rect x="1" y="8" width="14" height="2" fill="#111"/>
-        <rect x="2" y="10" width="12" height="4" fill="#f8fafc"/>
-        <rect x="4" y="14" width="8" height="1" fill="#111"/>
-        <rect x="6" y="6" width="4" height="4" fill="#111"/>
-        <rect x="7" y="7" width="2" height="2" fill="#fff"/>
-    </svg>`;
-    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    if (typeof getItemSpriteUrl === "function") {
+        return getItemSpriteUrl(capId);
+    }
+    const clean = String(capId || "capsule_basic").replace("capsule_", "").replace("ball_", "");
+    return `/img/items/${clean}-ball.png`;
 }
 
 function changeGbaSpriteVersion(newVer) {
@@ -4754,7 +4735,7 @@ function renderCapsuleDock(force = false) {
             const chanceRating = chance >= 98 ? "Garantida" : chance >= 60 ? "Alta" : chance >= 25 ? "Média" : "Baixa";
             return `<div class="hk-slot poke-ball-slot" onclick="throwCapsule('${c.id}')" title="${c.name} - ${c.cond_label} (${chance.toFixed(1)}% chance)" style="${qty <= 0 ? "opacity:0.45;" : ""}">
                 <div class="ball-slot-icon-box">
-                    <img class="pixel-item-icon" src="${svgUri}" onerror="this.onerror=null;this.src='${ballSprite}';" alt="${c.name}" style="width:24px;height:24px;">
+                    <img class="pixel-item-icon" src="${ballSprite || svgUri}" onerror="this.onerror=null;this.src='/img/items/poke-ball.png';" alt="${c.name}" style="width:24px;height:24px;image-rendering:pixelated;">
                     <span class="ball-slot-qty">×${qty}</span>
                 </div>
                 <div style="flex:1;min-width:0;">
@@ -8488,98 +8469,188 @@ function challengeHubPlayerDuel(playerId) {
 // 32-BIT PIXEL ART ANIME TRAINER AVATAR ENGINE (10 FAMOUS ANIME MODELS)
 // =========================================================================
 
-const ANIME_TRAINER_MODELS = [
+// =========================================================================
+// OFFICIAL STANDARDIZED TRAINER SKINS ARCHITECTURE FOR POKÉLAND
+// =========================================================================
+const TRAINER_SKINS = [
     {
-        id: "ethan_gold",
+        id: "ethan",
+        aliases: ["ethan_gold", "hgss_ethan", "trainer_male"],
         name: "Ethan / Gold",
         anime: "Pokémon HeartGold (Oficial)",
-        desc: "Protagonista oficial de Pokémon HeartGold. Boné com viseira para trás, jaqueta esportiva azul e bolsa transversal.",
-        sheetUrl: "/img/trainers/pp_TrainerMale02.png",
+        title: "Campeão de Johto (New Bark)",
+        region: "Johto",
+        gender: "male",
+        desc: "Protagonista oficial de HeartGold. Boné esportivo invertido, jaqueta e bolsa de viagem.",
         portraitUrl: "/img/trainers/hgss_ethan.png",
+        sheetUrl: "/img/trainers/pp_TrainerMale02.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerMale02.png",
         topMain: "#2563eb",
     },
     {
-        id: "lyra_ss",
+        id: "lyra",
+        aliases: ["lyra_ss", "hgss_lyra", "lyra_female", "trainer_female"],
         name: "Lyra / Kotone",
         anime: "Pokémon SoulSilver (Oficial)",
-        desc: "Protagonista feminina oficial de SoulSilver. Chapéu branco de palha, macacão jeans, maria-chiquinha e bolsa Marill.",
-        sheetUrl: "/img/trainers/pp_TrainerFemale03.png",
+        title: "Heroína de Johto (New Bark)",
+        region: "Johto",
+        gender: "female",
+        desc: "Protagonista oficial de SoulSilver. Chapéu branco de palha, macacão jeans e maria-chiquinha.",
         portraitUrl: "/img/trainers/hgss_lyra.png",
+        sheetUrl: "/img/trainers/pp_TrainerFemale03.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerFemale03.png",
         topMain: "#ec4899",
     },
     {
-        id: "red_champion",
-        name: "Red (Campeão Mt. Silver)",
+        id: "red",
+        aliases: ["red_champion", "hgss_red", "red_classic", "red_ash"],
+        name: "Red Campeão",
         anime: "Pokémon HGSS (Mt. Silver)",
-        desc: "O lendário Campeão no pico do Mt. Silver em HeartGold. Boné clássico vermelho, jaqueta e olhar determinado.",
-        sheetUrl: "/img/trainers/pp_TrainerMale01.png",
+        title: "Lenda Viva do Mt. Silver",
+        region: "Kanto",
+        gender: "male",
+        desc: "O lendário Campeão no cume do Mt. Silver. Boné clássico vermelho, jaqueta e olhar determinado.",
         portraitUrl: "/img/trainers/hgss_red.png",
+        sheetUrl: "/img/trainers/pp_TrainerMale01.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerMale01.png",
         topMain: "#dc2626",
     },
     {
-        id: "leaf_green",
-        name: "Leaf / Green",
-        anime: "Pokémon FireRed / HGSS",
-        desc: "Treinadora de Kanto com chapéu branco clássico, bolsa de ombro e visual icônico de exploração.",
-        sheetUrl: "/img/trainers/pp_TrainerFemale01.png",
-        portraitUrl: "/img/trainers/icon_pp_TrainerFemale01.png",
-        topMain: "#059669",
+        id: "blue",
+        aliases: ["blue_rival", "hgss_blue"],
+        name: "Blue Rival",
+        anime: "Pokémon HGSS (Viridian Gym)",
+        title: "Líder de Ginásio de Viridian",
+        region: "Kanto",
+        gender: "male",
+        desc: "O eterno rival e gênio tático de Kanto. Postura imponente e domínio estratégico supremo.",
+        portraitUrl: "/img/trainers/hgss_blue.png",
+        sheetUrl: "/img/trainers/pp_TrainerMale03.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerMale03.png",
+        topMain: "#7c3aed",
     },
     {
-        id: "cynthia_champ",
-        name: "Cynthia (Campeã Sinjoh)",
-        anime: "Evento Sinjoh HGSS",
-        desc: "A imbatível Campeã de Sinnoh nas Ruínas Sinjoh de HeartGold. Sobretudo negro e enfeites de Lucario.",
-        sheetUrl: "/img/trainers/pp_TrainerFemale02.png",
-        portraitUrl: "/img/trainers/hgss_cynthia.png",
-        topMain: "#1e1b4b",
+        id: "silver",
+        aliases: ["silver_rival", "hgss_silver"],
+        name: "Silver Rival",
+        anime: "Pokémon HGSS (Rival)",
+        title: "Desafiante de Johto",
+        region: "Johto",
+        gender: "male",
+        desc: "Treinador solitário de cabelos escarlates e determinação feroz em busca da verdadeira força.",
+        portraitUrl: "/img/trainers/hgss_silver.png",
+        sheetUrl: "/img/trainers/pp_TrainerMale05.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerMale05.png",
+        topMain: "#b91c1c",
     },
     {
-        id: "steven_stone",
-        name: "Steven Stone",
-        anime: "Campeão Hoenn (HGSS)",
-        desc: "Campeão colecionador de pedras raras que visita o Museu de Pewter em HGSS. Terno nobre e anéis de aço.",
-        sheetUrl: "/img/trainers/pp_TrainerMale06.png",
-        portraitUrl: "/img/trainers/icon_pp_TrainerMale06.png",
-        topMain: "#0284c7",
-    },
-    {
-        id: "lance_dragon",
-        name: "Lance (Mestre dos Dragões)",
+        id: "lance",
+        aliases: ["lance_dragon", "hgss_lance"],
+        name: "Lance Mestre Dragão",
         anime: "Campeão da Liga Johto HGSS",
-        desc: "Campeão da Liga Pokémon em HeartGold. Capa nobre de dragões, traje de batalha e domínio sobre Dragonite.",
-        sheetUrl: "/img/trainers/pp_TrainerMale04.png",
+        title: "Campeão do Planalto Índigo",
+        region: "Kanto / Johto",
+        gender: "male",
+        desc: "Campeão da Liga Pokémon em HeartGold. Capa nobre cerimonial e domínio sobre Dragonite.",
         portraitUrl: "/img/trainers/hgss_lance.png",
+        sheetUrl: "/img/trainers/pp_TrainerMale04.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerMale04.png",
         topMain: "#ea580c",
     },
     {
-        id: "clair_gym",
-        name: "Clair (Líder Blackthorn)",
-        anime: "Ginásio de Dragão HGSS",
-        desc: "Última líder de ginásio de Johto em HeartGold. Traje cerimonial azul e capa dos mestres de dragão.",
-        sheetUrl: "/img/trainers/pp_TrainerFemale04.png",
+        id: "cynthia",
+        aliases: ["cynthia_champ", "hgss_cynthia"],
+        name: "Cynthia Campeã",
+        anime: "Evento Sinjoh HGSS",
+        title: "Campeã Suprema de Sinnoh",
+        region: "Sinnoh",
+        gender: "female",
+        desc: "A imbatível Campeã nas Ruínas Sinjoh. Sobretudo negro, enfeites de Lucario e Garchomp.",
+        portraitUrl: "/img/trainers/hgss_cynthia.png",
+        sheetUrl: "/img/trainers/pp_TrainerFemale02.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerFemale02.png",
+        topMain: "#1e1b4b",
+    },
+    {
+        id: "jasmine",
+        aliases: ["jasmine_steel", "hgss_jasmine"],
+        name: "Jasmine Líder de Aço",
+        anime: "Ginásio de Olivine HGSS",
+        title: "Líder de Aço de Olivine",
+        region: "Johto",
+        gender: "female",
+        desc: "Líder bondosa do Farol e Ginásio de Olivine. Defesa impenetrável com Steelix.",
+        portraitUrl: "/img/trainers/hgss_jasmine.png",
+        sheetUrl: "/img/trainers/pp_TrainerFemale05.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerFemale05.png",
+        topMain: "#64748b",
+    },
+    {
+        id: "clair",
+        aliases: ["clair_gym", "hgss_clair"],
+        name: "Clair Líder Dragão",
+        anime: "Ginásio Blackthorn HGSS",
+        title: "Mestra dos Dragões de Johto",
+        region: "Johto",
+        gender: "female",
+        desc: "Última líder de ginásio de Johto. Traje azul cobalto e capa cerimonial dos dragões.",
         portraitUrl: "/img/trainers/hgss_clair.png",
+        sheetUrl: "/img/trainers/pp_TrainerFemale04.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerFemale04.png",
         topMain: "#3b82f6",
     },
     {
-        id: "tanjiro_slayer",
-        name: "Tanjiro Kamado",
-        anime: "Demon Slayer (Evento)",
-        desc: "Visual crossover oficial PokePixel. Haori quadriculado verde e preto, brincos Hanafuda e Katana Nichirin.",
-        sheetUrl: "/img/trainers/pp_TrainerMale15.png",
-        portraitUrl: "/img/trainers/icon_pp_TrainerMale15.png",
-        topMain: "#10b981",
+        id: "morty",
+        aliases: ["morty_ghost", "hgss_morty"],
+        name: "Morty Líder Fantasma",
+        anime: "Ginásio Ecruteak HGSS",
+        title: "Vidente da Torre Queimada",
+        region: "Johto",
+        gender: "male",
+        desc: "Místico de Ecruteak com cachecol roxo e sintonia com os Pokémon espectrais e Ho-Oh.",
+        portraitUrl: "/img/trainers/hgss_morty.png",
+        sheetUrl: "/img/trainers/pp_TrainerMale07.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerMale07.png",
+        topMain: "#6366f1",
     },
     {
-        id: "rengoku_flame",
-        name: "Kyojuro Rengoku",
-        anime: "Demon Slayer (Evento)",
-        desc: "Hashira das Chamas oficial PokePixel. Capa com chamas ardentes, olhos de fogo e postura imponente.",
-        sheetUrl: "/img/trainers/pp_TrainerMale16.png",
-        portraitUrl: "/img/trainers/icon_pp_TrainerMale16.png",
-        topMain: "#f59e0b",
+        id: "leaf",
+        aliases: ["leaf_green"],
+        name: "Leaf / Green",
+        anime: "Pokémon FireRed / HGSS",
+        title: "Exploradora de Kanto",
+        region: "Kanto",
+        gender: "female",
+        desc: "Treinadora clássica com chapéu branco, bolsa de viagem e espírito aventureiro.",
+        portraitUrl: "/img/trainers/icon_pp_TrainerFemale01.png",
+        sheetUrl: "/img/trainers/pp_TrainerFemale01.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerFemale01.png",
+        topMain: "#059669",
     },
+    {
+        id: "steven",
+        aliases: ["steven_stone"],
+        name: "Steven Stone",
+        anime: "Campeão Hoenn (HGSS)",
+        title: "Campeão Colecionador de Hoenn",
+        region: "Hoenn",
+        gender: "male",
+        desc: "Nobre colecionador de pedras raras e anéis de aço que visita Pewter City em HGSS.",
+        portraitUrl: "/img/trainers/icon_pp_TrainerMale06.png",
+        sheetUrl: "/img/trainers/pp_TrainerMale06.png",
+        iconUrl: "/img/trainers/icon_pp_TrainerMale06.png",
+        topMain: "#0284c7",
+    }
 ];
+
+function getStandardTrainerSkin(idOrAlias) {
+    if (!idOrAlias) return TRAINER_SKINS[0];
+    const key = String(idOrAlias).toLowerCase().trim();
+    const found = TRAINER_SKINS.find(s => s.id === key || (s.aliases && s.aliases.includes(key)));
+    return found || TRAINER_SKINS[0];
+}
+
+const ANIME_TRAINER_MODELS = TRAINER_SKINS;
 
 const _trainerSpriteCanvasCache = {};
 const _trainerDataUrlCache = {};
@@ -9393,22 +9464,17 @@ function drawOfficialCharacterSprite(ctx, sheetUrl, px, py, dir = 0, frame = 0, 
 }
 
 function getTrainerModelDataUrl(modelId) {
-    const m = ANIME_TRAINER_MODELS.find((x) => x.id === modelId) || ANIME_TRAINER_MODELS[0];
-    if (m && m.portraitUrl) {
-        return m.portraitUrl;
+    const s = getStandardTrainerSkin(modelId);
+    if (s && s.portraitUrl) {
+        return s.portraitUrl;
     }
-    const key = `hd64_${modelId}`;
-    if (_trainerDataUrlCache[key]) return _trainerDataUrlCache[key];
-    const c = get32BitAnimeTrainerCanvas(modelId, 0, 0);
-    const url = c.toDataURL("image/png");
-    _trainerDataUrlCache[key] = url;
-    return url;
+    return "/img/trainers/hgss_ethan.png";
 }
 
 function draw32BitAnimeTrainerOnCanvas(ctx, modelId, px, py, dir = 0, frame = 0, isWalking = false) {
-    const m = ANIME_TRAINER_MODELS.find((x) => x.id === modelId) || ANIME_TRAINER_MODELS[0];
-    if (m && m.sheetUrl) {
-        const ok = drawOfficialCharacterSprite(ctx, m.sheetUrl, px, py, dir, frame, isWalking);
+    const s = getStandardTrainerSkin(modelId);
+    if (s && s.sheetUrl) {
+        const ok = drawOfficialCharacterSprite(ctx, s.sheetUrl, px, py, dir, frame, isWalking);
         if (ok) return;
     }
 

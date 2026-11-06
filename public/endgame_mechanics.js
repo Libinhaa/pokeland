@@ -29,14 +29,14 @@ const ENDGAME_STATE = {
         ]
     },
     gyms: [
-        { id: "pewter", name: "Ginásio de Pewter", leader: "Brock", type: "Pedra", badge: "Boulder Badge", minLv: 15, leaderSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/brock.png", defeated: true, ace: "Onix Lv.16" },
-        { id: "cerulean", name: "Ginásio de Cerulean", leader: "Misty", type: "Água", badge: "Cascade Badge", minLv: 24, leaderSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/misty.png", defeated: true, ace: "Starmie Lv.25" },
-        { id: "vermilion", name: "Ginásio de Vermilion", leader: "Lt. Surge", type: "Elétrico", badge: "Thunder Badge", minLv: 32, leaderSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/surge.png", defeated: true, ace: "Raichu Lv.34" },
-        { id: "celadon", name: "Ginásio de Celadon", leader: "Erika", type: "Planta", badge: "Rainbow Badge", minLv: 40, leaderSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/erika.png", defeated: true, ace: "Vileplume Lv.42" },
-        { id: "fuchsia", name: "Ginásio de Fuchsia", leader: "Koga", type: "Veneno", badge: "Soul Badge", minLv: 50, leaderSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/koga.png", defeated: true, ace: "Venomoth Lv.52" },
-        { id: "saffron", name: "Ginásio de Saffron", leader: "Sabrina", type: "Psíquico", badge: "Marsh Badge", minLv: 58, leaderSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/sabrina.png", defeated: true, ace: "Alakazam Lv.60" },
-        { id: "cinnabar_gym", name: "Ginásio de Cinnabar", leader: "Blaine", type: "Fogo", badge: "Volcano Badge", minLv: 65, leaderSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/blaine.png", defeated: true, ace: "Magmar Lv.68" },
-        { id: "viridian", name: "Ginásio de Viridian", leader: "Giovanni", type: "Terra", badge: "Earth Badge", minLv: 75, leaderSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/giovanni.png", defeated: true, ace: "Rhydon Lv.78" },
+        { id: "pewter", name: "Ginásio de Pewter", leader: "Brock", type: "Pedra", badge: "Boulder Badge", minLv: 15, leaderSprite: "/img/trainers/leader_brock.png", defeated: true, ace: "Onix Lv.16" },
+        { id: "cerulean", name: "Ginásio de Cerulean", leader: "Misty", type: "Água", badge: "Cascade Badge", minLv: 24, leaderSprite: "/img/trainers/leader_misty.png", defeated: true, ace: "Starmie Lv.25" },
+        { id: "vermilion", name: "Ginásio de Vermilion", leader: "Lt. Surge", type: "Elétrico", badge: "Thunder Badge", minLv: 32, leaderSprite: "/img/trainers/leader_surge.png", defeated: true, ace: "Raichu Lv.34" },
+        { id: "celadon", name: "Ginásio de Celadon", leader: "Erika", type: "Planta", badge: "Rainbow Badge", minLv: 40, leaderSprite: "/img/trainers/leader_erika.png", defeated: true, ace: "Vileplume Lv.42" },
+        { id: "fuchsia", name: "Ginásio de Fuchsia", leader: "Koga", type: "Veneno", badge: "Soul Badge", minLv: 50, leaderSprite: "/img/trainers/leader_koga.png", defeated: true, ace: "Venomoth Lv.52" },
+        { id: "saffron", name: "Ginásio de Saffron", leader: "Sabrina", type: "Psíquico", badge: "Marsh Badge", minLv: 58, leaderSprite: "/img/trainers/leader_sabrina.png", defeated: true, ace: "Alakazam Lv.60" },
+        { id: "cinnabar_gym", name: "Ginásio de Cinnabar", leader: "Blaine", type: "Fogo", badge: "Volcano Badge", minLv: 65, leaderSprite: "/img/trainers/leader_blaine.png", defeated: true, ace: "Magmar Lv.68" },
+        { id: "viridian", name: "Ginásio de Viridian", leader: "Giovanni", type: "Terra", badge: "Earth Badge", minLv: 75, leaderSprite: "/img/trainers/leader_giovanni.png", defeated: true, ace: "Rhydon Lv.78" },
     ],
     eliteFour: {
         currentStage: 1, // 1 to 5
@@ -308,7 +308,7 @@ function renderGymsSection() {
     const gymsHtml = ENDGAME_STATE.gyms.map(gym => `
         <div class="gym-challenge-card">
             <div style="display:flex;gap:12px;align-items:center;">
-                <img src="${gym.leaderSprite}" alt="${gym.leader}" style="width:52px;height:52px;object-fit:contain;image-rendering:pixelated;" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/red.png';">
+                <img src="${gym.leaderSprite}" alt="${gym.leader}" style="width:52px;height:52px;object-fit:contain;image-rendering:pixelated;" onerror="this.onerror=null;this.src='/img/trainers/leader_brock.png';">
                 <div style="flex:1;">
                     <div style="font-weight:800;font-size:14px;color:#f8fafc;">${gym.name}</div>
                     <div style="font-size:11.5px;color:#94a3b8;">Líder: <strong style="color:#e2e8f0;">${gym.leader}</strong> (${gym.type})</div>
