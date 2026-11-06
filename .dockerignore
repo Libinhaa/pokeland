@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+*.log
+scratch/
+test_*.py
+test_*.js
+check_*.js

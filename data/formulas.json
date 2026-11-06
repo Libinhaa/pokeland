@@ -1,0 +1,996 @@
+{
+  "rules": {
+    "spawn": {
+      "shiny_chance": 0.00048828125,
+      "rarity_luck_base": 1,
+      "rarity_luck_max": 5,
+      "wild_hp_scale": 1.25,
+      "normal_quality_retention": {
+        "epic": 0.25,
+        "legendary": 0.2,
+        "mythical": 0.5
+      },
+      "shiny_pity": {
+        "enabled": true,
+        "step_encounters": 1000,
+        "step_bonus": 0.1,
+        "max_multiplier": 3
+      }
+    },
+    "hunt": {
+      "shiny_evolution": {
+        "enabled": true,
+        "stone_drop_chance": 0.01,
+        "material_drop_chance": 0.001
+      },
+      "capture_window_seconds": 25,
+      "change_cooldown_seconds": 30,
+      "gold_multiplier": 0.1,
+      "master_key_drop_chance": 0.002,
+      "scaled_mode": {
+        "enabled": true,
+        "min_trainer_level": 350,
+        "level": 350
+      }
+    },
+    "breeding": {
+      "unlock_level": 60,
+      "stone_quantity": 10,
+      "kills_required": 3000,
+      "free_bonus_min": 0.01,
+      "free_bonus_max": 0.04,
+      "pheromone_bonus_min": 0.15,
+      "pheromone_bonus_max": 0.3,
+      "iv_improve_chance": 0.05,
+      "shiny_chance": 0.000244140625
+    },
+    "creatures": {
+      "storage_free": 100,
+      "storage_premium": 2000,
+      "iv_normal_material_cost": 2000,
+      "iv_shiny_material_cost": 5000,
+      "iv_normal_gold_cost": 10000000,
+      "iv_shiny_gold_cost": 50000000
+    },
+    "starter": {
+      "initial_gold": 500,
+      "trainer_level": 1,
+      "creature_level": 5,
+      "species_ids": [
+        "bulbasaur",
+        "charmander",
+        "squirtle",
+        "treecko",
+        "torchic",
+        "mudkip"
+      ],
+      "items": {
+        "310": 1,
+        "311": 100,
+        "capsule_basic": 30,
+        "potion_great": 500,
+        "revive_basic": 5
+      }
+    },
+    "progression": {
+      "yield_per_level": 0.15,
+      "exp_bands": [
+        {
+          "level": 100,
+          "multiplier": 2
+        },
+        {
+          "level": 150,
+          "multiplier": 4
+        },
+        {
+          "level": 200,
+          "multiplier": 10
+        },
+        {
+          "level": 500,
+          "multiplier": 20
+        }
+      ],
+      "trainer_exp": {
+        "after_level": 400,
+        "multiplier": 2
+      }
+    },
+    "arena": {
+      "timezone": "America/Sao_Paulo",
+      "daily_start": "20:00",
+      "daily_end": "22:00"
+    },
+    "stamina": {
+      "capacity_minutes": 480,
+      "accrual_numerator": 1,
+      "accrual_denominator": 2
+    },
+    "events": {
+      "rampage_max_rounds": 12,
+      "world_end_seconds": 300,
+      "credits_seconds": 120
+    },
+    "raid": {
+      "boss_speed": 1.75,
+      "creature_speed": 4,
+      "aggro_range": 15,
+      "leash_range": 18,
+      "attack_range": 2.25,
+      "retarget_ms": 2000,
+      "cast_ms": 2000,
+      "damage_percent": 75,
+      "strike_percent": 30,
+      "combo_strike_percent": 37,
+      "combo_chance": 0.5,
+      "radius": 7,
+      "inner_radius": 3,
+      "width": 5,
+      "length": 18,
+      "half_angle": 0.6283185307179586
+    },
+    "guild": {
+      "creation_diamonds": 15,
+      "service_prices": {
+        "guild_emblem_token": 40,
+        "guild_rename_token": 50,
+        "trainer_gender_token": 30,
+        "trainer_rename_token": 30
+      }
+    }
+  },
+  "exp_scale": 54,
+  "combat": {
+    "mechanics": {
+      "poison_hp_fraction": 0.125,
+      "burn_hp_fraction": 0.0625,
+      "confusion_hp_fraction": 0.125,
+      "burn_attack_multiplier": 0.5,
+      "paralysis_speed_multiplier": 0.5,
+      "confusion_chance_percent": 33,
+      "dungeon_paralysis_percent": 25,
+      "dungeon_thaw_percent": 20,
+      "stab": 1.5,
+      "minimum_power": 40,
+      "action_interval_ms": 1000,
+      "cooldown_min_ms": 1500,
+      "cooldown_max_ms": 60000,
+      "effective_cooldown_min_ms": 600,
+      "legacy_cooldown_base_ms": 2200,
+      "legacy_cooldown_per_power": 55,
+      "default_heal_percent": 50,
+      "default_drain_percent": 50,
+      "recovery_percent": 30,
+      "status_tick_ms": 2000,
+      "status_turn_ms": 2000,
+      "status_durations": {
+        "burn": 10000,
+        "confusion": 6000,
+        "flinch": 2000,
+        "freeze": 4000,
+        "paralysis": 8000,
+        "poison": 10000,
+        "root": 3000,
+        "sleep": 4000
+      },
+      "reinforced_power_bonus_percent": 30,
+      "reinforced_power_drain_bonus_percent": 30,
+      "reinforced_direct_heal_bonus_percent": 30
+    },
+    "formula_id": "pokemon-v1",
+    "formula_revision": 3,
+    "formula_fingerprint": "fd42034dd19d62488bbf499184f0c00e6a1972dcc3ed236cd25265deb445e7f0",
+    "level_gap_deadzone": 3,
+    "level_gap_penalty_cap": 20,
+    "level_gap_penalty_floor": 0.02,
+    "level_gap_penalty_exponent": 1.6,
+    "level_gap_bonus_cap": 20,
+    "level_gap_bonus_max": 1.5,
+    "crit_chance": 0.0625,
+    "crit_multiplier": 1.5,
+    "variance_floor": 0.85,
+    "variance_span": 0.15,
+    "move_power_multiplier": 3.35,
+    "move_cooldown_multiplier": 1,
+    "low_power_move_cooldown_multiplier": 1,
+    "low_power_move_threshold": 50
+  },
+  "quality": {
+    "iv_band_range_version": 3,
+    "quality_iv_bands": {
+      "common": {
+        "min": 18,
+        "max": 60
+      },
+      "epic": {
+        "min": 102,
+        "max": 144
+      },
+      "legendary": {
+        "min": 126,
+        "max": 168
+      },
+      "mythical": {
+        "min": 144,
+        "max": 186
+      },
+      "rare": {
+        "min": 78,
+        "max": 120
+      },
+      "uncommon": {
+        "min": 48,
+        "max": 90
+      },
+      "weak": {
+        "min": 6,
+        "max": 42
+      }
+    },
+    "iv_per_stat_min": 1,
+    "iv_per_stat_max": 31,
+    "normal_quality_bands": [
+      {
+        "label": "common",
+        "chance": 0.68,
+        "min": 1.0,
+        "max": 1.08
+      },
+      {
+        "label": "uncommon",
+        "chance": 0.22,
+        "min": 1.1,
+        "max": 1.22
+      },
+      {
+        "label": "rare",
+        "chance": 0.075,
+        "min": 1.25,
+        "max": 1.38
+      },
+      {
+        "label": "epic",
+        "chance": 0.02,
+        "min": 1.4,
+        "max": 1.55
+      },
+      {
+        "label": "legendary",
+        "chance": 0.0048,
+        "min": 1.6,
+        "max": 1.75
+      },
+      {
+        "label": "mythical",
+        "chance": 0.0002,
+        "min": 1.75,
+        "max": 2.1
+      }
+    ],
+    "shiny_quality_bands": [
+      {
+        "label": "uncommon",
+        "chance": 0.15,
+        "min": 1.3,
+        "max": 1.42
+      },
+      {
+        "label": "rare",
+        "chance": 0.4,
+        "min": 1.45,
+        "max": 1.58
+      },
+      {
+        "label": "epic",
+        "chance": 0.3,
+        "min": 1.6,
+        "max": 1.75
+      },
+      {
+        "label": "legendary",
+        "chance": 0.12,
+        "min": 1.8,
+        "max": 1.95
+      },
+      {
+        "label": "mythical",
+        "chance": 0.03,
+        "min": 2.2,
+        "max": 2.6
+      }
+    ],
+    "starter_stat_bonus": 1,
+    "hp_scale": 3,
+    "quality_exponent": 1.15,
+    "male_attack_bonus": 1.1,
+    "female_hp_bonus": 1.1,
+    "trainer_bonus_per_tier": 0.02,
+    "trainer_level_tier_size": 10,
+    "shiny_stat_bonus": 1,
+    "shiny_stat_exponent": 1,
+    "ditto_inheritance_percent": 75,
+    "shiny_ditto_inheritance_percent": 75
+  },
+  "profession": {
+    "mining_cycle_seconds_max": 12,
+    "mining_cycle_seconds_min": 4,
+    "breeding_duration_minutes": 120,
+    "breeding_item_id": "reference_strange_pheromone",
+    "breeding_item_quantity": 1,
+    "breeding_max_bonus": 0.3,
+    "breeding_higher_tier_base": 0.1,
+    "breeding_genetics_weight": 0.45,
+    "breeding_male_chance": 0.5,
+    "mining_level1_min_seconds": 10,
+    "mining_level1_max_seconds": 20,
+    "mining_level100_min_seconds": 5,
+    "mining_level100_max_seconds": 10,
+    "farming_level1_seconds": 60,
+    "farming_level100_seconds": 20,
+    "farming_action_seconds": 1,
+    "farming_node_count": 20,
+    "progression_xp_base": 6,
+    "progression_xp_exponent": 1.5,
+    "xp_per_action": 1,
+    "fishing_level100_min_seconds": 2,
+    "fishing_level100_max_seconds": 6,
+    "fishing_level1_min_seconds": 15,
+    "fishing_level1_max_seconds": 20,
+    "fishing_auto_fish_quantity": 1,
+    "fishing_xp_per_catch": 2,
+    "fishing_manual_yield_min": 2,
+    "fishing_manual_yield_max": 5,
+    "fishing_manual_xp": 1,
+    "fishing_bag_chance": 1e-05,
+    "fishing_manual_cooldown_seconds": 5,
+    "fishing_manual_cycle_ms": 2000,
+    "fishing_manual_target_basis": 2200,
+    "fishing_manual_tolerance_ms": 100,
+    "fishing_manual_round_seconds": 12,
+    "fishing_manual_block_minutes": 15,
+    "worker_endurance_level1_minutes": 120,
+    "worker_endurance_level100_minutes": 480,
+    "mining_worker_cycle_seconds": 120,
+    "mining_element_stone_chance": 0.002,
+    "farm_harvest_actions": 100,
+    "farm_grain_min": 2,
+    "farm_grain_max": 5,
+    "farm_berry_chance": 0.35,
+    "farm_rare_item_id": "farm_herb",
+    "farm_rare_drop_chance": 0.045,
+    "miner_level1_yield_min": 1,
+    "miner_level1_yield_max": 1,
+    "miner_level100_yield_min": 3,
+    "miner_level100_yield_max": 12,
+    "stone_fragment_item_id": "prof_stone_fragment",
+    "evolution_stone_cost": 100,
+    "forget_profession_item_id": "profession_memory_eraser",
+    "forget_profession_term": "Licença de Reespecialização",
+    "forget_profession_price": 100000,
+    "mining_map_id": 169,
+    "farming_map_id": 170,
+    "wild_evolution_stone_chance": 0,
+    "work_duration_minutes": 480,
+    "hunt_recovery_minutes": 120,
+    "hunt_credit_max_gap_seconds": 300,
+    "free_worker_slots": 1,
+    "vip_extra_worker_slots": 2,
+    "mining_license_item_id": "profession_mining_license",
+    "mining_license_gold_cost": 50000,
+    "mining_license_diamond_cost": 50,
+    "mining_license_drop_chance": 0,
+    "stone_element_item_cost": 25,
+    "stone_craft_gold_cost": 5000,
+    "first_evolution_gold_cost": 25000,
+    "second_evolution_gold_cost": 150000,
+    "work_efficiency_bands": [
+      {
+        "quality": "weak",
+        "min_basis": 7000,
+        "max_basis": 9000
+      },
+      {
+        "quality": "common",
+        "min_basis": 8500,
+        "max_basis": 11000
+      },
+      {
+        "quality": "uncommon",
+        "min_basis": 10000,
+        "max_basis": 12500
+      },
+      {
+        "quality": "rare",
+        "min_basis": 11500,
+        "max_basis": 14000
+      },
+      {
+        "quality": "epic",
+        "min_basis": 13000,
+        "max_basis": 15500
+      },
+      {
+        "quality": "legendary",
+        "min_basis": 14500,
+        "max_basis": 17500
+      },
+      {
+        "quality": "mythical",
+        "min_basis": 16500,
+        "max_basis": 20000
+      }
+    ],
+    "work_rewards": [
+      {
+        "profession_id": "miner",
+        "item_id": "prof_stone_fragment",
+        "name": "Fragmento de Pedra",
+        "min_quantity": 120,
+        "max_quantity": 220
+      },
+      {
+        "profession_id": "farmer",
+        "item_id": "farm_grain",
+        "name": "Grão Dourado",
+        "min_quantity": 90,
+        "max_quantity": 180
+      },
+      {
+        "profession_id": "farmer",
+        "item_id": "farm_berry",
+        "name": "Baga Nutritiva",
+        "min_quantity": 20,
+        "max_quantity": 55
+      }
+    ],
+    "element_materials": [
+      {
+        "element": "normal",
+        "item_id": "element_material_normal",
+        "name": "Essência Normal",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "fire",
+        "item_id": "element_material_fire",
+        "name": "Brasa Elemental",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "water",
+        "item_id": "element_material_water",
+        "name": "Gota Elemental",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "electric",
+        "item_id": "element_material_electric",
+        "name": "Carga Elemental",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "grass",
+        "item_id": "element_material_grass",
+        "name": "Seiva Elemental",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "ice",
+        "item_id": "element_material_ice",
+        "name": "Cristal Gélido",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "fighting",
+        "item_id": "element_material_fighting",
+        "name": "Insígnia de Combate",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "poison",
+        "item_id": "element_material_poison",
+        "name": "Glândula Tóxica",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "ground",
+        "item_id": "element_material_ground",
+        "name": "Núcleo Terrestre",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "flying",
+        "item_id": "element_material_flying",
+        "name": "Pluma Celeste",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "psychic",
+        "item_id": "element_material_psychic",
+        "name": "Fragmento Psíquico",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "bug",
+        "item_id": "element_material_bug",
+        "name": "Carapaça Elemental",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "rock",
+        "item_id": "element_material_rock",
+        "name": "Núcleo Rochoso",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "ghost",
+        "item_id": "element_material_ghost",
+        "name": "Ectoplasma",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "dragon",
+        "item_id": "element_material_dragon",
+        "name": "Escama Dracônica",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "dark",
+        "item_id": "element_material_dark",
+        "name": "Essência Sombria",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "steel",
+        "item_id": "element_material_steel",
+        "name": "Liga Metálica",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      },
+      {
+        "element": "fairy",
+        "item_id": "element_material_fairy",
+        "name": "Pó Feérico",
+        "drop_chance": 0.08,
+        "min_qty": 1,
+        "max_qty": 1
+      }
+    ],
+    "pickaxes": [
+      {
+        "item_id": "prof_pickaxe_basic",
+        "name": "Picareta Comum",
+        "break_chance": 0.12,
+        "shop_price": 500
+      },
+      {
+        "item_id": "prof_pickaxe_steel",
+        "name": "Picareta Reforçada",
+        "break_chance": 0.08,
+        "shop_price": 0
+      }
+    ],
+    "shovels": [
+      {
+        "item_id": "prof_shovel_basic",
+        "name": "Enxada Comum",
+        "break_chance": 0.11,
+        "shop_price": 500
+      },
+      {
+        "item_id": "prof_shovel_steel",
+        "name": "Enxada Reforçada",
+        "break_chance": 0.06,
+        "shop_price": 0
+      }
+    ],
+    "crops": [
+      {
+        "item_id": "farm_grain",
+        "name": "Grão Dourado",
+        "unlock_level": 1,
+        "weight": 65,
+        "min_yield": 1,
+        "max_yield": 3
+      },
+      {
+        "item_id": "farm_berry",
+        "name": "Baga Nutritiva",
+        "unlock_level": 25,
+        "weight": 25,
+        "min_yield": 1,
+        "max_yield": 3
+      },
+      {
+        "item_id": "farm_herb",
+        "name": "Erva Vital",
+        "unlock_level": 60,
+        "weight": 10,
+        "min_yield": 1,
+        "max_yield": 2
+      }
+    ],
+    "feeds": [
+      {
+        "item_id": "poke_feed_basic",
+        "name": "Ração Simples",
+        "pokemon_xp": 1000,
+        "stamina_restore_basis": 2500,
+        "craft_gold": 0,
+        "recipe": [
+          {
+            "item_id": "farm_grain",
+            "quantity": 15
+          }
+        ]
+      },
+      {
+        "item_id": "poke_feed_great",
+        "name": "Ração Nutritiva",
+        "pokemon_xp": 12500,
+        "stamina_restore_basis": 5000,
+        "craft_gold": 0,
+        "recipe": [
+          {
+            "item_id": "farm_grain",
+            "quantity": 35
+          },
+          {
+            "item_id": "farm_berry",
+            "quantity": 10
+          }
+        ]
+      },
+      {
+        "item_id": "poke_feed_ultra",
+        "name": "Ração Superior",
+        "pokemon_xp": 45000,
+        "stamina_restore_basis": 8000,
+        "craft_gold": 0,
+        "recipe": [
+          {
+            "item_id": "farm_grain",
+            "quantity": 80
+          },
+          {
+            "item_id": "farm_berry",
+            "quantity": 35
+          },
+          {
+            "item_id": "farm_herb",
+            "quantity": 5
+          }
+        ]
+      },
+      {
+        "item_id": "poke_feed_master",
+        "name": "Ração Mestra",
+        "pokemon_xp": 180000,
+        "stamina_restore_basis": 10000,
+        "craft_gold": 0,
+        "recipe": [
+          {
+            "item_id": "farm_grain",
+            "quantity": 200
+          },
+          {
+            "item_id": "farm_berry",
+            "quantity": 100
+          },
+          {
+            "item_id": "farm_herb",
+            "quantity": 25
+          }
+        ]
+      }
+    ]
+  },
+  "element_mastery": {
+    "kills_per_milestone": 2000,
+    "basis_points_per_step": 1,
+    "max_bonus_basis_points": 5000,
+    "high_level_threshold": 100
+  },
+  "capture": {
+    "base_rate_multiplier": 0.5,
+    "global_difficulty": 0.3,
+    "level_penalty_scale": 0,
+    "chance_floor": 0.001,
+    "chance_ceiling": 0.3,
+    "mythical_mult": 0.15,
+    "legendary_mult": 0.3,
+    "shiny_mult": 1,
+    "shiny_base_rates": {
+      "epic": 0.002150537634408602,
+      "legendary": 0.0011921579847761425,
+      "mythical": 0.0011921793037672865
+    },
+    "quality_penalty": {
+      "epic": 0.31,
+      "legendary": 0.111842,
+      "mythical": 0.022368,
+      "rare": 0.82,
+      "uncommon": 0.95
+    },
+    "encounter_floor": 0.0001,
+    "encounter_ceil": 0.3
+  },
+  "market": {
+    "gold_listing_fee_rate": 0.05,
+    "diamond_listing_fee_rate": 0,
+    "listing_duration_hours": 72,
+    "min_price_gold": 10,
+    "min_price_diamonds": 0,
+    "blocked_item_ids": null
+  },
+  "casino": {
+    "eevee_price_gold": 250000,
+    "eevee_shiny_odds_1_in": 40000,
+    "max_eevees_per_purchase": 10
+  },
+  "movement": {
+    "base_speed": 4,
+    "speed_range": 0.1,
+    "level_cap": 100,
+    "hunt_base_speed": 3.5
+  },
+  "diamond_store": {
+    "active": true,
+    "tiers": [
+      {
+        "min_amount": 1,
+        "max_amount": 99,
+        "price_cents": 38
+      },
+      {
+        "min_amount": 100,
+        "max_amount": 199,
+        "price_cents": 36
+      },
+      {
+        "min_amount": 200,
+        "max_amount": 499,
+        "price_cents": 34
+      },
+      {
+        "min_amount": 500,
+        "max_amount": 999,
+        "price_cents": 32
+      },
+      {
+        "min_amount": 1000,
+        "max_amount": 4999,
+        "price_cents": 30
+      },
+      {
+        "min_amount": 5000,
+        "max_amount": 0,
+        "price_cents": 28
+      }
+    ]
+  },
+  "pvp": {
+    "matchmaking_parity_version": 1,
+    "leagues": [
+      {
+        "name": "Bronze",
+        "sprite_slug": "bronze",
+        "min_rating": 0
+      },
+      {
+        "name": "Prata",
+        "sprite_slug": "silver",
+        "min_rating": 1200
+      },
+      {
+        "name": "Ouro",
+        "sprite_slug": "gold",
+        "min_rating": 1400
+      },
+      {
+        "name": "Platina",
+        "sprite_slug": "platinum",
+        "min_rating": 1600
+      },
+      {
+        "name": "Esmeralda",
+        "sprite_slug": "emerald",
+        "min_rating": 1800
+      },
+      {
+        "name": "Diamante",
+        "sprite_slug": "diamond",
+        "min_rating": 2000
+      }
+    ],
+    "k_factor": 32,
+    "delta_min": 1,
+    "delta_max": 40,
+    "rating_gap_base": 50,
+    "rating_gap_max_bonus": 300,
+    "rating_gap_bonus_per_sec": 4,
+    "power_ratio_base": 10,
+    "power_ratio_max_bonus": 0.15,
+    "power_ratio_wait_secs": 90,
+    "level_range_percent": 0.1,
+    "accept_window_seconds": 20,
+    "countdown_seconds": 60,
+    "switch_cooldown_seconds": 9,
+    "tick_interval_millis": 200,
+    "battle_timeout_seconds": 120,
+    "damage_multiplier": 0.7,
+    "arena_windows": [
+      {
+        "id": "default",
+        "start": "20:00",
+        "end": "22:00",
+        "creature_level_cap": 0,
+        "trainer_level_cap": 0,
+        "daily_reward_limit": 10,
+        "win_rewards": [
+          {
+            "kind": "gold",
+            "gold": 50000
+          },
+          {
+            "kind": "item",
+            "item_id": "pvp_badge",
+            "item_qty": 1
+          }
+        ],
+        "loss_rewards": []
+      },
+      {
+        "id": "805abd71-3e20-42b4-96e4-a70a3b9f4d2b",
+        "start": "09:00",
+        "end": "19:00",
+        "creature_level_cap": 100,
+        "trainer_level_cap": 150,
+        "daily_reward_limit": 0,
+        "win_rewards": [],
+        "loss_rewards": []
+      }
+    ]
+  },
+  "awakening": {
+    "enabled": true,
+    "normal_gain_cents": {
+      "common": 2,
+      "epic": 3,
+      "legendary": 3,
+      "mythical": 2,
+      "rare": 3,
+      "uncommon": 2,
+      "weak": 2
+    },
+    "shiny_gain_cents": {
+      "epic": 4,
+      "legendary": 3,
+      "mythical": 3
+    },
+    "generic_material_per_step": 1,
+    "shiny_material_min_grade": {
+      "epic": "weak",
+      "legendary": "mid",
+      "mythical": "strong"
+    },
+    "normal_challenges": {
+      "common": {
+        "materials": 800,
+        "kills": 2000,
+        "stones": 4,
+        "xp_loss_bps": 200,
+        "gold": 100000,
+        "diamonds": 2
+      },
+      "epic": {
+        "materials": 50,
+        "kills": 8000,
+        "stones": 20,
+        "xp_loss_bps": 500,
+        "gold": 10000000,
+        "diamonds": 5
+      },
+      "legendary": {
+        "materials": 15,
+        "kills": 10000,
+        "stones": 150,
+        "xp_loss_bps": 600,
+        "gold": 15000000,
+        "diamonds": 8
+      },
+      "rare": {
+        "materials": 200,
+        "kills": 6000,
+        "stones": 16,
+        "xp_loss_bps": 400,
+        "gold": 500000,
+        "diamonds": 4
+      },
+      "uncommon": {
+        "materials": 400,
+        "kills": 4000,
+        "stones": 8,
+        "xp_loss_bps": 300,
+        "gold": 250000,
+        "diamonds": 3
+      },
+      "weak": {
+        "materials": 1600,
+        "kills": 1000,
+        "stones": 2,
+        "xp_loss_bps": 100,
+        "gold": 50000,
+        "diamonds": 1
+      }
+    },
+    "shiny_challenges": {
+      "epic": {
+        "materials": 3,
+        "kills": 12000,
+        "stones": 250,
+        "xp_loss_bps": 800,
+        "gold": 30000000,
+        "diamonds": 15
+      },
+      "legendary": {
+        "materials": 2,
+        "kills": 15000,
+        "stones": 400,
+        "xp_loss_bps": 1000,
+        "gold": 60000000,
+        "diamonds": 30
+      }
+    },
+    "god_tier": {
+      "material_qty": 1,
+      "material_same_species": false,
+      "stones": 100000,
+      "own_species_kills": 1000000,
+      "account_kills": 10000000,
+      "quality_cents": 300,
+      "stat_bonus_per_species_bps": 500,
+      "stat_bonus_cap_bps": 2000,
+      "apply_to_hp": true,
+      "title_name_template": "Divindade {species}"
+    },
+    "exchange": {
+      "enabled": true,
+      "min_cost": 1
+    }
+  }
+}

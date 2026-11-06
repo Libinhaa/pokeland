@@ -1,0 +1,14 @@
+{
+  "server_name": "PokéLand",
+  "gba_sprite_version": "emerald",
+  "catch_rate_mult": 1,
+  "max_capture_cap": 98,
+  "hp_capture_bonus": false,
+  "exp_mult": 1,
+  "gold_mult": 1,
+  "drop_mult": 1,
+  "shiny_chance": 0.002,
+  "unlock_all_capsules": false,
+  "unlock_legendary_islands": false,
+  "unlock_safari_zone": false
+}

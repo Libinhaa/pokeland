@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokéLand — Portal do Treinador & Login</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        :root {
+            --bg-night: #0b0f19;
+            --card-bg: rgba(15, 23, 42, 0.88);
+            --card-border: rgba(59, 130, 246, 0.35);
+            --card-glow: 0 12px 40px rgba(0, 0, 0, 0.75), 0 0 30px rgba(59, 130, 246, 0.2);
+            --gold: #facc15;
+            --gold-glow: #eab308;
+            --blue-accent: #3b82f6;
+            --blue-bright: #60a5fa;
+            --red-accent: #ef4444;
+            --green-accent: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-ui, 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-night);
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(37, 99, 235, 0.18), transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.12), transparent 50%),
+                linear-gradient(180deg, #070a12 0%, #0d1527 50%, #070a12 100%);
+            min-height: 100vh;
+            color: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient floating pixel particles */
+        .stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .portal-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        /* Brand Title & Hero */
+        .portal-header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .portal-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            border-radius: 40px;
+            padding: 8px 24px 8px 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            margin-bottom: 12px;
+        }
+
+        .brand-ball-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #ef4444 0%, #ef4444 48%, #1e293b 48%, #1e293b 52%, #ffffff 52%, #ffffff 100%);
+            border: 2px solid #0f172a;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+            position: relative;
+            animation: spinPokeball 8s linear infinite;
+        }
+
+        .brand-ball-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: #ffffff;
+            border: 2px solid #0f172a;
+            border-radius: 50%;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes spinPokeball {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .brand-title-text {
+            font-family: var(--font-brand, 'Pokemon Solid', sans-serif);
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(180deg, #ffffff 0%, #ffe066 40%, #facc15 70%, #ca8a04 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 3px 0 #1e3a8a) drop-shadow(0 0 16px rgba(250, 204, 21, 0.7));
+        }
+
+        .brand-tag {
+            font-size: 11px;
+            font-weight: 700;
+            background: #2563eb;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .portal-subtitle {
+            font-size: 14px;
+            color: #94a3b8;
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.4;
+        }
+
+        
+        /* Homepage Showcase Cards */
+        .homepage-features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .hp-feature-card {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 10px;
+            padding: 10px 12px;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .hp-feature-card:hover {
+            border-color: rgba(250, 204, 21, 0.5);
+            background: rgba(15, 23, 42, 0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        }
+
+        .hp-feature-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+            display: inline-block;
+        }
+
+        .hp-feature-title {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #fde047;
+            margin-bottom: 2px;
+        }
+
+        .hp-feature-desc {
+            font-size: 10px;
+            color: #94a3b8;
+            line-height: 1.35;
+        }
+
+        /* Glassmorphic Portal Card */
+        .portal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 28px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: var(--card-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #ec4899, #facc15, #10b981);
+        }
+
+        /* Tab Switcher */
+        .portal-tabs {
+            display: flex;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 10px;
+            padding: 4px;
+            gap: 6px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .portal-tab-btn {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .portal-tab-btn:hover {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .portal-tab-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .form-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            font-size: 16px;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 11px 14px 11px 38px;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        /* Avatar Picker Grid */
+        .selector-heading {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin: 16px 0 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .avatar-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .avatar-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(96, 165, 250, 0.6);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .avatar-card.selected {
+            border-color: #facc15;
+            background: rgba(37, 99, 235, 0.25);
+            box-shadow: 0 0 14px rgba(250, 204, 21, 0.4);
+        }
+
+        .avatar-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            background: #facc15;
+            color: #0f172a;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .avatar-card img {
+            width: 44px;
+            height: 55px;
+            image-rendering: pixelated;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        .avatar-card-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: #cbd5e1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Starter Choice Cards */
+        .starter-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .starter-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            padding: 8px 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .starter-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(96, 165, 250, 0.6);
+        }
+
+        .starter-card.selected {
+            border-color: #3b82f6;
+            background: rgba(37, 99, 235, 0.25);
+            box-shadow: 0 0 14px rgba(59, 130, 246, 0.5);
+        }
+
+        .starter-card.selected::after {
+            content: '★';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            color: #ffffff;
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .starter-card img {
+            width: 48px;
+            height: 48px;
+            image-rendering: pixelated;
+            object-fit: contain;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+        }
+
+        .starter-card-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .starter-type-badge {
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 2px;
+            text-transform: uppercase;
+        }
+
+        .type-fire { background: #ea580c; color: #fff; }
+        .type-water { background: #0284c7; color: #fff; }
+        .type-grass { background: #16a34a; color: #fff; }
+        .type-electric { background: #ca8a04; color: #fff; }
+
+        /* Actions & Buttons */
+        .btn-primary {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.4);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+
+        .btn-guest {
+            width: 100%;
+            padding: 11px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px dashed rgba(148, 163, 184, 0.4);
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-guest:hover {
+            background: rgba(51, 65, 85, 0.8);
+            color: #f1f5f9;
+            border-color: #60a5fa;
+        }
+
+        /* Demo Accounts Shortcuts */
+        .demo-accounts {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .demo-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .demo-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .demo-pill {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #cbd5e1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .demo-pill:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        /* Status & Alert Messages */
+        .alert-box {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-box.error {
+            display: flex;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+
+        .alert-box.success {
+            display: flex;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+        }
+
+        /* Telemetry & Server Badge */
+        .server-telemetry-card {
+            margin-top: 18px;
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .telemetry-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulseDot 2s infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        @media (max-width: 600px) {
+            .portal-card { padding: 18px 14px; }
+            .avatar-grid { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+            .starter-grid { grid-template-columns: repeat(3, 1fr); }
+            .server-telemetry-card { flex-direction: column; gap: 8px; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stars-canvas" class="stars-canvas"></canvas>
+
+    <div class="portal-wrapper">
+        <!-- Brand Header -->
+        <header class="portal-header">
+            <div class="portal-brand">
+                <div class="brand-ball-icon"></div>
+                <h1 class="brand-title-text">PokéLand</h1>
+                <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(234,179,8,0.15);border:1px solid rgba(250,204,21,0.5);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:900;color:#fde047;margin-top:4px;"><span style="width:7px;height:7px;background:#4ade80;border-radius:50%;box-shadow:0 0 8px #4ade80;display:inline-block;"></span> Versão v1.7.0 • Build Oficial</div>
+                <span class="brand-tag" style="background:linear-gradient(135deg,#2563eb,#4f46e5);font-weight:900;">MMORPG OFICIAL</span>
+            </div>
+            <p class="portal-subtitle">
+                A maior experiência Pokémon MMORPG no navegador. Acesse sua conta PokéLand ou registre seu treinador para explorar Kanto, Johto e as Ilhas Lendárias.
+            </p>
+        </header>
+
+        
+        <!-- Homepage Feature Highlights Showcase -->
+        <div class="homepage-features-grid">
+            <div class="hp-feature-card">
+                <span class="hp-feature-icon">🗺️</span>
+                <div class="hp-feature-title">Mundo Aberto em Tempo Real</div>
+                <div class="hp-feature-desc">Explore Kanto, Johto e Ilhas com spawns selvagens e batalhas dinâmicas.</div>
+            </div>
+            <div class="hp-feature-card">
+                <span class="hp-feature-icon">🏆</span>
+                <div class="hp-feature-title">Grandes Desafios & GvG</div>
+                <div class="hp-feature-desc">Arenas isoladas de Guerra de Guildas, Ginásios Oficiais e Dungeons.</div>
+            </div>
+            <div class="hp-feature-card">
+                <span class="hp-feature-icon">🏪</span>
+                <div class="hp-feature-title">PokéMart & Venda em Lote</div>
+                <div class="hp-feature-desc">Balcão flutuante para resgate de múltiplos Pokémon da mochila ou do PC Box por Ouro.</div>
+            </div>
+            <div class="hp-feature-card">
+                <span class="hp-feature-icon">⚡</span>
+                <div class="hp-feature-title">Auto-Farm & Expedições</div>
+                <div class="hp-feature-desc">Caça, ataque e captura automatizados com continuidade e farm offline.</div>
+            </div>
+        </div>
+
+        <!-- Main Card Container -->
+        <main class="portal-card">
+            <!-- Alert Banner -->
+            <div id="alert-banner" class="alert-box">
+                <span id="alert-icon">⚠️</span>
+                <span id="alert-msg">Mensagem de alerta</span>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="portal-tabs">
+                <button type="button" class="portal-tab-btn active" id="tab-btn-login" onclick="switchPortalTab('login')">
+                    <span>🔑 Entrar (Login)</span>
+                </button>
+                <button type="button" class="portal-tab-btn" id="tab-btn-register" onclick="switchPortalTab('register')">
+                    <span>✨ Criar Treinador (Registro)</span>
+                </button>
+            </div>
+
+            <!-- ==============================================
+                 1. LOGIN FORM PANEL
+                 ============================================== -->
+            <section id="panel-login">
+                <form id="form-login" onsubmit="handleLoginSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="login-username">Nome de Treinador ou Usuário</label>
+                        <div class="form-input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="login-username" class="form-input" placeholder="Ex: Red, Gold, Ash" required autocomplete="username">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="login-password">
+                            <span>Senha Secreta</span>
+                        </label>
+                        <div class="form-input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="login-password" class="form-input" placeholder="Digite sua senha" required autocomplete="current-password">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-submit-login" class="btn-primary">
+                        <span>Acessar o Jogo</span>
+                        <span>➜</span>
+                    </button>
+                </form>
+
+                <!-- Quick Demo Fill Badges -->
+                <div class="demo-accounts">
+                    <div class="demo-label">
+                        <span>⚡ Contas Prontas para Teste Rápido:</span>
+                    </div>
+                    <div class="demo-pills">
+                        <button type="button" class="demo-pill" onclick="quickFillAccount('Red', 'red123')">
+                            <span style="color:#ef4444;">🔴</span>
+                            <strong>Red (Lv. 35)</strong>
+                            <span style="font-size:10px; opacity:0.7;">6 Míticos</span>
+                        </button>
+                        <button type="button" class="demo-pill" onclick="quickFillAccount('Gold', 'gold123')">
+                            <span style="color:#facc15;">🟡</span>
+                            <strong>Gold (Lv. 35)</strong>
+                            <span style="font-size:10px; opacity:0.7;">Johto</span>
+                        </button>
+                        <button type="button" class="demo-pill" onclick="quickFillAccount('Admin', 'admin123')">
+                            <span style="color:#10b981;">🛡️</span>
+                            <strong>Admin</strong>
+                            <span style="font-size:10px; opacity:0.7;">God Mode</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top:14px;padding:8px 12px;background:rgba(59,130,246,0.1);border:1px dashed rgba(59,130,246,0.3);border-radius:8px;font-size:11px;color:#94a3b8;text-align:center;">
+                    🔒 O login é obrigatório para acessar o mundo de PokéLand e persistir seu progresso.
+                </div>
+            </section>
+
+            <!-- ==============================================
+                 2. REGISTER / CREATE TRAINER PANEL
+                 ============================================== -->
+            <section id="panel-register" style="display:none;">
+                <form id="form-register" onsubmit="handleRegisterSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="reg-username">Nome do Seu Treinador</label>
+                        <div class="form-input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="reg-username" class="form-input" placeholder="Mínimo 3 caracteres (Ex: Satoshi)" minlength="3" maxlength="20" required autocomplete="username">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="reg-password">Senha</label>
+                        <div class="form-input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="reg-password" class="form-input" placeholder="Mínimo 4 caracteres" minlength="4" required autocomplete="new-password">
+                        </div>
+                    </div>
+
+                    <!-- Interactive Trainer Avatar Picker -->
+                    <div class="selector-heading">
+                        <span>1. Escolha a Skin do Treinador (Oficial HGSS):</span>
+                        <span id="selected-avatar-name" style="color:#60a5fa; font-weight:700;">Ethan / Gold</span>
+                    </div>
+                    <div class="avatar-grid" id="avatar-picker-grid">
+                        <!-- Injected via JavaScript from ANIME_TRAINER_MODELS -->
+                    </div>
+
+                    <!-- Interactive Starter Pokémon Picker -->
+                    <div class="selector-heading">
+                        <span>2. Escolha seu Pokémon Inicial (Lv. 12 + Starter Pack):</span>
+                        <span id="selected-starter-name" style="color:#facc15; font-weight:700;">Charmander 🔥</span>
+                    </div>
+                    <div class="starter-grid" id="starter-picker-grid">
+                        <!-- Injected via JavaScript -->
+                    </div>
+
+                    <button type="submit" id="btn-submit-register" class="btn-primary">
+                        <span>Criar Treinador e Iniciar Jornada</span>
+                        <span>🚀</span>
+                    </button>
+                </form>
+            </section>
+        </main>
+
+        <!-- Server & Database Telemetry Footer -->
+        <footer class="server-telemetry-card">
+            <div class="telemetry-item">
+                <span class="status-dot"></span>
+                <span>Servidor: <strong style="color:#10b981;">Online (Localhost:8080)</strong></span>
+            </div>
+            <div class="telemetry-item">
+                <span>🗄️ Banco de Dados: <strong style="color:#60a5fa;">SQLite 3 (data/pokepixel.db)</strong></span>
+            </div>
+            <div class="telemetry-item">
+                <span>🔐 Criptografia: <strong>PBKDF2-SHA256</strong></span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Logic Script -->
+    <script>
+        // Official HGSS Trainer Models
+        const TRAINER_MODELS = [
+            { id: "ethan_gold", name: "Ethan / Gold", portrait: "/img/trainers/hgss_ethan.png" },
+            { id: "lyra_ss", name: "Lyra / Kotone", portrait: "/img/trainers/hgss_lyra.png" },
+            { id: "red_champion", name: "Red Campeão", portrait: "/img/trainers/hgss_red.png" },
+            { id: "blue_rival", name: "Blue Rival", portrait: "/img/trainers/hgss_blue.png" },
+            { id: "lance_dragon", name: "Lance Mestre", portrait: "/img/trainers/hgss_lance.png" },
+            { id: "cynthia_champ", name: "Cynthia", portrait: "/img/trainers/hgss_cynthia.png" },
+            { id: "steven_stone", name: "Steven Stone", portrait: "/img/trainers/icon_pp_TrainerMale06.png" },
+            { id: "clair_gym", name: "Clair Líder", portrait: "/img/trainers/hgss_clair.png" },
+            { id: "tanjiro_slayer", name: "Tanjiro", portrait: "/img/trainers/icon_pp_TrainerMale15.png" },
+            { id: "rengoku_flame", name: "Rengoku", portrait: "/img/trainers/icon_pp_TrainerMale16.png" }
+        ];
+
+        // Starter Pokémon Options
+        const STARTER_OPTIONS = [
+            { id: "charmander", name: "Charmander", type: "fire", typeLabel: "Fogo", img: "/img/pmd/charmander/Portrait.png" },
+            { id: "squirtle", name: "Squirtle", type: "water", typeLabel: "Água", img: "/img/pmd/squirtle/Portrait.png" },
+            { id: "bulbasaur", name: "Bulbasaur", type: "grass", typeLabel: "Planta", img: "/img/pmd/bulbasaur/Portrait.png" },
+            { id: "pikachu", name: "Pikachu", type: "electric", typeLabel: "Elétrico", img: "/img/pmd/pikachu/Portrait.png" },
+            { id: "cyndaquil", name: "Cyndaquil", type: "fire", typeLabel: "Fogo", img: "/img/pmd/cyndaquil/Portrait.png" },
+            { id: "totodile", name: "Totodile", type: "water", typeLabel: "Água", img: "/img/pmd/totodile/Portrait.png" },
+            { id: "chikorita", name: "Chikorita", type: "grass", typeLabel: "Planta", img: "/img/pmd/chikorita/Portrait.png" },
+        ];
+
+        let selectedAvatarId = "ethan_gold";
+        let selectedStarterId = "charmander";
+
+        // Initialize elements
+        function initPortal() {
+            renderAvatars();
+            renderStarters();
+            initStarsBackground();
+
+            if (window.location.search.includes("tab=register")) {
+                switchPortalTab('register');
+            }
+
+            // Auto-check if already logged in
+            const token = localStorage.getItem("pokepixel_auth_token");
+            if (token && !window.location.search.includes("logout=1")) {
+                fetch("/api/auth/me", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.authenticated) {
+                        showAlert(`Bem-vindo de volta, Treinador ${res.user.username}! Entrando...`, "success");
+                        setTimeout(() => {
+                            window.location.href = "/";
+                        }, 600);
+                    }
+                })
+                .catch(() => {});
+            }
+        }
+
+        function switchPortalTab(tab) {
+            hideAlert();
+            const isLogin = tab === 'login';
+            document.getElementById('tab-btn-login').classList.toggle('active', isLogin);
+            document.getElementById('tab-btn-register').classList.toggle('active', !isLogin);
+            document.getElementById('panel-login').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('panel-register').style.display = isLogin ? 'none' : 'block';
+        }
+
+        function showAlert(msg, type = "error") {
+            const b = document.getElementById("alert-banner");
+            const m = document.getElementById("alert-msg");
+            const icon = document.getElementById("alert-icon");
+            b.className = `alert-box ${type}`;
+            m.textContent = msg;
+            icon.textContent = type === "error" ? "⚠️" : "🎉";
+            b.style.display = "flex";
+        }
+
+        function hideAlert() {
+            document.getElementById("alert-banner").style.display = "none";
+        }
+
+        function renderAvatars() {
+            const grid = document.getElementById("avatar-picker-grid");
+            grid.innerHTML = TRAINER_MODELS.map(m => `
+                <div class="avatar-card ${m.id === selectedAvatarId ? 'selected' : ''}" onclick="selectAvatar('${m.id}')" title="${m.name}">
+                    <img src="${m.portrait}" onerror="this.src='/img/trainers/icon_pp_TrainerMale01.png'" alt="${m.name}">
+                    <div class="avatar-card-name">${m.name}</div>
+                </div>
+            `).join("");
+        }
+
+        function selectAvatar(id) {
+            selectedAvatarId = id;
+            renderAvatars();
+            const found = TRAINER_MODELS.find(m => m.id === id);
+            if (found) {
+                document.getElementById("selected-avatar-name").textContent = found.name;
+            }
+        }
+
+        function renderStarters() {
+            const grid = document.getElementById("starter-picker-grid");
+            grid.innerHTML = STARTER_OPTIONS.map(s => `
+                <div class="starter-card ${s.id === selectedStarterId ? 'selected' : ''}" onclick="selectStarter('${s.id}')">
+                    <img src="${s.img}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${s.id}.png'" alt="${s.name}">
+                    <div class="starter-card-name">${s.name}</div>
+                    <span class="starter-type-badge type-${s.type}">${s.typeLabel}</span>
+                </div>
+            `).join("");
+        }
+
+        function selectStarter(id) {
+            selectedStarterId = id;
+            renderStarters();
+            const found = STARTER_OPTIONS.find(s => s.id === id);
+            if (found) {
+                document.getElementById("selected-starter-name").textContent = `${found.name} (${found.typeLabel})`;
+            }
+        }
+
+        function quickFillAccount(username, password) {
+            document.getElementById("login-username").value = username;
+            document.getElementById("login-password").value = password;
+            showAlert(`Credenciais da conta pronta de ${username} carregadas! Clique em "Acessar o Jogo".`, "success");
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            hideAlert();
+            const username = document.getElementById("login-username").value.trim();
+            const password = document.getElementById("login-password").value;
+            const btn = document.getElementById("btn-submit-login");
+
+            btn.disabled = true;
+            btn.innerHTML = `<span>Conectando...</span> <span>⏳</span>`;
+
+            try {
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (data.ok) {
+                    localStorage.setItem("pokepixel_auth_token", data.token);
+                    localStorage.removeItem("pokepixel_guest");
+                    showAlert(`Login efetuado com sucesso! Entrando no PokéLand...`, "success");
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 500);
+                } else {
+                    showAlert(data.error || "Erro ao conectar. Verifique seu login e senha.");
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>Acessar o Jogo</span> <span>➜</span>`;
+                }
+            } catch (err) {
+                showAlert("Erro de conexão com o servidor PokéLand.");
+                btn.disabled = false;
+                btn.innerHTML = `<span>Acessar o Jogo</span> <span>➜</span>`;
+            }
+        }
+
+        async function handleRegisterSubmit(e) {
+            e.preventDefault();
+            hideAlert();
+            const username = document.getElementById("reg-username").value.trim();
+            const password = document.getElementById("reg-password").value;
+            const btn = document.getElementById("btn-submit-register");
+
+            btn.disabled = true;
+            btn.innerHTML = `<span>Criando Treinador...</span> <span>⏳</span>`;
+
+            try {
+                const res = await fetch("/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        avatar_model: selectedAvatarId,
+                        starter_id: selectedStarterId
+                    })
+                });
+                const data = await res.json();
+
+                if (data.ok) {
+                    localStorage.setItem("pokepixel_auth_token", data.token);
+                    localStorage.removeItem("pokepixel_guest");
+                    showAlert(`Treinador ${username} criado com sucesso! Iniciando jornada...`, "success");
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 600);
+                } else {
+                    showAlert(data.error || "Não foi possível criar o treinador.");
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>Criar Treinador e Iniciar Jornada</span> <span>🚀</span>`;
+                }
+            } catch (err) {
+                showAlert("Erro ao se comunicar com o banco de dados.");
+                btn.disabled = false;
+                btn.innerHTML = `<span>Criar Treinador e Iniciar Jornada</span> <span>🚀</span>`;
+            }
+        }
+
+        function playAsGuest() {
+            localStorage.removeItem("pokepixel_auth_token");
+            localStorage.setItem("pokepixel_guest", "1");
+            window.location.href = "/";
+        }
+
+        // Ambient floating stars effect
+        function initStarsBackground() {
+            const canvas = document.getElementById("stars-canvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            let w = canvas.width = window.innerWidth;
+            let h = canvas.height = window.innerHeight;
+
+            window.addEventListener("resize", () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const stars = Array.from({ length: 45 }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                size: Math.random() * 2 + 1,
+                speed: Math.random() * 0.4 + 0.1,
+                alpha: Math.random() * 0.7 + 0.3
+            }));
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                for (const star of stars) {
+                    star.y -= star.speed;
+                    if (star.y < 0) {
+                        star.y = h;
+                        star.x = Math.random() * w;
+                    }
+                    ctx.fillStyle = `rgba(147, 197, 253, ${star.alpha})`;
+                    ctx.fillRect(Math.round(star.x), Math.round(star.y), Math.round(star.size), Math.round(star.size));
+                }
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        window.addEventListener("DOMContentLoaded", initPortal);
+    </script>
+</body>
+</html>

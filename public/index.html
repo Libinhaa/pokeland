@@ -1,0 +1,2676 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokéLand</title>
+    <link rel="stylesheet" href="/styles.css?v=pokeland_clean_dex_v20">
+</head>
+<body class="fullscreen-mode">
+    <!-- =========================================================
+         SVG POKÉMON FRANCHISE ORIGINAL THEMED ICONS DEFINTIONS
+         ========================================================= -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+        <defs>
+            <!-- Pokédex Handheld Device -->
+            <g id="poke-svg-dex">
+                <rect x="2" y="1" width="20" height="22" rx="3" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.2"/>
+                <circle cx="7" cy="6" r="3.2" fill="#38bdf8" stroke="#0284c7" stroke-width="1"/>
+                <circle cx="6" cy="5" r="1" fill="#fff"/>
+                <circle cx="13" cy="4.5" r="1.2" fill="#ef4444"/>
+                <circle cx="16" cy="4.5" r="1.2" fill="#eab308"/>
+                <circle cx="19" cy="4.5" r="1.2" fill="#22c55e"/>
+                <rect x="5" y="11" width="14" height="8" rx="1.5" fill="#0f172a" stroke="#334155" stroke-width="0.8"/>
+                <path d="M7 15h10M7 13h6" stroke="#38bdf8" stroke-width="0.8" stroke-linecap="round"/>
+                <circle cx="17" cy="21" r="1" fill="#64748b"/>
+            </g>
+
+            <!-- Bill's PC Box Storage -->
+            <g id="poke-svg-pc">
+                <rect x="2" y="2" width="20" height="15" rx="2" fill="#334155" stroke="#1e293b" stroke-width="1.2"/>
+                <rect x="4" y="4" width="16" height="11" rx="1" fill="#0284c7"/>
+                <!-- Mini Pokéball on Screen -->
+                <circle cx="12" cy="9.5" r="3.2" fill="#f8fafc"/>
+                <path d="M8.8 9.5a3.2 3.2 0 0 1 6.4 0H8.8z" fill="#ef4444"/>
+                <circle cx="12" cy="9.5" r="1" fill="#fff" stroke="#0f172a" stroke-width="0.6"/>
+                <!-- Stand -->
+                <path d="M9 17h6l2 4H7l2-4z" fill="#475569" stroke="#1e293b" stroke-width="1"/>
+                <rect x="5" y="21" width="14" height="2" rx="1" fill="#1e293b"/>
+            </g>
+
+            <!-- PokéMart Shop Bag -->
+            <g id="poke-svg-shop">
+                <path d="M4 8h16l-1.5 13H5.5L4 8z" fill="#0284c7" stroke="#0369a1" stroke-width="1.2"/>
+                <path d="M8 8V5a4 4 0 0 1 8 0v3" fill="none" stroke="#f8fafc" stroke-width="1.8" stroke-linecap="round"/>
+                <!-- Gold Center Emblem -->
+                <circle cx="12" cy="14.5" r="3.5" fill="#fde047" stroke="#ca8a04" stroke-width="0.8"/>
+                <path d="M8.5 14.5a3.5 3.5 0 0 1 7 0H8.5z" fill="#ef4444"/>
+                <circle cx="12" cy="14.5" r="1.1" fill="#fff" stroke="#1e293b" stroke-width="0.6"/>
+            </g>
+
+            <!-- Silph Co. Poké-Gear / Settings Cog -->
+            <g id="poke-svg-gear">
+                <circle cx="12" cy="12" r="9" fill="#475569" stroke="#1e293b" stroke-width="1.2"/>
+                <!-- Cog teeth -->
+                <path d="M12 1v3M12 20v3M1 12h3M20 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="#f1f5f9" stroke-width="2" stroke-linecap="round"/>
+                <!-- Inner Pokéball Core -->
+                <circle cx="12" cy="12" r="4.5" fill="#f8fafc" stroke="#0f172a" stroke-width="0.8"/>
+                <path d="M7.5 12a4.5 4.5 0 0 1 9 0H7.5z" fill="#3b82f6"/>
+                <circle cx="12" cy="12" r="1.5" fill="#fff" stroke="#0f172a" stroke-width="0.8"/>
+            </g>
+
+            <!-- Master Ball Admin Crest -->
+            <g id="poke-svg-master">
+                <circle cx="12" cy="12" r="9.5" fill="#f8fafc" stroke="#1e1b4b" stroke-width="1.2"/>
+                <path d="M2.5 12a9.5 9.5 0 0 1 19 0H2.5z" fill="#7c3aed"/>
+                <!-- M bumps -->
+                <circle cx="7.5" cy="7.5" r="2.2" fill="#ec4899"/>
+                <circle cx="16.5" cy="7.5" r="2.2" fill="#ec4899"/>
+                <path d="M8 8.5l2-2.5 2 2 2-2 2 2.5" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <!-- Center Core -->
+                <circle cx="12" cy="12" r="2.5" fill="#fff" stroke="#1e1b4b" stroke-width="1"/>
+                <circle cx="12" cy="12" r="1.1" fill="#e2e8f0"/>
+            </g>
+
+            <!-- Town Map / Mapas & Rotas -->
+            <g id="poke-svg-atlas">
+                <path d="M3 4l6-2 6 2 6-2v17l-6 2-6-2-6 2V4z" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+                <!-- Map Fold Shading -->
+                <path d="M9 2v17M15 4v17" stroke="#d97706" stroke-width="1" stroke-dasharray="2,2"/>
+                <!-- Route Path -->
+                <path d="M5 8c2 3 4 1 6 4s5 2 7-1" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+                <!-- Destination Pokéball Pin -->
+                <circle cx="16" cy="11" r="2.2" fill="#ef4444" stroke="#991b1b" stroke-width="0.8"/>
+                <circle cx="16" cy="11" r="0.8" fill="#fff"/>
+            </g>
+
+            <!-- Poké-Radar Compass -->
+            <g id="poke-svg-radar">
+                <circle cx="12" cy="12" r="9.5" fill="#0f172a" stroke="#0ea5e9" stroke-width="1.2"/>
+                <circle cx="12" cy="12" r="6.5" fill="none" stroke="#0284c7" stroke-width="0.8" stroke-dasharray="1.5,1.5"/>
+                <circle cx="12" cy="12" r="3" fill="none" stroke="#38bdf8" stroke-width="0.8"/>
+                <path d="M12 2.5v19M2.5 12h19" stroke="#0369a1" stroke-width="0.8"/>
+                <!-- Radar Sweep Beam -->
+                <path d="M12 12l6-6A8.5 8.5 0 0 0 12 3.5v8.5z" fill="rgba(56, 189, 248, 0.4)"/>
+                <!-- Ping Blip -->
+                <circle cx="15.5" cy="8.5" r="1.3" fill="#fde047"/>
+            </g>
+
+            <!-- Battle Moves Crossed Swords -->
+            <g id="poke-svg-swords">
+                <!-- Sword 1 -->
+                <path d="M4 20l11-11M15 9l3-3 2 2-3 3M13 11l-2-2M3 21l2-2" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/>
+                <!-- Sword 2 -->
+                <path d="M20 20L9 9M9 9L6 6l-2 2 3 3M11 11l2-2M21 21l-2-2" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/>
+                <!-- Sparkle -->
+                <circle cx="12" cy="12" r="1.8" fill="#ffe066"/>
+            </g>
+
+            <!-- Central Plaza PokéCenter -->
+            <g id="poke-svg-hub">
+                <path d="M2 11l10-8 10 8v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V11z" fill="#ef4444" stroke="#991b1b" stroke-width="1.2"/>
+                <path d="M5 12h14v9H5v-9z" fill="#fef2f2"/>
+                <path d="M9 21v-6a3 3 0 0 1 6 0v6" fill="#0284c7"/>
+                <!-- Pokéball Roof Crest -->
+                <circle cx="12" cy="8" r="3" fill="#fff" stroke="#991b1b" stroke-width="0.8"/>
+                <path d="M9 8a3 3 0 0 1 6 0H9z" fill="#ef4444"/>
+                <circle cx="12" cy="8" r="0.9" fill="#fff" stroke="#1e293b" stroke-width="0.5"/>
+            </g>
+
+            <!-- Auto-Farm Drone Bot -->
+            <g id="poke-svg-autobot">
+                <rect x="4" y="6" width="16" height="13" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2"/>
+                <!-- Dual Visor Eyes -->
+                <circle cx="8.5" cy="12" r="2" fill="#38bdf8"/>
+                <circle cx="15.5" cy="12" r="2" fill="#38bdf8"/>
+                <circle cx="9" cy="11.5" r="0.7" fill="#fff"/>
+                <circle cx="16" cy="11.5" r="0.7" fill="#fff"/>
+                <!-- Antenna -->
+                <path d="M12 6V2" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="12" cy="2" r="1.5" fill="#fde047"/>
+                <!-- Side Thrusters -->
+                <rect x="1" y="9" width="3" height="7" rx="1.5" fill="#0284c7"/>
+                <rect x="20" y="9" width="3" height="7" rx="1.5" fill="#0284c7"/>
+            </g>
+
+            <!-- Whisper Secret Mail -->
+            <g id="poke-svg-whisper">
+                <rect x="2" y="4" width="20" height="15" rx="2" fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+                <path d="M2 5l10 8 10-8" fill="none" stroke="#db2777" stroke-width="1.4" stroke-linecap="round"/>
+                <!-- Pink Heart-Ball Seal -->
+                <circle cx="12" cy="13" r="3.2" fill="#ec4899" stroke="#9d174d" stroke-width="0.8"/>
+                <path d="M8.8 13a3.2 3.2 0 0 1 6.4 0H8.8z" fill="#f43f5e"/>
+                <circle cx="12" cy="13" r="1" fill="#fff"/>
+            </g>
+        </defs>
+    </svg>
+    <!-- =========================================================
+         1. FULLSCREEN GAME WORLD VIEWPORT (100vw x 100vh)
+         ========================================================= -->
+    <div id="fullscreen-game-stage" class="fullscreen-game-stage">
+        <canvas id="tibia-game-canvas" width="1536" height="1056"></canvas>
+        <div id="pokeidle-vfx-layer" class="fullscreen-vfx-layer"></div>
+    </div>
+
+    <!-- =========================================================
+         2. FLOATING TOP MENU BAR (All Status Info + Floating Menu Toggles)
+         ========================================================= -->
+    <header id="top-menubar-hud" class="topbar floating-top-menubar" data-draggable-panel="top-menubar-hud">
+        <!-- Left: Drag Handle + Trainer Crest + Live Status Pills -->
+        <div class="menubar-left-group">
+            <span class="bar-drag-handle" data-drag-handle="top-menubar-hud" title="Arraste para mover a Barra Superior para qualquer lugar">⠿</span>
+            <div class="brand">
+                <div class="brand-logo" title="Líder Ativo do Time" onclick="toggleFloatingMenu('float-panel-pokebar', 'menubtn-pokebar')">
+                    <img id="hud-brand-portrait" src="/img/pmd/metagross/Portrait.png" onerror="this.onerror=null;this.src='/img/pmd/pikachu/Portrait.png';" alt="Leader">
+                    <span class="brand-pokeball-corner"></span>
+                </div>
+                <div class="brand-text-compact">
+                    <div class="brand-title">
+                        <span id="hud-server-name" class="poke-gold-title">PokéLand</span>
+                        <span id="hud-version-badge" class="hud-version-badge" onclick="openUpdateLogModal()" title="Versão Atual: v1.7.0 (Clique para abrir o Update Log)">v1.7.0</span>
+                    </div>
+                </div>
+            </div>
+            <button class="topbar-minimize-btn" id="btn-topbar-minimize" onclick="toggleTopbarMinimize()" title="Minimizar / Expandir Barra Superior">
+                <span id="topbar-minimize-icon">▲</span>
+            </button>
+        </div>
+
+        <!-- Center/Right: Floating HUD Menu Toggles + Full Modal Windows -->
+        <nav class="menubar-nav-group topbar-invisible-grid">
+            <!-- Floating HUD Overlays -->
+            <div class="menubar-section-pills topbar-invisible-subgrid" id="topbar-nav-dock">
+                <!-- TREINADOR: MERGE DE STATUS + PERFIL -->
+                <button class="nav-btn float-toggle-btn active" id="menubtn-trainer" onclick="toggleTrainerProfile()" title="Treinador — Perfil, Nível, Conquistas & Status da Equipe (Atalho: C)">
+                    <span style="font-size:12px;line-height:1;">👤</span>
+                    <span>Treinador</span>
+                </button>
+
+                <button class="nav-btn float-toggle-btn active" id="menubtn-pokebar" onclick="toggleFloatingMenu('float-panel-pokebar', 'menubtn-pokebar')" title="Mostrar/Ocultar Meu Time">
+                    <span class="nav-pokeball-icon is-red"></span>
+                    <span>Time</span>
+                </button>
+
+                <!-- MAPAS: MERGE DE MAPAS + CIDADE CENTRAL -->
+                <button class="nav-btn float-toggle-btn" id="menubtn-atlas" onclick="toggleFloatingMenu('float-panel-atlas', 'menubtn-atlas')" title="Mapas, Rotas & Cidade Central (Hub Social)">
+                    <svg class="poke-svg-ico" viewBox="0 0 24 24"><use href="#poke-svg-atlas"/></svg>
+                    <span>Mapas</span>
+                </button>
+                
+                <button class="nav-btn float-toggle-btn active" id="menubtn-actionbar" onclick="toggleFloatingMenu('float-panel-actionbar', 'menubtn-actionbar')" title="Mostrar/Ocultar Barra de Ação Rápida (8 Slots)">
+                    <span style="font-size:12px;line-height:1;filter:drop-shadow(0 0 4px #facc15);">⚡</span>
+                    <span>Ação</span>
+                </button>
+
+                <button class="nav-btn float-toggle-btn nav-btn-autofarm" id="topbtn-autofarm" onclick="toggleAutoFarmMenu()" title="Central de Auto-Farm (Caça, Ataque, Captura e Farm Offline)">
+                    <span style="font-size:13px;line-height:1;filter:drop-shadow(0 0 5px #fde047);">⚡</span>
+                    <span style="color:#fde047;font-weight:800;">Auto-Farm</span>
+                </button>
+            </div>
+
+            <div class="menubar-divider"></div>
+
+            <!-- Modal Windows (Pokédex, PC Box, Loja, Admin, Reset, Sair) -->
+            <div class="menubar-section-modals topbar-invisible-subgrid" id="topbar-modals-dock">
+                <button class="nav-btn nav-btn-mechanics" onclick="switchTab('mechanics')" id="tabbtn-mechanics" title="Grandes Desafios & Endgame (GvG, PvP, Ginásios, Elite 4, Safari, World Boss, Dungeons)">
+                    <span style="font-size:13px;line-height:1;filter:drop-shadow(0 0 5px #f43f5e);">🏆</span>
+                    <span style="color:#fb7185;font-weight:800;">Desafios</span>
+                </button>
+
+                <button class="nav-btn" onclick="switchTab('pokedex')" id="tabbtn-pokedex" title="Abrir Pokédex">
+                    <svg class="poke-svg-ico" viewBox="0 0 24 24"><use href="#poke-svg-dex"/></svg>
+                    <span>Dex</span>
+                </button>
+                <button class="nav-btn" onclick="switchTab('party')" id="tabbtn-party" title="Depósito de Pokémon (PC Box)">
+                    <svg class="poke-svg-ico" viewBox="0 0 24 24"><use href="#poke-svg-pc"/></svg>
+                    <span>PC Box</span>
+                </button>
+                <button class="nav-btn" onclick="switchTab('bag')" id="tabbtn-bag" title="Mochila & Inventário Independente (Atalho: B)">
+                    <span style="font-size:13px;line-height:1;">🎒</span>
+                    <span>Mochila</span>
+                </button>
+                <button class="nav-btn" onclick="switchTab('shop')" id="tabbtn-shop" title="Loja de Itens em Ouro / PokeMart (Atalho: L)">
+                    <svg class="poke-svg-ico" viewBox="0 0 24 24"><use href="#poke-svg-shop"/></svg>
+                    <span>Loja</span>
+                </button>
+                <button class="nav-btn nav-btn-cashshop" onclick="switchTab('cashshop')" id="tabbtn-cashshop" title="Cash Shop — Loja de Diamantes & Itens VIP">
+                    <span style="font-size:13px;line-height:1;filter:drop-shadow(0 0 5px #60a5fa);">💎</span>
+                    <span style="color:#67e8f9;font-weight:800;">Cash Shop</span>
+                </button>
+                <button class="nav-btn nav-btn-market" onclick="switchTab('market')" id="tabbtn-market" title="Mercado Global de Jogadores — Negocie Itens & Pokémon (Atalho: M)">
+                    <span style="font-size:13px;line-height:1;filter:drop-shadow(0 0 5px #fbbf24);">⚖️</span>
+                    <span style="color:#fde047;font-weight:800;">Mercado</span>
+                </button>
+                <button class="nav-btn nav-btn-updatelog" onclick="openUpdateLogModal()" id="topbtn-updatelog" title="Notas de Atualização & Registro de Versão (v1.7.0)">
+                    <span style="font-size:12px;line-height:1;filter:drop-shadow(0 0 4px #facc15);">📜</span>
+                    <span>Updates</span>
+                </button>
+
+                <button class="nav-btn nav-btn-playtest" id="menubtn-playtest" onclick="openPlaytesterGuideModal()" title="Central do Playtester & Kit Especial">
+                    <span style="font-size:13px;line-height:1;">🚀</span>
+                    <span>Playtest</span>
+                </button>
+                <button class="nav-btn nav-btn-feedback" id="menubtn-feedback" onclick="openFeedbackModal()" title="Reportar Bug ou Enviar Feedback">
+                    <span style="font-size:13px;line-height:1;">🐞</span>
+                    <span>Feedback</span>
+                </button>
+                <button class="nav-btn" onclick="openSettingsModal()" id="tabbtn-settings" title="Configurações do Jogo, HUD & Qualidade de Vida (QoL)">
+                    <svg class="poke-svg-ico" viewBox="0 0 24 24"><use href="#poke-svg-gear"/></svg>
+                    <span>Opções</span>
+                </button>
+                <button class="nav-btn" onclick="switchTab('admin')" id="tabbtn-admin" title="Painel Admin e Balanceamento">
+                    <svg class="poke-svg-ico" viewBox="0 0 24 24"><use href="#poke-svg-master"/></svg>
+                    <span>Admin</span>
+                </button>
+
+                <!-- REINICIAR JOGO: AO LADO DO BOTÃO SAIR NA GRADE -->
+                <div id="dock-btn-restart-wrap" class="draggable-btn-wrap">
+                    <button id="btn-topbar-restart-cache" class="nav-btn nav-btn-restart-top" onclick="forceCompleteGameRestartAndClearCache()" title="Reiniciar completamente o jogo limpando todo o cache do navegador">
+                        <span style="font-size:12px;line-height:1;filter:drop-shadow(0 0 4px #38bdf8);">🔄</span>
+                        <span>Reiniciar</span>
+                    </button>
+                </div>
+                <button class="nav-btn logout-top-btn" id="btn-top-logout" onclick="logoutTrainer()" title="Sair da Conta / Trocar de Treinador (Retorna ao Login)">
+                    <span>🚪 Sair</span>
+                </button>
+            </div>
+        </nav></nav>
+        <div class="win-resize-handle" data-resize-handle="top-menubar-hud" title="Arraste para redimensionar a Barra Superior (largura e altura)">&#9698;</div>
+    </header>
+
+    <!-- HUD EDIT MODE BANNER -->
+    <div id="hud-edit-mode-banner" class="hud-edit-mode-banner is-hidden">
+        <div class="hud-edit-banner-left">
+            <span class="hud-edit-pulse-icon">📐</span>
+            <div>
+                <div style="font-size:12px;font-weight:900;color:#38bdf8;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;">
+                    <span>MODO DE EDIÇÃO DO HUD</span>
+                    <span class="hud-live-tag" style="background:#0284c7;color:#fff;font-size:9px;padding:1px 6px;border-radius:4px;">ATIVO</span>
+                </div>
+                <div style="font-size:10.5px;color:#94a3b8;margin-top:2px;">
+                    Arraste qualquer barra, dock de golpes ou botão. Redimensione e reorganize livremente!
+                </div>
+            </div>
+        </div>
+        <div class="hud-edit-banner-actions">
+            <!-- RESIZE BUTTONS STEPPER -->
+            <div class="hud-edit-scale-stepper" title="Ajuste o tamanho e escala de todos os botões da barra superior">
+                <span style="font-size:11px;font-weight:800;color:#fde047;">🔍 Botões:</span>
+                <button class="btn btn-secondary btn-sm" onclick="changeTopbarButtonsScale(-0.1)" title="Diminuir tamanho dos botões">➖</button>
+                <span id="hud-btn-scale-display" style="font-size:11px;font-weight:900;color:#38bdf8;min-width:44px;text-align:center;">100%</span>
+                <button class="btn btn-secondary btn-sm" onclick="changeTopbarButtonsScale(0.1)" title="Aumentar tamanho dos botões">➕</button>
+            </div>
+            <!-- OPEN REORGANIZE MODAL -->
+            <button class="btn btn-secondary btn-sm" onclick="openTopbarOrganizerModal()" title="Abrir painel para organizar ordem, destacar ou ocultar botões">
+                <span>📋</span>
+                <span>Organizar Botões</span>
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="savePlayerHudProfile()" title="Salvar perfil do HUD com novas posições e tamanhos">
+                <span>💾</span>
+                <span>Salvar Perfil</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="resetPlayerHudProfile()" title="Redefinir todas as barras, botões e golpes para o layout de fábrica">
+                <span>🔄</span>
+                <span>Padrão</span>
+            </button>
+            <button class="btn btn-gold btn-sm" onclick="toggleHudEditMode(false)" title="Concluir edição">
+                <span>✓</span>
+                <span>Concluir</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE ORGANIZAÇÃO E REDIMENSIONAMENTO DOS BOTÕES DA TOP BAR -->
+    <div id="modal-topbar-organizer" class="poke-modal-overlay is-hidden" onclick="if(event.target===this) closeTopbarOrganizerModal()">
+        <div class="poke-modal-dialog topbar-organizer-dialog" style="max-width:760px;width:95vw;">
+            <div class="poke-modal-header" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg, #0f172a 0%, #1e293b 100%);border-bottom:1.5px solid #38bdf8;padding:12px 18px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:22px;">📋</span>
+                    <div>
+                        <div style="font-size:15px;font-weight:900;color:#38bdf8;">Organizador de Botões da Barra Superior</div>
+                        <div style="font-size:11px;color:#94a3b8;">Reorganize a ordem, destaque botões para flutuarem na tela ou altere o tamanho</div>
+                    </div>
+                </div>
+                <button class="poke-modal-close" onclick="closeTopbarOrganizerModal()" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <div class="poke-modal-body" style="padding:16px 20px;max-height:65vh;overflow-y:auto;">
+                <!-- QUICK SIZE PRESETS -->
+                <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(56,189,248,0.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <div style="font-size:12px;font-weight:800;color:#fde047;">🔍 Tamanho dos Botões da Barra:</div>
+                        <div style="font-size:10.5px;color:#94a3b8;">Escolha um tamanho predefinido ou ajuste livremente pelo seletor</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                        <button class="btn btn-secondary btn-sm" onclick="setTopbarButtonsScale(0.8)">Compacto (80%)</button>
+                        <button class="btn btn-secondary btn-sm" onclick="setTopbarButtonsScale(1.0)">Padrão (100%)</button>
+                        <button class="btn btn-secondary btn-sm" onclick="setTopbarButtonsScale(1.2)">Grande (120%)</button>
+                        <button class="btn btn-secondary btn-sm" onclick="setTopbarButtonsScale(1.4)">Gigante (140%)</button>
+                    </div>
+                </div>
+
+                <!-- DRAGGABLE / REORDERABLE BUTTONS LIST -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <div style="font-size:12px;font-weight:800;color:#e2e8f0;">Ordem dos Botões (Arraste ou use as setas para mover):</div>
+                    <div style="font-size:11px;color:#38bdf8;">Total de <span id="topbar-organizer-count">0</span> botões</div>
+                </div>
+                
+                <div id="topbar-organizer-list" class="topbar-organizer-list" style="display:flex;flex-direction:column;gap:6px;">
+                    <!-- Rendered dynamically by renderTopbarOrganizer() -->
+                </div>
+            </div>
+            <div class="poke-modal-footer" style="padding:12px 20px;display:flex;justify-content:space-between;align-items:center;background:rgba(15,23,42,0.95);border-top:1px solid #1e293b;">
+                <button class="btn btn-secondary" onclick="resetTopbarButtonsOrder()" style="padding:8px 16px;">
+                    <span>🔄</span>
+                    <span>Restaurar Ordem Padrão</span>
+                </button>
+                <div style="display:flex;gap:10px;">
+                    <button class="btn btn-green" onclick="savePlayerHudProfile(); closeTopbarOrganizerModal();" style="padding:8px 20px;font-weight:900;">
+                        <span>💾</span>
+                        <span>Salvar e Fechar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING UPDATE ANNOUNCEMENT BOX -->
+    <div id="floating-update-announcer" class="floating-update-announcer is-hidden" data-draggable-panel="floating-update-announcer">
+        <div class="update-announcer-inner">
+            <div class="update-announcer-header" data-drag-handle="floating-update-announcer">
+                <div class="update-announcer-badge">
+                    <span class="pulsing-radar-dot"></span>
+                    <span>🚀 NOVA ATUALIZAÇÃO DISPONÍVEL!</span>
+                </div>
+                <button class="update-close-btn" onclick="dismissUpdateAnnouncement(300)" title="Fechar aviso temporariamente">✕</button>
+            </div>
+            <div class="update-announcer-body">
+                <div class="update-announcer-title" id="update-announcer-title">O jogo foi atualizado no servidor!</div>
+                <div class="update-announcer-message" id="update-announcer-message">
+                    Uma nova versão com correções de combate, venda de Pokémon na Loja e novas mecânicas está disponível. O jogo precisa ser reiniciado para carregar todas as novidades sem conflito de cache.
+                </div>
+                <div class="update-announcer-meta">
+                    <span>Versão: <strong id="update-announcer-version" style="color:#38bdf8;">v1.6.2</strong></span>
+                    <span>Status: <strong style="color:#4ade80;">Servidor Atualizado</strong></span>
+                </div>
+            </div>
+            <div class="update-announcer-actions">
+                <button class="btn btn-gold btn-restart-pulse" onclick="forceCompleteGameRestartAndClearCache()" style="font-weight:900;flex:1;">
+                    🔄 Reiniciar Agora (Limpar Cache)
+                </button>
+                <button class="btn btn-secondary" onclick="dismissUpdateAnnouncement(300)">
+                    ⏱️ Lembrar em 5 Min
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         3. FLOATING ROUTE BANNER & FLOATING TEXTS OVER THE MAP
+         ========================================================= -->
+    <div id="floating-route-banner" class="floating-route-banner" data-draggable-panel="floating-route-banner" style="display:none !important;">
+        <div class="floating-route-main" data-drag-handle="floating-route-banner" title="Arraste para mover ou clique para abrir Mapas & Rotas">
+            <span class="bar-drag-handle is-inline">⠿</span>
+            <div id="arena-zone-types" class="floating-zone-types"></div>
+            <span class="floating-route-pill" id="floating-route-mode-pill" onclick="if(!window._hudJustDragged) toggleFloatingMenu('float-panel-atlas', 'menubtn-atlas')" title="Clique para trocar de Mapa / Rota (ou arraste para mover)">
+                MAPA ATUAL ▾
+            </span>
+            <span id="arena-zone-title" class="floating-zone-title-text" onclick="if(!window._hudJustDragged) toggleFloatingMenu('float-panel-atlas', 'menubtn-atlas')">
+                Kanto: Magikarp (Lv. 1)
+            </span>
+            <button class="floating-central-quick-pill" id="btn-banner-central" onclick="if(!window._hudJustDragged) toggleBetweenCentralAndHunt()" title="Ir para a Cidade Central ou Voltar para a Caça">
+                🏙️ Ir p/ Central
+            </button>
+            <span id="target-base-rate-info" class="floating-target-rate-text"></span>
+        </div>
+        <div class="floating-controls-subtext" style="display:none;">
+            <span id="hud-rates-summary" class="floating-rates-text"></span>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         4. CENTRAL DE CHAT & COMUNICAÇÃO (LOCAL, GLOBAL, TRADE, GUILD, SYSTEM, WHISPER)
+         ========================================================= -->
+    <!-- Floating Minimized Chat Bubble (Icon with Unread Counter) -->
+    <button id="floating-chat-bubble" class="floating-chat-bubble is-hidden" onclick="expandChatFromBubble()" title="Expandir Chat">
+        <span class="chat-bubble-icon">💬</span>
+        <span id="chat-bubble-unread" class="chat-bubble-unread-badge" style="display:none;">0</span>
+    </button>
+
+    <div id="floating-chat-stream" class="floating-chat-stream" data-draggable-panel="floating-chat-stream">
+        <div class="chat-header-bar" data-drag-handle="floating-chat-stream" title="Arraste para mover o Chat">
+            <span class="bar-drag-handle is-inline">⠿</span>
+            <div class="chat-tabs-track">
+                <button class="chat-tab-btn active" data-chat-channel="local" onclick="switchChatChannel('local')">💬 Local</button>
+                <button class="chat-tab-btn" data-chat-channel="global" onclick="switchChatChannel('global')">🌐 Global</button>
+                <button class="chat-tab-btn" data-chat-channel="trade" onclick="switchChatChannel('trade')">💰 Trade</button>
+                <button class="chat-tab-btn" data-chat-channel="guild" onclick="switchChatChannel('guild')">🛡️ Guild</button>
+                <button class="chat-tab-btn" data-chat-channel="system" onclick="switchChatChannel('system')">📜 Sistema</button>
+                <button class="chat-tab-btn" data-chat-channel="whisper" onclick="switchChatChannel('whisper')">✉️ Whisper <span id="whisper-unread-badge" class="chat-unread-badge" style="display:none;">0</span></button>
+            </div>
+            <button class="chat-collapse-btn" onclick="collapseFloatingPanel('floating-chat-stream')" title="Minimizar/Expandir">—</button>
+        </div>
+        <div class="chat-body-content">
+            <div class="chat-messages-container" id="chat-messages-container"></div>
+            <div id="combat-log" style="display:none;"></div>
+            <div class="chat-input-toolbar">
+                <select id="chat-channel-select" class="chat-channel-select" onchange="onChatChannelSelectChange(this.value)">
+                    <option value="local">💬 Local</option>
+                    <option value="global">🌐 Global</option>
+                    <option value="trade">💰 Trade</option>
+                    <option value="guild">🛡️ Guild</option>
+                    <option value="whisper">✉️ Whisper</option>
+                </select>
+                <input id="chat-input-text" type="text" class="chat-input-text" placeholder="Falar no chat... (use /w jogador para sussurrar)" maxlength="220" onkeydown="handleChatInputKeyDown(event)">
+                <button class="chat-send-btn" onclick="sendChatMessage()" title="Enviar Mensagem (Enter)">➤</button>
+            </div>
+        </div>
+        <div class="win-resize-handle" data-resize-handle="floating-chat-stream" title="Arraste para redimensionar (largura e altura)">&#9698;</div>
+    </div>
+
+    <!-- =========================================================
+         5. FLOATING HUD OVERLAY MENUS & MODAL WINDOWS
+         ========================================================= -->
+    <main class="fullscreen-hud-layer">
+        <!-- TAB 1: FLOATING HUD PANELS OVER FULLSCREEN MAP -->
+        <section id="tab-hunt" class="tab-pane active">
+                        <!-- FLOATING MENU 0 (LEFT): PAINEL DO TREINADOR & AUTO-FARM HUD -->
+            <aside id="float-panel-player" class="floating-hud-panel float-pos-player-hud" data-draggable-panel="float-panel-player">
+                <div class="tibia-window poke-window player-hud-window">
+                    <div class="tibia-win-header poke-win-header" data-drag-handle="float-panel-player" title="Arraste pelo cabeçalho para mover o Painel do Treinador">
+                        <span class="win-title-with-ball">
+                            <span class="bar-drag-handle is-inline">⠿</span>
+                            <span class="header-pokeball-svg is-great"></span>
+                            <span>TREINADOR & STATUS</span>
+                        </span>
+                        <div class="float-win-controls">
+                            <button class="float-ctrl-btn" onclick="collapseFloatingPanel('float-panel-player')" title="Minimizar/Expandir">—</button>
+                            <button class="float-ctrl-btn is-close" onclick="toggleFloatingMenu('float-panel-player', 'menubtn-playerhud')" title="Ocultar">✕</button>
+                        </div>
+                    </div>
+
+                    <div class="tibia-win-body player-hud-win-body">
+                        <!-- Top Trainer Hero & Level Card -->
+                        <div class="side-trainer-hero" onclick="switchTab('status')" title="Clique para abrir o Menu Completo de Status (Atalho: C)">
+                            <div class="side-trainer-avatar-box">
+                                <img id="hud-trainer-avatar-img" class="side-trainer-avatar" src="" alt="Trainer">
+                                <span class="side-trainer-online-dot" title="Treinador Conectado"></span>
+                            </div>
+                            <div class="side-trainer-details">
+                                <div class="side-trainer-name-row">
+                                    <span id="hud-trainer-name" class="side-trainer-name">Red</span>
+                                    <span id="hud-trainer-lvl" class="trainer-lvl-tag side-lvl-tag">Lv. 39</span>
+                                </div>
+                                <div class="trainer-exp-track side-exp-track" title="Progresso de Experiência do Treinador">
+                                    <div id="hud-trainer-exp-fill" class="trainer-exp-fill" style="width:45%;"></div>
+                                </div>
+                                <div class="side-trainer-sub">
+                                    <span class="side-status-link">📊 Ver Status (Atalho: C)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Currency, Diamonds, Pokédex & Master Key Grid -->
+                        <div class="side-player-metrics-grid">
+                            <div class="side-metric-chip side-gold-chip" title="PokéDollars / Ouro ($)">
+                                <span class="poke-dollar-badge">₽</span>
+                                <span id="hud-gold">$15,112</span>
+                            </div>
+                            <div class="side-metric-chip side-diamond-chip" title="Diamantes Premium">
+                                <span class="rmmz-icon-mini" style="background-position: -128px -672px;"></span>
+                                <span id="hud-diamonds">250</span>
+                            </div>
+                            <div class="side-metric-chip side-dex-chip" onclick="switchTab('pokedex')" title="Espécies Registradas na Pokédex" style="cursor:pointer;">
+                                <span class="mini-pokeball-dot"></span>
+                                <span id="hud-dex-count">7 / 400</span>
+                            </div>
+                            <div class="side-metric-chip side-key-chip" id="hud-key-pill" style="display:none;" title="Master Key desbloqueada!">
+                                <span class="rmmz-icon-mini" style="background-position: -192px -928px;"></span>
+                                <span>VIP Key</span>
+                            </div>
+                        </div>
+
+                        <!-- Auto-Farm Central Action Button -->
+                        <div class="side-autofarm-container">
+                            <button id="menubtn-autofarm" class="side-autofarm-action-btn" onclick="toggleAutoFarmMenu()" title="Central de Auto-Farm (Caça, Ataque, Captura e Coleta)">
+                                <div class="autofarm-btn-left">
+                                    <svg class="poke-svg-ico autofarm-ico" viewBox="0 0 24 24"><use href="#poke-svg-autobot"/></svg>
+                                    <div class="autofarm-text-group">
+                                        <span class="autofarm-main-title">Central de Auto-Farm</span>
+                                        <span class="autofarm-sub-hint">Caça • Ataque • Captura • Coleta</span>
+                                    </div>
+                                </div>
+                                <span id="autofarm-summary-badge" class="autofarm-status-badge">OFF</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="win-resize-handle" data-resize-handle="float-panel-player" title="Arraste para redimensionar (largura e altura)">&#9698;</div>
+                </div>
+            </aside>
+
+            <!-- FLOATING MENU 1 (LEFT): MEU TIME -->
+            <aside id="float-panel-pokebar" class="floating-hud-panel float-pos-left" data-draggable-panel="float-panel-pokebar">
+                <div class="tibia-window poke-window">
+                    <div class="tibia-win-header poke-win-header" data-drag-handle="float-panel-pokebar" title="Arraste pelo cabeçalho para mover Meu Time">
+                        <span class="win-title-with-ball">
+                            <span class="bar-drag-handle is-inline">⠿</span>
+                            <span class="header-pokeball-svg"></span>
+                            <span>MEU TIME</span>
+                        </span>
+                        <div class="float-win-controls">
+                            <span id="pokebar-mitico-tag" class="header-mitico-pill"></span>
+                            <button class="float-ctrl-btn" onclick="collapseFloatingPanel('float-panel-pokebar')" title="Minimizar/Expandir">—</button>
+                            <button class="float-ctrl-btn is-close" onclick="toggleFloatingMenu('float-panel-pokebar', 'menubtn-pokebar')" title="Fechar">✕</button>
+                        </div>
+                    </div>
+                    <div class="poke-window-submenu-bar">
+                        <button class="party-submenu-pill active" data-party-sub="team" onclick="switchPartySubmenu('team')">👥 Time</button>
+                        <button class="party-submenu-pill" data-party-sub="stats" onclick="switchPartySubmenu('stats')">📊 Status & IVs</button>
+                        <button class="party-submenu-pill" data-party-sub="moves" onclick="switchPartySubmenu('moves')">⚔️ Golpes</button>
+                        <button class="party-submenu-pill" data-party-sub="items" onclick="switchPartySubmenu('items')">🎒 Itens</button>
+                    </div>
+                    <div class="tibia-win-body">
+                        <!-- Dynamic Submenu Container for Stats / Moves / Items -->
+                        <div id="party-sub-container" style="display:none;padding:8px;"></div>
+
+                        <!-- Highlighted Active Leader Banner -->
+                        <div id="pokebar-active-leader" class="poke-leader-banner"></div>
+
+                        <!-- 6-Slot Party Bench -->
+                        <div class="pokebar-list" id="tibia-pokebar-list"></div>
+
+                        <!-- Pokémon Command Pad -->
+                        <div class="tibia-order-grid">
+                            <button class="tibia-btn poke-cmd-btn is-red" onclick="toggleSummonOut()">🔴 Invocar / Guardar</button>
+                            <button class="tibia-btn poke-cmd-btn is-blue" id="btn-order-mode" onclick="toggleOrderMode()">📍 Mover</button>
+                            <button class="tibia-btn poke-cmd-btn is-pink" onclick="healFullParty()">🏥 Curar</button>
+                            <button class="tibia-btn poke-cmd-btn active-toggle" id="btn-autoloot" onclick="toggleAutoLoot()">🧲 Auto-Coleta: ON</button>
+                        </div>
+                    </div>
+                    <div class="win-resize-handle" data-resize-handle="float-panel-pokebar" title="Arraste para redimensionar (largura e altura)">&#9698;</div>
+                </div>
+            </aside>
+
+            <!-- FLOATING MENU 2 (TOP DROPDOWN): MAPAS & ROTAS -->
+            <aside id="float-panel-atlas" class="floating-hud-panel float-pos-atlas is-hidden" data-draggable-panel="float-panel-atlas">
+                <div class="tibia-window poke-window">
+                    <div class="tibia-win-header poke-win-header" data-drag-handle="float-panel-atlas" title="Arraste pelo cabeçalho para mover Mapas & Rotas">
+                        <span class="win-title-with-ball">
+                            <span class="bar-drag-handle is-inline">⠿</span>
+                            <span class="header-pokeball-svg is-great"></span>
+                            <span>MAPAS & ROTAS</span>
+                        </span>
+                        <div class="float-win-controls">
+                            <span id="zone-count-badge" class="header-count-pill">358 rotas</span>
+                            <button class="float-ctrl-btn" onclick="collapseFloatingPanel('float-panel-atlas')" title="Minimizar/Expandir">—</button>
+                            <button class="float-ctrl-btn is-close" onclick="toggleFloatingMenu('float-panel-atlas', 'menubtn-atlas')" title="Fechar">✕</button>
+                        </div>
+                    </div>
+                    <div class="poke-window-submenu-bar">
+                        <button class="atlas-submenu-pill active" data-atlas-sub="kanto" onclick="switchAtlasSubmenu('kanto')">🏝️ Kanto</button>
+                        <button class="atlas-submenu-pill" data-atlas-sub="wild" onclick="switchAtlasSubmenu('wild')">🌋 Hunts</button>
+                        <button class="atlas-submenu-pill" data-atlas-sub="mythic" onclick="switchAtlasSubmenu('mythic')">⭐ Míticas</button>
+                        <button class="atlas-submenu-pill" data-atlas-sub="hub" onclick="enterCentralHubMap(true)">🏙️ Praça</button>
+                    </div>
+                    <div class="tibia-win-body">
+                        <button class="central-city-warp-banner" onclick="enterCentralHubMap(true)">
+                            <span>🏙️ <strong>CIDADE CENTRAL (SAFFRON PLAZA)</strong> — Encontrar Jogadores, Trocar, Evoluir & Social</span>
+                            <span class="warp-pill-tag">TELEPORTAR ▸</span>
+                        </button>
+                        <div class="world-tabs" id="world-tabs-container"></div>
+                        <div id="active-world-banner" class="world-atlas-banner"></div>
+                        <input type="text" id="zone-search-input" class="zone-search" placeholder="🔍 Buscar Pokémon ou rota (ex: Magikarp, Charizard)..." oninput="renderZoneList()">
+                        <div class="zone-list" id="zone-list-container"></div>
+                    </div>
+                    <div class="win-resize-handle" data-resize-handle="float-panel-atlas" title="Arraste para redimensionar (largura e altura)">&#9698;</div>
+                </div>
+            </aside>
+
+            <!-- FLOATING MENU 2B (CENTRAL SOCIAL HUB): TROCAS, EVOLUÇÃO & INTERAÇÃO SOCIAL -->
+            <aside id="float-panel-central" class="floating-hud-panel float-pos-central is-hidden" data-draggable-panel="float-panel-central">
+                <div class="tibia-window poke-window">
+                    <div class="tibia-win-header poke-win-header" data-drag-handle="float-panel-central" title="Arraste pelo cabeçalho para mover a janela da Cidade Central">
+                        <span class="win-title-with-ball">
+                            <span class="bar-drag-handle is-inline">⠿</span>
+                            <span class="header-pokeball-svg is-master"></span>
+                            <span>🏙️ CIDADE CENTRAL — TROCAS, EVOLUÇÃO & SOCIAL</span>
+                        </span>
+                        <div class="float-win-controls">
+                            <button class="central-warp-toggle-btn" id="btn-toggle-hub-mode" onclick="toggleBetweenCentralAndHunt()">🌀 Voltar p/ Caça</button>
+                            <button class="float-ctrl-btn" onclick="collapseFloatingPanel('float-panel-central')" title="Minimizar/Expandir">—</button>
+                            <button class="float-ctrl-btn is-close" onclick="closeCentralPanel()" title="Fechar">✕</button>
+                        </div>
+                    </div>
+                    <div class="tibia-win-body central-hub-body">
+                        <!-- Sub-Navigation Tabs inside Central Hub Window -->
+                        <div class="central-subtabs is-four-tabs">
+                            <button class="central-subtab-btn active" id="csub-btn-trade" onclick="switchCentralSubTab('trade')">🤝 Trocar Pokémon</button>
+                            <button class="central-subtab-btn" id="csub-btn-evolve" onclick="switchCentralSubTab('evolve')">✨ Evoluir Pokémon</button>
+                            <button class="central-subtab-btn" id="csub-btn-social" onclick="switchCentralSubTab('social')">💬 Social & Jogadores</button>
+                            <button class="central-subtab-btn" id="csub-btn-avatars" onclick="switchCentralSubTab('avatars')">🎨 Treinadores HGSS (10 Skins)</button>
+                        </div>
+
+                        <!-- Quick Social Emote & Speech Bar (Always accessible in Central Hub) -->
+                        <div class="central-emote-bar">
+                            <span class="emote-lbl">Balão no Mapa:</span>
+                            <button class="emote-chip" onclick="sendPlayerHubEmote('👋 Olá pessoal!')">👋 Olá</button>
+                            <button class="emote-chip" onclick="sendPlayerHubEmote('🤝 Troco Pokémon / Shiny!')">🤝 Trocar</button>
+                            <button class="emote-chip" onclick="sendPlayerHubEmote('✨ Olhem meu Pokémon Mítico!')">✨ Exibir</button>
+                            <button class="emote-chip" onclick="sendPlayerHubEmote('⚔️ Alguém Duelo 1v1 na Arena?')">⚔️ PvP</button>
+                            <button class="emote-chip" onclick="sendPlayerHubEmote('❤️ GG / Boa caça!')">❤️ GG</button>
+                        </div>
+
+                        <!-- Dynamic Content Container for Trade / Evolve / Social -->
+                        <div id="central-hub-content" class="central-hub-content"></div>
+                    </div>
+                    <div class="win-resize-handle" data-resize-handle="float-panel-central" title="Arraste para redimensionar (largura e altura)">&#9698;</div>
+                </div>
+            </aside>
+
+            <!-- FLOATING MENU 3 (TOP DROPDOWN): CENTRAL DE AUTO-FARM (UNIFIED AUTOMATION) -->
+            <aside id="float-panel-autofarm" class="floating-hud-panel float-pos-autofarm is-hidden" data-draggable-panel="float-panel-autofarm">
+                <div class="tibia-window poke-window autofarm-window">
+                    <div class="tibia-win-header poke-win-header" data-drag-handle="float-panel-autofarm" title="Arraste para mover o Auto-Farm">
+                        <span class="win-title-with-ball">
+                            <span class="bar-drag-handle is-inline">⠿</span>
+                            <span class="header-pokeball-svg is-master"></span>
+                            <span>CENTRAL DE AUTO-FARM</span>
+                        </span>
+                        <div class="float-win-controls">
+                            <button class="float-ctrl-btn" onclick="collapseFloatingPanel('float-panel-autofarm')" title="Minimizar">—</button>
+                            <button class="float-ctrl-btn is-close" onclick="toggleAutoFarmMenu()" title="Fechar">✕</button>
+                        </div>
+                    </div>
+                    <div class="poke-window-submenu-bar">
+                        <button class="autofarm-submenu-pill active" data-autofarm-sub="modules" onclick="switchAutoFarmSubmenu('modules')">⚡ Módulos</button>
+                        <button class="autofarm-submenu-pill" data-autofarm-sub="offline" onclick="switchAutoFarmSubmenu('offline')">💤 Farm Offline</button>
+                        <button class="autofarm-submenu-pill" data-autofarm-sub="presets" onclick="switchAutoFarmSubmenu('presets')">💾 Presets</button>
+                        <button class="autofarm-submenu-pill" data-autofarm-sub="visual" onclick="switchAutoFarmSubmenu('visual')">🎨 Visual</button>
+                    </div>
+                    <div class="tibia-win-body autofarm-body">
+                        <!-- Master Control Header -->
+                        <div class="autofarm-master-banner">
+                            <div class="autofarm-master-info">
+                                <span class="autofarm-master-title">⚡ Automação Global</span>
+                                <span class="autofarm-master-sub" id="autofarm-active-summary">0 de 4 módulos ativos</span>
+                            </div>
+                            <div class="autofarm-master-actions">
+                                <button class="tibia-btn poke-cmd-btn is-green" onclick="setAllAutoFarm(true)" title="Ativar todos os módulos de caça, combate, captura e coleta">⚡ Ligar Tudo</button>
+                                <button class="tibia-btn poke-cmd-btn is-red" onclick="setAllAutoFarm(false)" title="Pausar todas as rotinas automáticas">⏹️ Desligar Tudo</button>
+                            </div>
+                        </div>
+
+                        <!-- 4 Main Automation Modules -->
+                        <div class="autofarm-modules-grid">
+
+                            <!-- Module 1: Auto-Caça (Cavebot) -->
+                            <div class="autofarm-card" id="card-autohunt">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">🏃</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Auto-Caça (Cavebot)</div>
+                                            <div class="autofarm-mod-desc">Caminha e persegue alvos pela rota</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-toggle-autohunt" class="autofarm-switch-btn" onclick="toggleAutoHunt()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">OFF</span>
+                                    </button>
+                                </div>
+                                <div class="autofarm-card-options">
+                                    <label>Velocidade:</label>
+                                    <select id="autohunt-speed" class="poke-select" onchange="updateAutoHuntSpeed()">
+                                        <option value="2600">🚶 Calmo (2.6s)</option>
+                                        <option value="1440" selected>⚡ Normal (1.4s)</option>
+                                        <option value="720">🚀 Rápido (0.7s)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Module 2: Auto-Ataque (Golpes) -->
+                            <div class="autofarm-card" id="card-autoattack">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">⚔️</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Auto-Ataque (Habilidades)</div>
+                                            <div class="autofarm-mod-desc">Dispara habilidades m1-m4 nos monstros</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-toggle-autoattack" class="autofarm-switch-btn is-on" onclick="toggleAutoMoves()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">ON</span>
+                                    </button>
+                                </div>
+                                <div class="autofarm-card-options move-slots-row">
+                                    <span style="font-size:10px;color:#94a3b8;font-weight:700;">Golpes Ativos:</span>
+                                    <div class="autofarm-move-chips" id="autofarm-move-chips">
+                                        <button class="move-chip-btn active" onclick="toggleSingleMoveAuto(0, event)">m1</button>
+                                        <button class="move-chip-btn active" onclick="toggleSingleMoveAuto(1, event)">m2</button>
+                                        <button class="move-chip-btn active" onclick="toggleSingleMoveAuto(2, event)">m3</button>
+                                        <button class="move-chip-btn active" onclick="toggleSingleMoveAuto(3, event)">m4</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Module 3: Auto-Captura (Pokébolas) -->
+                            <div class="autofarm-card" id="card-autocatch">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">🔴</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Auto-Captura (Pokébolas)</div>
+                                            <div class="autofarm-mod-desc">Lança Pokébolas em monstros caídos</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-toggle-autocatch" class="autofarm-switch-btn" onclick="toggleAutoCatch()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">OFF</span>
+                                    </button>
+                                </div>
+                                <div class="autofarm-card-options" style="flex-direction:column;align-items:stretch;gap:5px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <label>Filtro:</label>
+                                        <select id="autocatch-mode" class="poke-select" onchange="changeAutoCatchMode(this.value)">
+                                            <option value="always" selected>🎯 Capturar Todos</option>
+                                            <option value="shiny_or_new">✨ Somente Shinies e Novos</option>
+                                            <option value="rare_plus">💎 Somente Raros / Míticos</option>
+                                        </select>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <label>Pokébola:</label>
+                                        <select id="autocatch-ball" class="poke-select is-ball" onchange="changeAutoCatchBall(this.value)">
+                                            <option value="best" selected>✨ Melhor Disponível</option>
+                                            <option value="cheap">🪙 Econômica (Menor Custo)</option>
+                                            <option value="capsule_ultra">Ultra Ball (4x)</option>
+                                            <option value="capsule_great">Great Ball (2x)</option>
+                                            <option value="capsule_poke">Poké Ball (1x)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Module 4: Auto-Coleta (Auto-Loot) -->
+                            <div class="autofarm-card" id="card-autoloot">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">🎒</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Auto-Coleta (Auto-Loot)</div>
+                                            <div class="autofarm-mod-desc">Coleta ouro e itens de drops no chão</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-toggle-autoloot" class="autofarm-switch-btn is-on" onclick="toggleAutoLoot()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">ON</span>
+                                    </button>
+                                </div>
+                                <div class="autofarm-card-options">
+                                    <span style="font-size:10px;color:#94a3b8;">Ouro, materiais e itens raros caídos vão direto para a bolsa.</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Offline Farm View (Expedição Desconectado) -->
+                        <div class="autofarm-offline-view" id="autofarm-offline-view" style="display:none;">
+                            <!-- Master status banner -->
+                            <div class="offline-banner-box">
+                                <div class="offline-banner-info">
+                                    <span class="offline-banner-title">💤 Expedição Offline</span>
+                                    <span class="offline-banner-sub" id="offline-summary-badge">Status: ATIVO (Até 12 horas de progresso contínuo)</span>
+                                </div>
+                                <button id="btn-toggle-offline-farm" class="autofarm-switch-btn is-on" onclick="toggleOfflineFarmState()">
+                                    <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                    <span class="switch-text">ON</span>
+                                </button>
+                            </div>
+
+                            <!-- Live Rate Preview -->
+                            <div class="offline-rate-card">
+                                <div class="offline-rate-header">
+                                    <span>⚡ Rendimento Estimado por Hora Ausente:</span>
+                                    <span class="offline-rate-tag" id="offline-efficiency-tag">Eficiência: 100%</span>
+                                </div>
+                                <div class="offline-stats-mini-grid">
+                                    <div class="offline-mini-stat">
+                                        <span class="offline-stat-num" id="rate-kills">~750</span>
+                                        <span class="offline-stat-lbl">Inimigos / h</span>
+                                    </div>
+                                    <div class="offline-mini-stat">
+                                        <span class="offline-stat-num is-gold" id="rate-gold">+$15.000</span>
+                                        <span class="offline-stat-lbl">Ouro / h</span>
+                                    </div>
+                                    <div class="offline-mini-stat">
+                                        <span class="offline-stat-num is-exp" id="rate-exp">+30.000</span>
+                                        <span class="offline-stat-lbl">EXP / h</span>
+                                    </div>
+                                    <div class="offline-mini-stat">
+                                        <span class="offline-stat-num is-ball" id="rate-catches">~25 - 35</span>
+                                        <span class="offline-stat-lbl">Capturas / h</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Offline Expedition Route Selection -->
+                            <div class="autofarm-card">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">🧭</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Rota da Expedição Offline</div>
+                                            <div class="autofarm-mod-desc">Onde seu treinador caça e treina enquanto desconectado</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="autofarm-card-options">
+                                    <select id="offline-route-select" class="poke-select is-gold" onchange="changeOfflineExpeditionZone(this.value)" style="width:100%;">
+                                        <option value="" selected>📍 Rota Atual (Onde estiver caçando)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Offline Auto-Catch Options -->
+                            <div class="autofarm-card">
+                                <div class="autofarm-card-header">
+                                    <div class="autofarm-card-title-box">
+                                        <span class="autofarm-mod-icon">🔴</span>
+                                        <div>
+                                            <div class="autofarm-mod-title">Captura Automática Offline</div>
+                                            <div class="autofarm-mod-desc">Lança Pokébolas da bolsa nos Pokémon derrotados</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-toggle-offline-catch" class="autofarm-switch-btn is-on" onclick="toggleOfflineAutoCatch()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">ON</span>
+                                    </button>
+                                </div>
+                                <div class="autofarm-card-options" style="flex-direction:column;gap:6px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <label>Pokébola Preferida:</label>
+                                        <select id="offline-catch-ball" class="poke-select is-ball" onchange="changeOfflineCatchBall(this.value)">
+                                            <option value="best" selected>✨ Melhor Disponível</option>
+                                            <option value="capsule_ultra">Ultra Ball (4x)</option>
+                                            <option value="capsule_great">Great Ball (2x)</option>
+                                            <option value="capsule_basic">Poké Ball (1x)</option>
+                                        </select>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <label>Capacidade do Armazém:</label>
+                                        <span style="font-size:11px;color:#38bdf8;font-weight:700;">Até 12 horas consecutivas</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Simulator and Test Sandbox -->
+                            <div class="offline-sim-card">
+                                <div class="offline-sim-title">🧪 Testar / Simular Farm Offline (Demonstração):</div>
+                                <div class="offline-sim-buttons">
+                                    <button class="tibia-btn poke-cmd-btn" onclick="triggerOfflineSimulation(0.5)">+30 Min</button>
+                                    <button class="tibia-btn poke-cmd-btn is-green" onclick="triggerOfflineSimulation(2.0)">+2 Horas</button>
+                                    <button class="tibia-btn poke-cmd-btn is-blue" onclick="triggerOfflineSimulation(8.0)">+8 Horas</button>
+                                    <button class="tibia-btn poke-cmd-btn is-purple" onclick="triggerOfflineSimulation(12.0)">+12 Horas</button>
+                                </div>
+                                <button class="tibia-btn poke-cmd-btn is-gold" onclick="openLastOfflineReportModal()" style="width:100%;margin-top:6px;">📜 Ver Último Relatório de Resgate</button>
+                            </div>
+                        </div>
+                        <div class="autofarm-presets-bar">
+                            <span class="presets-title">Presets Rápidos:</span>
+                            <div class="presets-buttons">
+                                <button class="tibia-btn poke-cmd-btn" onclick="applyAutoFarmPreset('full_hunt')">🔥 Caçador Completo</button>
+                                <button class="tibia-btn poke-cmd-btn" onclick="applyAutoFarmPreset('leveling')">⚔️ Treinar EXP</button>
+                                <button class="tibia-btn poke-cmd-btn" onclick="applyAutoFarmPreset('shiny_hunt')">✨ Somente Shinies</button>
+                            </div>
+                        </div>
+
+                        <!-- Preferências Gráficas do Treinador (Colapsável) -->
+                        <details class="autofarm-visual-settings">
+                            <summary>🎨 Preferências Visuais & Avatar</summary>
+                            <div class="float-auto-grid" style="padding-top:8px;">
+                                <div class="auto-field-row">
+                                    <label>Avatar do Treinador:</label>
+                                    <select id="trainer-avatar-select" class="poke-select is-gold" onchange="selectTrainerAvatarModel(this.value)"></select>
+                                </div>
+                                <div class="auto-field-row">
+                                    <label>Estilo do Mapa:</label>
+                                    <select id="map-bg-mode-select" class="poke-select is-gold" onchange="changeMapBgMode(this.value)">
+                                        <option value="hd_ring" selected>🗺️ Ilha HD Completa</option>
+                                        <option value="hd_zoom">🔍 Câmera Próxima HD</option>
+                                        <option value="pixel_tiles">🧱 Pixel-Art Clássico</option>
+                                    </select>
+                                </div>
+                                <div class="auto-field-row">
+                                    <label>Estilo Visual dos Pokémon:</label>
+                                    <select id="gba-version-select" class="poke-select" onchange="changeGbaSpriteVersion(this.value)">
+                                        <option value="pmd" selected>✨ 32-Bit PMD Oficial (SpriteCollab HD) — 5 Ações Padronizadas</option>
+                                    </select>
+                                </div>
+                                <div class="auto-field-actions" style="display:flex;gap:6px;margin-top:6px;">
+                                    <button class="tibia-btn poke-cmd-btn is-blue" onclick="forceSpawnWave()">⚡ + Gerar Pokémon</button>
+                                    <button class="tibia-btn poke-cmd-btn" onclick="resetHudPositions()">🔄 Resetar Janelas</button>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                    <div class="win-resize-handle" data-resize-handle="float-panel-autofarm" title="Arraste para redimensionar">&#9698;</div>
+                </div>
+            </aside>
+
+            <!-- TRANSLUCID POKÉMON MOVES DOCK (m1 - m4) - LIVREMENTE MOVÍVEL -->
+            <div id="dock-pokemon-moves" class="static-translucent-moves-dock" data-draggable-panel="dock-pokemon-moves">
+                <div class="moves-dock-drag-header" data-drag-handle="dock-pokemon-moves" title="Arraste para mover a Barra de Golpes para onde quiser">
+                    <span class="bar-drag-handle is-inline">⠿</span>
+                    <span class="moves-dock-drag-title">GOLPES (1–4)</span>
+                    <span class="moves-dock-drag-hint">Arraste para reposicionar</span>
+                </div>
+                <div class="moves-plate-grid" id="battle-moves-row"></div>
+                <div class="win-resize-handle" data-resize-handle="dock-pokemon-moves" title="Arraste para redimensionar a Barra de Golpes">&#9698;</div>
+            </div>
+
+            <!-- POKÉMON STATUS HOVER CARD -->
+            <div id="pokemon-hover-card" class="pokemon-hover-card is-hidden"></div>
+
+            <!-- FLOATING MENU 6 (BOTTOM CENTER): BARRA DE AÇÃO RÁPIDA (8 SLOTS DE ITENS & POKÉBOLAS) -->
+            <aside id="float-panel-actionbar" class="floating-hud-panel float-pos-actionbar" data-draggable-panel="float-panel-actionbar">
+                <div class="tibia-window poke-window actionbar-window">
+                    <div class="tibia-win-header poke-win-header" data-drag-handle="float-panel-actionbar" title="Arraste pelo cabeçalho para mover a Barra de Ação">
+                        <span class="win-title-with-ball">
+                            <span class="bar-drag-handle is-inline">⠿</span>
+                            <span class="header-pokeball-svg is-master"></span>
+                            <span>ITENS RÁPIDOS (<kbd>Alt+1</kbd>–<kbd>Alt+8</kbd>)</span>
+                        </span>
+                        <div class="float-win-controls">
+                            <button class="float-ctrl-btn" onclick="collapseFloatingPanel('float-panel-actionbar')" title="Minimizar/Expandir">—</button>
+                            <button class="float-ctrl-btn is-close" onclick="toggleFloatingMenu('float-panel-actionbar', 'menubtn-actionbar')" title="Fechar">✕</button>
+                        </div>
+                    </div>
+                    <div class="tibia-win-body actionbar-body">
+                        <div class="actionbar-slots-grid" id="quick-action-bar-slots">
+                            <!-- 8 Quick Action Item Slots Rendered by JS -->
+                        </div>
+                    </div>
+                    <div class="win-resize-handle" data-resize-handle="float-panel-actionbar" title="Arraste para redimensionar">&#9698;</div>
+                </div>
+            </aside>
+        </section>
+
+        <!-- TAB 2: FLOATING MODAL — POKÉDEX -->
+        <section id="tab-pokedex" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span class="header-pokeball-svg is-great"></span>
+                        <h2>📖 Pokédex (400 Pokémon)</h2>
+                    </div>
+                    <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Voltar ao Jogo</button>
+                </div>
+                <div class="poke-modal-submenu-bar">
+                    <button class="dex-submenu-pill active" data-dex-sub="all" onclick="switchDexSubmenu('all')">📖 Todas as Espécies</button>
+                    <button class="dex-submenu-pill" data-dex-sub="habitats" onclick="switchDexSubmenu('habitats')">🗺️ Habitats & Rotas</button>
+                    <button class="dex-submenu-pill" data-dex-sub="shinies" onclick="switchDexSubmenu('shinies')">✨ Shinies Raros</button>
+                </div>
+                <div class="floating-modal-content">
+                    <div class="pvp-header-bar">
+                        <p style="font-size:12.5px;color:#9ca3af;">Lista de Pokémon + Chances de Captura + Atalhos de Evolução + Teleporte para o Mapa</p>
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                            <input type="text" id="dex-search" placeholder="Buscar por nome ou nº..." oninput="renderPokedex()" style="background:#181b2e;border:1px solid #2e3454;color:#fff;padding:8px 14px;border-radius:10px;width:230px;font-size:13px;">
+                            <select id="dex-sort" onchange="renderPokedex()" style="background:#181b2e;border:1px solid #2e3454;color:#fff;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;">
+                                <option value="dex_asc" selected>Nº Pokédex (#001 → #493)</option>
+                                <option value="dex_desc">Nº Pokédex Reverso (#493 → #001)</option>
+                                <option value="catch_high">Mais Fáceis de Capturar</option>
+                                <option value="name_asc">Nome (A → Z)</option>
+                            </select>
+                            <label style="font-size:12.5px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                <input type="checkbox" id="dex-only-team" onchange="renderPokedex()"> Apenas "MEU TIME"
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="type-filter-bar" id="dex-type-filters"></div>
+                    <div class="pvp-cards-grid" id="pokedex-grid-container"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: FLOATING MODAL — MEUS POKÉMON (TIME VERTICAL & PC BOX FILTRÁVEL) -->
+        <section id="tab-party" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window pcbox-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span class="header-pokeball-svg is-ultra"></span>
+                        <h2>📦 Gerenciador Pokémon — Equipe Vertical & PC Box</h2>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button class="btn btn-purple" onclick="openRarityUpgradeModal()" style="background:#7c3aed;border-color:#a855f7;color:#fff;font-weight:700;"><span style="color:#facc15;">⭐</span> Aprimorar Raridade</button>
+                        <button class="btn btn-green" onclick="healFullParty()">💚 Curar Todos</button>
+                        <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Voltar ao Jogo</button>
+                    </div>
+                </div>
+
+                <div class="poke-modal-submenu-bar btn-grid-form">
+                    <button class="pc-submenu-pill active" data-pc-sub="all" onclick="switchPcBoxSubmenu('all')">📦 Box Geral (Todos)</button>
+                    <button class="pc-submenu-pill" data-pc-sub="mythics" onclick="switchPcBoxSubmenu('mythics')">⭐ Míticos & Lendários</button>
+                    <button class="pc-submenu-pill" data-pc-sub="shinies" onclick="switchPcBoxSubmenu('shinies')">✨ Apenas Shinies</button>
+                    <button class="pc-submenu-pill" onclick="openPokemartSellModal('box')" style="background:rgba(234,179,8,0.22);color:#fde047;border-color:#eab308;font-weight:900;" title="Abrir o Balcão Flutuante do PokéMart para vender Pokémon do PC Box em lote por Ouro">🏪 Vender no PokéMart (Lote)</button>
+                    <button class="pc-submenu-pill" data-pc-sub="elements" onclick="switchPcBoxSubmenu('elements')">🔍 Filtrar p/ Elemento</button>
+                </div>
+
+                <div class="floating-modal-content pcbox-split-content">
+                    <div class="pcbox-split-layout">
+                        <!-- LEFT COLUMN: VERTICAL MY TEAM (1 to 6 Pokémon) -->
+                        <div class="pcbox-vertical-team-panel">
+                            <div class="vertical-team-header">
+                                <div class="vertical-team-title">⚡ MEU TIME (<span id="vertical-team-count">0</span>/6)</div>
+                                <button class="btn btn-green btn-xs" onclick="healFullParty()" title="Curar todo o time">💚 Curar</button>
+                            </div>
+                            <p class="vertical-team-hint">Arraste ou use os botões para reordenar o líder e gerenciar sua equipe ativa:</p>
+                            <div class="vertical-party-list" id="party-grid-container">
+                                <!-- Rendered vertically by JS -->
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN: PC BOX STORAGE & ADVANCED FILTERS -->
+                        <div class="pcbox-storage-main-panel">
+                            <!-- Advanced Filter Toolbar -->
+                            <div class="pcbox-filter-toolbar">
+                                <div class="pcbox-search-row">
+                                    <input type="text" id="pcbox-filter-search" class="search-input" placeholder="🔍 Buscar por nome, espécie ou golpe..." oninput="renderPartyAndBox()">
+                                </div>
+                                <div class="pcbox-filters-row">
+                                    <select id="pcbox-filter-type" class="settings-select" onchange="renderPartyAndBox()">
+                                        <option value="all">🌐 Todos os Elementos</option>
+                                        <option value="water">Água (Water)</option>
+                                        <option value="fire">Fogo (Fire)</option>
+                                        <option value="grass">Planta (Grass)</option>
+                                        <option value="electric">Elétrico (Electric)</option>
+                                        <option value="dragon">Dragão (Dragon)</option>
+                                        <option value="steel">Aço (Steel)</option>
+                                        <option value="psychic">Psíquico (Psychic)</option>
+                                        <option value="ghost">Fantasma (Ghost)</option>
+                                        <option value="dark">Noturno (Dark)</option>
+                                        <option value="rock">Rocha (Rock)</option>
+                                        <option value="ground">Terra (Ground)</option>
+                                        <option value="ice">Gelo (Ice)</option>
+                                        <option value="flying">Voador (Flying)</option>
+                                        <option value="fighting">Lutador (Fighting)</option>
+                                        <option value="poison">Veneno (Poison)</option>
+                                        <option value="bug">Inseto (Bug)</option>
+                                        <option value="normal">Normal</option>
+                                    </select>
+
+                                    <select id="pcbox-filter-quality" class="settings-select" onchange="renderPartyAndBox()">
+                                        <option value="all">⭐ Todas as Raridades</option>
+                                        <option value="Mítico">🟢 Mítico (Grau S)</option>
+                                        <option value="Lendário">🟡 Lendário</option>
+                                        <option value="Épico">🟣 Épico</option>
+                                        <option value="Raro">🔵 Raro</option>
+                                        <option value="Incomum">⚪ Incomum</option>
+                                        <option value="Comum">Comum</option>
+                                    </select>
+
+                                    <select id="pcbox-filter-sort" class="settings-select" onchange="renderPartyAndBox()">
+                                        <option value="bst_desc">🔥 Maior BST / Poder</option>
+                                        <option value="lvl_desc">⚡ Maior Nível</option>
+                                        <option value="iv_desc">💎 Maior IV Total</option>
+                                        <option value="name_asc">🔤 Nome (A - Z)</option>
+                                        <option value="recent">⏱️ Recentes Primeiro</option>
+                                    </select>
+
+                                    <label class="pcbox-chk-label">
+                                        <input type="checkbox" id="pcbox-filter-shiny" onchange="renderPartyAndBox()">
+                                        <span>✨ Apenas Shinies</span>
+                                    </label>
+                                </div>
+                                <div class="pcbox-meta-summary" style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span id="pcbox-filtered-count-label">Carregando Pokémon...</span>
+                                    <button class="btn btn-gold btn-xs" onclick="openPokemartSellModal('box')" style="font-weight:900;padding:4px 12px;font-size:11px;display:flex;align-items:center;gap:6px;box-shadow:0 0 10px rgba(250,204,21,0.25);" title="Vender Pokémon diretamente do PC Box para o PokéMart">
+                                        <span>🏪</span>
+                                        <span>Balcão de Venda em Lote</span>
+                                    </button>
+                                    <span id="pcbox-count" style="display:none;">0</span>
+                                </div>
+                            </div>
+
+                            <!-- PC Box Cards Grid -->
+                            <div class="pcbox-cards-grid" id="pcbox-grid-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <!-- TAB: FLOATING MODAL — STATUS DO TREINADOR & EQUIPE -->
+        <section id="tab-status" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window status-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span style="font-size:22px;filter:drop-shadow(0 0 8px #38bdf8);margin-right:6px;">📊</span>
+                        <h2 style="background:linear-gradient(180deg,#e0f2fe 0%,#38bdf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Status do Treinador & Equipe</h2>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <button class="btn btn-blue" onclick="openTrainerAvatarSelector()" title="Trocar Skin do Treinador">🔄 Skin</button>
+                        <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Fechar</button>
+                    </div>
+                </div>
+
+                <div class="poke-modal-submenu-bar btn-grid-form">
+                    <button class="status-submenu-pill active" data-status-sub="trainer" onclick="switchStatusSubmenu('trainer')">👤 Perfil do Treinador</button>
+                    <button class="status-submenu-pill" data-status-sub="team" onclick="switchStatusSubmenu('team')">👾 Equipe Completa & IVs</button>
+                    <button class="status-submenu-pill" data-status-sub="badges" onclick="switchStatusSubmenu('badges')">🎖️ Insígnias de Ginásio</button>
+                    <button class="status-submenu-pill" data-status-sub="stats" onclick="switchStatusSubmenu('stats')">📈 Estatísticas de Carreira</button>
+                </div>
+
+                <div class="floating-modal-content status-modal-body">
+                    <!-- SUB 1: PERFIL DO TREINADOR -->
+                    <div id="status-sub-trainer" class="status-sub-view active">
+                        <div id="status-trainer-profile-container"></div>
+                    </div>
+
+                    <!-- SUB 2: EQUIPE COMPLETA & IVS -->
+                    <div id="status-sub-team" class="status-sub-view">
+                        <div class="status-team-toolbar">
+                            <span style="font-size:12.5px;color:#94a3b8;">Exibição profunda dos 6 Pokémon ativos, IVs (0–31), Natureza, BST, golpes equipados e ações rápidas.</span>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-purple" onclick="openRarityUpgradeModal()" style="background:#7c3aed;border-color:#a855f7;color:#fff;font-weight:700;"><span style="color:#facc15;">⭐</span> Aprimorar Raridade</button>
+                        <button class="btn btn-green" onclick="healFullParty()">💚 Curar Todos</button>
+                                <button class="btn btn-blue" onclick="switchTab('party')">📦 Abrir PC Box</button>
+                            </div>
+                        </div>
+                        <div class="status-team-grid" id="status-team-grid-container"></div>
+                    </div>
+
+                    <!-- SUB 3: INSÍGNIAS DE GINÁSIO -->
+                    <div id="status-sub-badges" class="status-sub-view">
+                        <div id="status-badges-container"></div>
+                    </div>
+
+                    <!-- SUB 4: ESTATÍSTICAS DE CARREIRA -->
+                    <div id="status-sub-stats" class="status-sub-view">
+                        <div id="status-career-stats-container"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: FLOATING MODAL — MOCHILA INDEPENDENTE (BAG) -->
+        <section id="tab-bag" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window bag-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span style="font-size:20px;margin-right:6px;">🎒</span>
+                        <h2>Mochila do Treinador</h2>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <button class="btn btn-gold" style="font-size:11px;padding:3px 8px;font-weight:800;" onclick="switchTab('shop'); switchShopSubmenu('sell_pokemon');" title="Vender Pokémon em massa para a Loja">💰 Vender Pokémon</button>
+                        <span class="bag-capacity-badge" id="bag-capacity-label">📦 0 / 400 slots</span>
+                        <span class="gold-badge-pill" id="bag-gold-label">$0</span>
+                        <span class="diamond-badge-pill" id="bag-diamond-label">💎 0</span>
+                        <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Fechar</button>
+                    </div>
+                </div>
+
+                <div class="poke-modal-submenu-bar">
+                    <button class="bag-submenu-pill active" data-bag-sub="all" onclick="switchBagSubmenu('all')">🎒 Todos os Itens</button>
+                    <button class="bag-submenu-pill" data-bag-sub="pokemon" onclick="switchBagSubmenu('pokemon')">👾 Pokémon (Cápsulas)</button>
+                    <button class="bag-submenu-pill" data-bag-sub="balls" onclick="switchBagSubmenu('balls')">🔴 Pokébolas</button>
+                    <button class="bag-submenu-pill" data-bag-sub="potions" onclick="switchBagSubmenu('potions')">🧪 Poções & Curas</button>
+                    <button class="bag-submenu-pill" data-bag-sub="stones" onclick="switchBagSubmenu('stones')">💎 Pedras de Evolução</button>
+                    <button class="bag-submenu-pill" data-bag-sub="valuable" onclick="switchBagSubmenu('valuable')">🔑 Valiosos & Drops</button>
+                </div>
+
+                <div class="floating-modal-content bag-modal-content">
+                    <div class="bag-toolbar-row">
+                        <div class="bag-search-wrapper">
+                            <input type="text" id="bag-search-input" class="search-input" placeholder="🔍 Buscar item na mochila..." oninput="filterBagItems()">
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-amber" onclick="sellAllDrops()" title="Vende todos os materiais e drops de monstros com 1 clique">💰 Vender Drops p/ NPC</button>
+                            <button class="btn btn-blue" onclick="openMarketSellFromBag()" title="Abrir menu de anúncio no Mercado Global">⚖️ Anunciar no Mercado</button>
+                        </div>
+                    </div>
+
+                    <div class="bag-items-grid" id="bag-items-grid-container">
+                        <!-- Dynamic Bag Items Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: FLOATING MODAL — LOJA DE ITENS EM OURO (POKÉMART) -->
+        <section id="tab-shop" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window shop-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span class="header-pokeball-svg"></span>
+                        <h2>🏪 Loja de Itens (PokéMart)</h2>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <span class="gold-badge-pill" id="shop-gold-label">$0</span>
+                        <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Fechar</button>
+                    </div>
+                </div>
+
+                <div class="poke-modal-submenu-bar">
+                    <button class="shop-submenu-pill active" data-shop-sub="all" onclick="switchShopSubmenu('all')">🏪 Todos os Itens</button>
+                    <button class="shop-submenu-pill" data-shop-sub="balls" onclick="switchShopSubmenu('balls')">🔴 Pokébolas</button>
+                    <button class="shop-submenu-pill" data-shop-sub="potions" onclick="switchShopSubmenu('potions')">🧪 Poções & Revives</button>
+                    <button class="shop-submenu-pill" data-shop-sub="stones" onclick="switchShopSubmenu('stones')">💎 Pedras de Evolução</button>
+                    <button class="shop-submenu-pill" data-shop-sub="utility" onclick="switchShopSubmenu('utility')">📦 Utilitários & Doces</button>
+                    <button class="shop-submenu-pill shop-sell-pokemon-pill" data-shop-sub="sell_pokemon" onclick="openPokemartSellModal('all')" style="background:rgba(234,179,8,0.22);border-color:#eab308;color:#fde047;font-weight:900;">💰 Vender Pokémon (Balcão Flutuante)</button>
+                </div>
+
+                <div class="floating-modal-content">
+                    <div class="shop-banner-info" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <div>
+                            🛒 Itens consumíveis e suprimentos oficiais adquiridos exclusivamente com <strong>Ouro ($)</strong> do jogo.
+                        </div>
+                        <button class="btn btn-gold btn-xs" onclick="openPokemartSellModal('all')" style="font-weight:900;padding:4px 12px;font-size:11px;display:flex;align-items:center;gap:6px;box-shadow:0 0 10px rgba(250,204,21,0.25);" title="Abrir Balcão Flutuante de Venda de Pokémon por Ouro">
+                            <span>🏪</span>
+                            <span>Balcão Flutuante de Venda em Lote</span>
+                        </button>
+                    </div>
+                    <div class="shop-cards-grid" id="gold-shop-grid-container">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: FLOATING MODAL — CASH SHOP (EXCLUSIVO DIAMANTES) -->
+        <section id="tab-cashshop" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window cashshop-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span style="font-size:22px;filter:drop-shadow(0 0 8px #60a5fa);margin-right:6px;">💎</span>
+                        <h2 style="background:linear-gradient(180deg,#e0f2fe 0%,#38bdf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Cash Shop — Loja VIP</h2>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <span class="diamond-badge-pill" id="cashshop-diamond-label">💎 0 Diamantes</span>
+                        <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Fechar</button>
+                    </div>
+                </div>
+
+                <div class="poke-modal-submenu-bar">
+                    <button class="cash-submenu-pill active" data-cash-sub="all" onclick="switchCashShopSubmenu('all')">💎 Todos os Destaques VIP</button>
+                    <button class="cash-submenu-pill" data-cash-sub="balls" onclick="switchCashShopSubmenu('balls')">🔮 Bolas & Auras Raras</button>
+                    <button class="cash-submenu-pill" data-cash-sub="boosters" onclick="switchCashShopSubmenu('boosters')">⚡ Boosters & Passes</button>
+                    <button class="cash-submenu-pill" data-cash-sub="eggs" onclick="switchCashShopSubmenu('eggs')">🥚 Ovos Míticos & Especiais</button>
+                </div>
+
+                <div class="floating-modal-content">
+                    <div class="cashshop-hero-banner">
+                        <div class="cashshop-hero-left">
+                            <span class="cashshop-badge-live">✨ SERVIÇOS PREMIUM POKÉLAND</span>
+                            <div class="cashshop-hero-title">Adquira Vantagens Exclusivas, Master Balls & Itens Lendários</div>
+                            <div class="cashshop-hero-sub">Itens comprados no Cash Shop utilizam exclusivamente <strong>Diamantes (💎)</strong> da sua conta.</div>
+                        </div>
+                        <div class="cashshop-hero-right">
+                            <div class="diamond-counter-hero">
+                                <span class="d-label">SEU SALDO DISPONÍVEL:</span>
+                                <span class="d-val" id="cashshop-hero-val">💎 10,250</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cashshop-cards-grid" id="cashshop-grid-container">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: FLOATING MODAL — MERCADO GLOBAL DE JOGADORES -->
+        <section id="tab-market" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window market-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span style="font-size:22px;filter:drop-shadow(0 0 8px #f59e0b);margin-right:6px;">⚖️</span>
+                        <h2 style="background:linear-gradient(180deg,#fffbeb 0%,#f59e0b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Mercado Global (Marketplace)</h2>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <span class="gold-badge-pill" id="market-gold-label">$0</span>
+                        <span class="diamond-badge-pill" id="market-diamond-label">💎 0</span>
+                        <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Fechar</button>
+                    </div>
+                </div>
+
+                <div class="poke-modal-submenu-bar">
+                    <button class="market-submenu-pill active" data-market-sub="browse" onclick="switchMarketSubmenu('browse')">🛒 Comprar no Mercado</button>
+                    <button class="market-submenu-pill" data-market-sub="my" onclick="switchMarketSubmenu('my')">📦 Meus Anúncios</button>
+                    <button class="market-submenu-pill" data-market-sub="sell" onclick="switchMarketSubmenu('sell')">➕ Criar Novo Anúncio</button>
+                    <button class="market-submenu-pill is-admin-only" id="market-tab-admin-hold" data-market-sub="admin" onclick="switchMarketSubmenu('admin')" style="display:none;">🏛️ Cofre do Servidor (5% Tax Hold)</button>
+                </div>
+
+                <div class="floating-modal-content">
+                    <!-- SUBTAB 1: BROWSE LISTINGS -->
+                    <div id="market-sub-browse" class="market-sub-view active">
+                        <div class="market-filter-bar">
+                            <div class="market-search-col">
+                                <input type="text" id="market-search-input" class="search-input" placeholder="🔍 Buscar Pokémon, Pokébola, Pedra ou Item..." oninput="debounceMarketSearch()">
+                            </div>
+                            <div class="market-pill-filters">
+                                <select id="market-filter-category" class="settings-select" onchange="fetchMarketListings()">
+                                    <option value="all">📂 Todas as Categorias</option>
+                                    <option value="pokemon">👾 Pokémon</option>
+                                    <option value="pokeball">🔴 Pokébolas</option>
+                                    <option value="stone">💎 Pedras de Evolução</option>
+                                    <option value="potion">🧪 Poções & Consumíveis</option>
+                                    <option value="candy">🍬 Doces de EXP</option>
+                                    <option value="item">📦 Outros Itens</option>
+                                </select>
+                                <select id="market-filter-currency" class="settings-select" onchange="fetchMarketListings()">
+                                    <option value="all">💰 Todas as Moedas</option>
+                                    <option value="gold">💵 Apenas Ouro ($)</option>
+                                    <option value="diamond">💎 Apenas Diamantes (💎)</option>
+                                </select>
+                                <select id="market-filter-sort" class="settings-select" onchange="fetchMarketListings()">
+                                    <option value="recent">⏱️ Mais Recentes</option>
+                                    <option value="cheapest">💲 Menor Preço</option>
+                                    <option value="expensive">💎 Maior Preço</option>
+                                </select>
+                                <button class="btn btn-blue" onclick="fetchMarketListings()">🔄 Atualizar</button>
+                            </div>
+                        </div>
+
+                        <div class="market-listings-grid" id="market-listings-container">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- SUBTAB 2: MY LISTINGS -->
+                    <div id="market-sub-my" class="market-sub-view">
+                        <div class="panel-header" style="margin-bottom:12px;">
+                            <div class="panel-title">📦 Seus Anúncios Ativos & Vendas Concluídas</div>
+                            <button class="btn btn-blue" onclick="loadMyMarketListings()">🔄 Atualizar</button>
+                        </div>
+                        <h4 style="color:#e2e8f0;font-size:13px;margin-bottom:8px;">🟢 Anúncios Atualmente à Venda</h4>
+                        <div class="market-listings-grid" id="my-active-listings-container"></div>
+
+                        <h4 style="color:#e2e8f0;font-size:13px;margin:20px 0 8px 0;">🎉 Histórico de Vendas Concluídas (Fundos já Creditados)</h4>
+                        <div class="market-listings-grid" id="my-sold-listings-container"></div>
+                    </div>
+
+                    <!-- SUBTAB 3: CREATE NEW LISTING -->
+                    <div id="market-sub-sell" class="market-sub-view">
+                        <div class="market-sell-form-card">
+                            <h3 class="market-sell-title">➕ Anunciar Item ou Pokémon no Mercado Global</h3>
+                            <p style="color:#94a3b8;font-size:12.5px;margin-bottom:16px;">
+                                O item ou Pokémon será retirado da sua posse e colocado na vitrine global para todos os jogadores do PokéLand.
+                                O comprador pagará o valor estipulado e <strong>95%</strong> dos fundos serão creditados a você, com <strong>5%</strong> retidos para o Cofre do Servidor.
+                            </p>
+
+                            <div class="sell-type-selector">
+                                <label class="sell-type-radio active" id="sell-type-item-lbl">
+                                    <input type="radio" name="sell_ltype" value="item" checked onchange="toggleMarketSellType('item')">
+                                    🎒 Vender Item da Mochila
+                                </label>
+                                <label class="sell-type-radio" id="sell-type-pokemon-lbl">
+                                    <input type="radio" name="sell_ltype" value="pokemon" onchange="toggleMarketSellType('pokemon')">
+                                    👾 Vender Pokémon (PC Box ou Equipe)
+                                </label>
+                            </div>
+
+                            <!-- Item Form Section -->
+                            <div id="market-sell-item-section" class="sell-section-box">
+                                <div class="settings-row">
+                                    <div class="settings-label-col">
+                                        <label for="market-sell-item-select">Selecione o Item da Sua Mochila</label>
+                                    </div>
+                                    <div class="settings-ctrl-col">
+                                        <select id="market-sell-item-select" class="settings-select" onchange="updateMarketSellItemPreview()"></select>
+                                    </div>
+                                </div>
+                                <div class="settings-row">
+                                    <div class="settings-label-col">
+                                        <label for="market-sell-item-qty">Quantidade a Vender</label>
+                                    </div>
+                                    <div class="settings-ctrl-col">
+                                        <input type="number" id="market-sell-item-qty" class="settings-input-num" min="1" value="1" oninput="updateMarketSellTaxPreview()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pokémon Form Section -->
+                            <div id="market-sell-pokemon-section" class="sell-section-box" style="display:none;">
+                                <div class="settings-row">
+                                    <div class="settings-label-col">
+                                        <label for="market-sell-pokemon-select">Selecione o Pokémon (Equipe ou PC Box)</label>
+                                        <span class="settings-hint">Exibe Nível, Qualidade, IVs e status Shiny ✨.</span>
+                                    </div>
+                                    <div class="settings-ctrl-col">
+                                        <select id="market-sell-pokemon-select" class="settings-select" onchange="updateMarketSellPokemonPreview()"></select>
+                                    </div>
+                                </div>
+                                <div id="market-sell-pokemon-preview-card" style="margin-top:8px;"></div>
+                            </div>
+
+                            <!-- Currency & Price Inputs -->
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="market-sell-currency">Moeda de Cobrança</label>
+                                    <span class="settings-hint">Escolha se deseja receber em Ouro ($) ou Diamantes (💎).</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <select id="market-sell-currency" class="settings-select" onchange="updateMarketSellTaxPreview()">
+                                        <option value="gold">💵 Ouro do Jogo ($)</option>
+                                        <option value="diamond">💎 Diamantes (💎)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="market-sell-price">Preço Total ao Comprador</label>
+                                    <span class="settings-hint">Valor total que o comprador pagará.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <input type="number" id="market-sell-price" class="settings-input-num" min="1" value="1000" oninput="updateMarketSellTaxPreview()">
+                                </div>
+                            </div>
+
+                            <!-- 5% Server Hold Live Preview Box -->
+                            <div class="market-tax-breakdown-box">
+                                <div class="tax-row">
+                                    <span>Preço Cobrado ao Comprador:</span>
+                                    <strong id="market-tax-preview-gross">$1,000</strong>
+                                </div>
+                                <div class="tax-row tax-highlight">
+                                    <span>🏛️ Taxa do Servidor (5% retida no Cofre Admin):</span>
+                                    <strong id="market-tax-preview-tax" style="color:#f87171;">-$50</strong>
+                                </div>
+                                <div class="tax-row tax-net">
+                                    <span>💰 Você Receberá Líquido (95%):</span>
+                                    <strong id="market-tax-preview-net" style="color:#4ade80;">+$950</strong>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:16px;">
+                                <button class="btn btn-gold btn-large" onclick="submitNewMarketListing()" style="width:100%;padding:11px;font-size:14px;font-weight:800;">
+                                    🚀 Publicar Anúncio no Mercado Global
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUBTAB 4: SERVER HOLD / ADMIN TREASURY (ADMIN ONLY) -->
+                    <div id="market-sub-admin" class="market-sub-view">
+                        <div class="admin-hold-container">
+                            <div class="admin-hold-hero">
+                                <div class="hold-title-group">
+                                    <span style="font-size:26px;">🏛️</span>
+                                    <div>
+                                        <div style="font-size:17px;font-weight:900;color:#facc15;">Cofre do Servidor — Retenção de Taxas (5% Hold)</div>
+                                        <div style="font-size:12px;color:#94a3b8;">Acesso restrito exclusivamente a administradores do PokéLand.</div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-blue" onclick="loadServerHoldData()">🔄 Atualizar Cofre</button>
+                            </div>
+
+                            <div class="admin-hold-metrics-grid">
+                                <div class="metric-card gold-metric">
+                                    <div class="metric-lbl">Total de Ouro Retido (5% Tax)</div>
+                                    <div class="metric-val" id="admin-hold-gold">$0</div>
+                                    <div class="metric-sub">Arrecadado de todas as transações globais</div>
+                                </div>
+                                <div class="metric-card diamond-metric">
+                                    <div class="metric-lbl">Total de Diamantes Retidos (5% Tax)</div>
+                                    <div class="metric-val" id="admin-hold-diamonds">💎 0</div>
+                                    <div class="metric-sub">Arrecadado de vendas em Diamantes</div>
+                                </div>
+                                <div class="metric-card tx-metric">
+                                    <div class="metric-lbl">Total de Negociações no Servidor</div>
+                                    <div class="metric-val" id="admin-hold-txs">0</div>
+                                    <div class="metric-sub">Transações auditadas no SQLite</div>
+                                </div>
+                            </div>
+
+                            <div class="panel" style="margin-top:16px;">
+                                <div class="panel-header">
+                                    <div class="panel-title">📜 Livro Razão de Auditoria — Últimas Transações Retidas</div>
+                                </div>
+                                <div class="table-responsive" style="max-height:280px;overflow-y:auto;">
+                                    <table class="poke-table" id="admin-hold-tx-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Data</th>
+                                                <th>Item / Pokémon</th>
+                                                <th>Vendedor</th>
+                                                <th>Comprador</th>
+                                                <th>Valor Bruto</th>
+                                                <th>Taxa 5% Retida</th>
+                                                <th>Líquido Vendedor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-hold-tx-tbody">
+                                            <!-- Rendered by JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: FLOATING MODAL — PAINEL ADMIN -->
+        <section id="tab-admin" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span class="header-pokeball-svg is-master"></span>
+                        <h2>⚙️ Painel Admin</h2>
+                    </div>
+                    <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Voltar ao Jogo</button>
+                </div>
+                <div class="poke-modal-submenu-bar">
+                    <button class="admin-submenu-pill active" data-admin-sub="presets" onclick="switchAdminSubmenu('presets')">🚀 Presets Rápidos</button>
+                    <button class="admin-submenu-pill" data-admin-sub="rates" onclick="switchAdminSubmenu('rates')">⚙️ Multiplicadores & Taxas</button>
+                    <button class="admin-submenu-pill" data-admin-sub="cb" onclick="switchAdminSubmenu('cb')">🧬 Gerador /cb</button>
+                </div>
+                <div class="floating-modal-content">
+                    <div class="panel" style="margin-bottom:18px;">
+                        <div class="panel-header">
+                            <div>
+                                <div class="panel-title">🚀 Presets Rápidos do Seu Servidor OT / PokéTibia</div>
+                                <p style="font-size:12.5px;color:#9ca3af;margin-top:2px;">Alterne com 1 clique entre as regras oficiais do PokéLand ou sua versão OT Custom com tudo liberado!</p>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                            <button class="btn" onclick="applyAdminPreset('official')">🔒 Modo Oficial (Apenas 6 Bolas Ativas / Cap 98% / Ilhas Bloqueadas)</button>
+                            <button class="btn btn-primary" onclick="applyAdminPreset('custom_plus')">🚀 Modo OT Unleashed (Liberar 22 Bolas + Ilhas Lendárias + Safari + 3x Rates)</button>
+                            <button class="btn btn-amber" onclick="applyAdminPreset('god_mode')">👑 Kit ADM God-Mode (+$500k Gold + 100x Todas as Bolas/Pedras + Lendários Míticos)</button>
+                            <button class="btn" style="border-color:#ef4444;color:#fca5a5;" onclick="applyAdminPreset('reset_save')">🗑️ Resetar Save do Jogador</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <div class="panel-title">⚙️ Multiplicadores & Desbloqueios do Servidor</div>
+                                <button class="btn btn-green" onclick="saveAdminConfig()">💾 Salvar Configurações</button>
+                            </div>
+
+                            <div class="form-row">
+                                <label>Multiplicador Global de Captura (`catch_rate_mult`)</label>
+                                <input type="number" step="0.1" min="0.1" max="100" id="cfg-catch-mult">
+                            </div>
+                            <div class="form-row">
+                                <label>Limite Máximo de Captura (`98%` Oficial vs `100%`)</label>
+                                <input type="number" step="1" min="10" max="100" id="cfg-max-cap">
+                            </div>
+                            <div class="form-row">
+                                <label>Bônus de Captura por HP Baixo / Corpo Desmaiado</label>
+                                <input type="checkbox" id="cfg-hp-bonus" style="width:20px;height:20px;">
+                            </div>
+                            <div class="form-row">
+                                <label>Multiplicador de EXP (`exp_mult`)</label>
+                                <input type="number" step="0.5" min="0.5" max="1000" id="cfg-exp-mult">
+                            </div>
+                            <div class="form-row">
+                                <label>Multiplicador de Gold (`gold_mult`)</label>
+                                <input type="number" step="0.5" min="0.5" max="1000" id="cfg-gold-mult">
+                            </div>
+                            <div class="form-row">
+                                <label>Multiplicador de Loot / Drops (`drop_mult`)</label>
+                                <input type="number" step="0.5" min="0.5" max="100" id="cfg-drop-mult">
+                            </div>
+                            <div class="form-row">
+                                <label>Chance de Shiny no Respawn (0.002 = 0.2% | 0.05 = 5% | 1.0 = 100%)</label>
+                                <input type="number" step="0.001" min="0.0001" max="1.0" id="cfg-shiny-chance">
+                            </div>
+                            <div class="form-row">
+                                <label>🔓 Desbloquear TODAS as 22 Pokébolas no Trade NPC</label>
+                                <input type="checkbox" id="cfg-unlock-balls" style="width:20px;height:20px;">
+                            </div>
+                            <div class="form-row">
+                                <label>🔓 Desbloquear Ilhas Lendárias & Captura de Lendários</label>
+                                <input type="checkbox" id="cfg-unlock-legendary" style="width:20px;height:20px;">
+                            </div>
+                            <div class="form-row">
+                                <label>🔓 Criar Mundo "Safari Especial" para Pokémon Sem Zona</label>
+                                <input type="checkbox" id="cfg-unlock-safari" style="width:20px;height:20px;">
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <div class="panel-title">🧬 Comando `/cb` ADM — Gerador de Pokémon & Editor de Catch</div>
+                            </div>
+
+                            <div class="form-row">
+                                <label>Selecionar Espécie (400 Pokémon):</label>
+                                <select id="admin-species-select" onchange="loadAdminSpeciesEditor()" style="width:220px;"></select>
+                            </div>
+                            <div class="form-row">
+                                <label>Taxa de Captura Base (`base_capture_chance` %):</label>
+                                <input type="number" step="0.01" min="0" max="100" id="admin-sp-base-chance">
+                            </div>
+                            <div class="form-row">
+                                <label>Catch Rate Oficial (`catch_rate` 3–255):</label>
+                                <input type="number" step="1" min="1" max="255" id="admin-sp-catch-rate">
+                            </div>
+                            <div style="margin:12px 0;">
+                                <button class="btn btn-primary" onclick="saveAdminSpeciesOverride()">💾 Salvar Nova Taxa para este Pokémon</button>
+                            </div>
+
+                            <hr style="border:none;border-top:1px solid #282c48;margin:18px 0;">
+
+                            <h3 style="font-size:14.5px;margin-bottom:10px;">⚡ Criar Pokémon Customizado (Com Escolha de Grau Mítico)</h3>
+                            <div class="form-row">
+                                <label>Nível do Pokémon:</label>
+                                <input type="number" min="1" max="350" value="100" id="spawn-mon-lvl">
+                            </div>
+                            <div class="form-row">
+                                <label>Qualidade / Grau Mítico:</label>
+                                <select id="spawn-mon-quality" style="width:220px;">
+                                    <option value="Comum">Comum (×1.00–1.05 | IV 0–42)</option>
+                                    <option value="Incomum">Incomum (×1.10–1.18 | IV 43–78)</option>
+                                    <option value="Raro">Raro (×1.20–1.30 | IV 79–108)</option>
+                                    <option value="Épico">Épico (×1.35–1.45 | IV 109–138)</option>
+                                    <option value="Lendário">Lendário (×1.50–1.60 | IV 139–143)</option>
+                                    <option value="Mítico_Forte" selected>🟢 Mítico FORTE (×1.78–1.80 | IV 172–186)</option>
+                                    <option value="Mítico_Medio">🟡 Mítico MÉDIO (×1.74–1.76 | IV 158–171)</option>
+                                    <option value="Mítico_Fraco">🔴 Mítico FRACO (×1.70–1.73 | IV 144–157)</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <label>✨ Versão Shiny (Mítico Shiny vai até ×2.60 Stats!):</label>
+                                <input type="checkbox" id="spawn-mon-shiny" style="width:20px;height:20px;">
+                            </div>
+                            <div style="margin-top:12px;">
+                                <button class="btn btn-pink" onclick="spawnCustomPokemonToParty()">✨ Gerar Pokémon na Minha PokéBar!</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <!-- TAB: FLOATING MODAL — GRANDES DESAFIOS & ENDGAME -->
+        <section id="tab-mechanics" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window mechanics-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span style="font-size:22px;filter:drop-shadow(0 0 8px #f43f5e);margin-right:6px;">🏆</span>
+                        <h2 style="background:linear-gradient(180deg,#ffe4e6 0%,#f43f5e 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Grandes Desafios & Endgame da Liga</h2>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Fechar</button>
+                    </div>
+                </div>
+
+                <div class="poke-modal-submenu-bar btn-grid-form">
+                    <button class="mechanics-submenu-pill active" data-mech-sub="gvg" onclick="switchMechanicsSubmenu('gvg')">⚔️ Guild vs Guild</button>
+                    <button class="mechanics-submenu-pill" data-mech-sub="pvp" onclick="switchMechanicsSubmenu('pvp')">🏆 PvP Ranqueado</button>
+                    <button class="mechanics-submenu-pill" data-mech-sub="gyms" onclick="switchMechanicsSubmenu('gyms')">🏛️ Ginásios</button>
+                    <button class="mechanics-submenu-pill" data-mech-sub="elite4" onclick="switchMechanicsSubmenu('elite4')">👑 Elite dos 4</button>
+                    <button class="mechanics-submenu-pill" data-mech-sub="safari" onclick="switchMechanicsSubmenu('safari')">🌿 Safari Zone</button>
+                    <button class="mechanics-submenu-pill" data-mech-sub="worldboss" onclick="switchMechanicsSubmenu('worldboss')">🐉 World Boss</button>
+                    <button class="mechanics-submenu-pill" data-mech-sub="dungeons" onclick="switchMechanicsSubmenu('dungeons')">🏰 Dungeons Co-op</button>
+                </div>
+
+                <div class="floating-modal-content mechanics-modal-body">
+                    <!-- SUB 1: GVG -->
+                    <div id="mech-sub-gvg" class="mechanics-sub-view active">
+                        <div id="mech-gvg-container"></div>
+                    </div>
+
+                    <!-- SUB 2: PVP -->
+                    <div id="mech-sub-pvp" class="mechanics-sub-view">
+                        <div id="mech-pvp-container"></div>
+                    </div>
+
+                    <!-- SUB 3: GINÁSIOS -->
+                    <div id="mech-sub-gyms" class="mechanics-sub-view">
+                        <div id="mech-gyms-container"></div>
+                    </div>
+
+                    <!-- SUB 4: ELITE 4 -->
+                    <div id="mech-sub-elite4" class="mechanics-sub-view">
+                        <div id="mech-elite4-container"></div>
+                    </div>
+
+                    <!-- SUB 5: SAFARI -->
+                    <div id="mech-sub-safari" class="mechanics-sub-view">
+                        <div id="mech-safari-container"></div>
+                    </div>
+
+                    <!-- SUB 6: WORLD BOSS -->
+                    <div id="mech-sub-worldboss" class="mechanics-sub-view">
+                        <div id="mech-worldboss-container"></div>
+                    </div>
+
+                    <!-- SUB 7: DUNGEONS -->
+                    <div id="mech-sub-dungeons" class="mechanics-sub-view">
+                        <div id="mech-dungeons-container"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: FLOATING MODAL — OPÇÕES & CONFIGURAÇÕES (QoL) -->
+        <section id="tab-settings" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window settings-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span class="header-pokeball-svg is-great"></span>
+                        <h2>⚙️ Configurações & Qualidade de Vida (QoL)</h2>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button class="btn btn-gold" onclick="showFloatingUpdateAnnouncement()" title="Testar/Simular Alerta de Nova Atualização">📢 Testar Alerta Update</button>
+                        <button class="btn" onclick="resetSettingsToDefault()" title="Restaurar valores padrão">🔄 Padrões</button>
+                        <button class="modal-close-btn" onclick="closeSettingsModal()">✕ Fechar</button>
+                    </div>
+                </div>
+
+                <div class="poke-modal-submenu-bar">
+                    <button class="settings-nav-pill active" data-settings-cat="graphics" onclick="switchSettingsCategory('graphics')">🎨 Gráficos & Tela</button>
+                    <button class="settings-nav-pill" data-settings-cat="audio" onclick="switchSettingsCategory('audio')">🔊 Áudio & Sons</button>
+                    <button class="settings-nav-pill" data-settings-cat="gameplay" onclick="switchSettingsCategory('gameplay')">⚔️ Jogabilidade & QoL</button>
+                    <button class="settings-nav-pill" data-settings-cat="keybinds" onclick="switchSettingsCategory('keybinds')">⌨️ Atalhos de Teclado</button>
+                </div>
+
+                <div class="floating-modal-content settings-modal-body">
+                    <!-- SECTION 1: GRÁFICOS -->
+                    <div id="settings-section-graphics" class="settings-section-pane active">
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">🗺️ Cenário & Mapa</h3>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-chk-grid">Grade Visual de SQMs (Grid Lines)</label>
+                                    <span class="settings-hint">Exibir ou ocultar linhas de piso do mapa. Padrão desativado para gráficos limpos.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <label class="poke-toggle-switch">
+                                        <input type="checkbox" id="setting-chk-grid" onchange="updateSetting('showGrid', this.checked)">
+                                        <span class="poke-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-sel-vfx">Efeitos Visuais de Magias & Golpes (VFX)</label>
+                                    <span class="settings-hint">Partículas elementais, anéis de choque, relâmpagos e cortes de combate.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <select id="setting-sel-vfx" class="settings-select" onchange="updateSetting('vfxQuality', this.value)">
+                                        <option value="full">✨ Completo (Partículas & Luzes 60 FPS)</option>
+                                        <option value="reduced">⚡ Reduzido (Melhor Desempenho)</option>
+                                        <option value="off">🚫 Desativado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-sel-camera">Estilo de Fundo do Terreno</label>
+                                    <span class="settings-hint">Cenário exterior HD Ring ou clássico minimalista.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <select id="setting-sel-camera" class="settings-select" onchange="updateSetting('cameraMode', this.value)">
+                                        <option value="hd_ring">🌲 Floresta HD Ring & Biomas Vivos</option>
+                                        <option value="cyber">🌆 Cyber Holográfico</option>
+                                        <option value="classic">🧱 Clássico Retrô</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">🔤 Tipografia & Pacote de Fontes Unificado</h3>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-sel-font">Pacote de Fontes do Jogo</label>
+                                    <span class="settings-hint">Alterne em tempo real entre o visual oficial híbrido, retrô 100% pixel art ou moderno ultra legível.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <select id="setting-sel-font" class="settings-select" onchange="updateSetting('fontPreset', this.value)">
+                                        <option value="pokemon-hybrid">✨ Oficial PokéLand (Títulos Branded + Inter HD)</option>
+                                        <option value="pokemon-retro">🕹️ Retrô Clássico (100% Pixel Art)</option>
+                                        <option value="pokemon-modern">📱 Ultra Moderna (Foco em Alta Nitidez)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="settings-font-showcase-box">
+                                <div class="font-showcase-brand">POKÉLAND</div>
+                                <div class="font-showcase-meta">EXP +1,450 • CRÍTICO 9,820 • FLORESTA DE VIRIDIAN</div>
+                                <div class="font-showcase-dialog">"Um Pikachu Selvagem apareceu! Equipe pronta para combate."</div>
+                                <div class="font-showcase-badges">
+                                    <span class="font-pill-brand">Pokemon Solid</span>
+                                    <span class="font-pill-pixel">Pokemon Emerald & DP</span>
+                                    <span class="font-pill-ui">Inter UI Sans</span>
+                                    <span class="font-pill-mono">JetBrains Mono</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">👾 Sprites & Escala da Tela</h3>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-sel-sprites">Versão dos Sprites dos Pokémon</label>
+                                    <span class="settings-hint">Alterne entre sprites animados 32-bit de alta qualidade ou clássicos.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <select id="setting-sel-sprites" class="settings-select" onchange="updateSetting('spriteVersion', this.value)">
+                                        <option value="pmd">🌟 Mystery Dungeon (Mais Frames & Idle)</option>
+                                        <option value="gen5">📺 Black & White Animado</option>
+                                        <option value="classic">🎮 GBA Clássico</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-sel-uiscale">Escala Geral da Interface (UI Zoom)</label>
+                                    <span class="settings-hint">Ajusta o tamanho das barras e janelas para monitores de alta resolução.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <select id="setting-sel-uiscale" class="settings-select" onchange="updateSetting('uiScale', parseInt(this.value, 10))">
+                                        <option value="85">85% (Compacto)</option>
+                                        <option value="100">100% (Padrão)</option>
+                                        <option value="110">110% (Ampliado)</option>
+                                        <option value="125">125% (Grande)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-sel-btnscale">Escala & Grade dos Botões (Button Scale)</label>
+                                    <span class="settings-hint">Redimensione todos os botões do jogo mantendo alinhamento estrito em grade e dentro dos menus.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <select id="setting-sel-btnscale" class="settings-select" onchange="updateSetting('btnSize', this.value)">
+                                        <option value="compact">Compacto (85% — Mais botões visíveis)</option>
+                                        <option value="normal" selected>Normal (100% — Padrão do Sistema)</option>
+                                        <option value="spacious">Espaçoso (115% — Toques Maiores)</option>
+                                        <option value="large">Grande (130% — Alta Acessibilidade)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: ÁUDIO & NOTIFICAÇÕES -->
+                    <div id="settings-section-audio" class="settings-section-pane">
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">🔊 Controle de Volume</h3>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-vol-slider">Volume Master</label>
+                                    <span class="settings-hint">Volume global de efeitos sonoros e alertas.</span>
+                                </div>
+                                <div class="settings-ctrl-col" style="display:flex;align-items:center;gap:10px;">
+                                    <input type="range" id="setting-vol-slider" min="0" max="100" value="80" class="settings-range" oninput="document.getElementById('setting-vol-label').textContent = this.value + '%'; updateSetting('masterVolume', parseInt(this.value, 10));">
+                                    <span id="setting-vol-label" style="font-weight:700;color:#38bdf8;width:40px;">80%</span>
+                                </div>
+                            </div>
+
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-chk-sfx">Efeitos Sonoros (SFX de Ataque & Captura)</label>
+                                    <span class="settings-hint">Sons sintetizados Web Audio de golpes, captura de Pokébola e cura.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <label class="poke-toggle-switch">
+                                        <input type="checkbox" id="setting-chk-sfx" checked onchange="updateSetting('sfxEnabled', this.checked)">
+                                        <span class="poke-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-chk-chatsound">Alerta Sonoro de Chat & Whisper</label>
+                                    <span class="settings-hint">Tocar bipe suave quando receber mensagens diretas ou menções no chat.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <label class="poke-toggle-switch">
+                                        <input type="checkbox" id="setting-chk-chatsound" checked onchange="updateSetting('chatNotifications', this.checked)">
+                                        <span class="poke-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: JOGABILIDADE & QoL -->
+                    <div id="settings-section-gameplay" class="settings-section-pane">
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">⚔️ Mira & Combate</h3>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-chk-autotarget">Auto-Target Mais Próximo</label>
+                                    <span class="settings-hint">Travar mira automaticamente no Pokémon selvagem mais próximo ao apertar m1–m4.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <label class="poke-toggle-switch">
+                                        <input type="checkbox" id="setting-chk-autotarget" checked onchange="updateSetting('autoTarget', this.checked)">
+                                        <span class="poke-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="setting-chk-release">Confirmar ao Soltar / Vender Pokémon</label>
+                                    <span class="settings-hint">Exibir confirmação de segurança para evitar liberação acidental de Pokémon raros.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <label class="poke-toggle-switch">
+                                        <input type="checkbox" id="setting-chk-release" checked onchange="updateSetting('confirmRelease', this.checked)">
+                                        <span class="poke-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">🪟 Interface & Janelas</h3>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+                                <button class="btn btn-primary" onclick="resetHudPositions()">🔄 Resetar Layout das Janelas HUD</button>
+                                <button class="btn btn-amber" onclick="toggleCleanScreenHud()">👁️ Alternar Modo Limpo / Cinema</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4: ATALHOS DE TECLADO -->
+                                        <!-- SECTION 4: LAYOUT DO HUD & EDIÇÃO LIVRE -->
+                    <div id="settings-section-hud" class="settings-section-pane">
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">📐 Personalização e Edição Completa do HUD</h3>
+                            <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;line-height:1.45;">
+                                Todas as funções do HUD estão unificadas aqui. A barra superior permanece travada em uma <strong>grade invisível</strong> para evitar arrastes acidentais durante a caça e batalhas, e você pode reorganizar a ordem, destacar botões ou alterar o tamanho livremente através deste menu.
+                            </p>
+                            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+                                <button class="btn btn-primary" onclick="toggleHudEditMode(true); closeSettingsModal();" style="font-weight:900;padding:8px 18px;display:flex;align-items:center;gap:6px;">
+                                    <span>📐</span>
+                                    <span>Ativar Modo de Edição na Tela</span>
+                                </button>
+                                <button class="btn btn-secondary" onclick="openTopbarOrganizerModal()" style="font-weight:800;padding:8px 18px;display:flex;align-items:center;gap:6px;">
+                                    <span>📋</span>
+                                    <span>Organizador da Ordem dos Botões</span>
+                                </button>
+                                <button class="btn btn-secondary" onclick="toggleCleanScreenHud()" style="padding:8px 16px;">
+                                    <span>👁️</span>
+                                    <span>Alternar Modo Cinema</span>
+                                </button>
+                                <button class="btn btn-green" onclick="savePlayerHudProfile()" style="font-weight:800;padding:8px 18px;display:flex;align-items:center;gap:6px;">
+                                    <span>💾</span>
+                                    <span>Salvar Perfil do Treinador</span>
+                                </button>
+                                <button class="btn btn-secondary" onclick="resetPlayerHudProfile()" style="padding:8px 16px;">
+                                    <span>🔄</span>
+                                    <span>Redefinir Layout Padrão</span>
+                                </button>
+                            </div>
+                            <div style="padding:10px 14px;background:rgba(15,23,42,0.6);border:1px dashed rgba(56,189,248,0.4);border-radius:8px;font-size:11.5px;color:#cbd5e1;margin-bottom:12px;">
+                                💡 <strong>Grade Invisível Estabilizada:</strong> Os botões da barra superior ficam firmemente fixos na grade. Para alterar a ordem dos botões na grade ou destacar botões para flutuarem na tela, use o <strong>Organizador da Ordem dos Botões</strong> acima.
+                            </div>
+                            <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(56,189,248,0.3);border-radius:10px;padding:12px 16px;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+                                    <div>
+                                        <div style="font-size:12px;font-weight:800;color:#fde047;">🔍 Tamanho dos Botões da Barra Superior</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Redimensione todos os botões e ícones da grade superior</div>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <button class="btn btn-secondary btn-sm" onclick="changeTopbarButtonsScale(-0.1)">➖</button>
+                                        <span id="settings-btn-scale-display" style="font-size:12px;font-weight:900;color:#38bdf8;min-width:44px;text-align:center;">100%</span>
+                                        <button class="btn btn-secondary btn-sm" onclick="changeTopbarButtonsScale(0.1)">➕</button>
+                                        <button class="btn btn-secondary btn-sm" onclick="setTopbarButtonsScale(0.8)">80%</button>
+                                        <button class="btn btn-secondary btn-sm" onclick="setTopbarButtonsScale(1.0)">100%</button>
+                                        <button class="btn btn-secondary btn-sm" onclick="setTopbarButtonsScale(1.2)">120%</button>
+                                        <button class="btn btn-secondary btn-sm" onclick="setTopbarButtonsScale(1.4)">140%</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<div id="settings-section-keybinds" class="settings-section-pane">
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">⌨️ Guia Completo de Teclas de Atalho</h3>
+                            
+                            <!-- REGRA OFICIAL DE TECLAS DE FUNÇÃO -->
+                            <div class="settings-alert-banner" style="background:rgba(239, 68, 68, 0.14);border:1.5px solid #ef4444;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+                                <span style="font-size:24px;">🚫</span>
+                                <div style="font-size:12px;color:#fecaca;line-height:1.45;">
+                                    <strong style="color:#f87171;font-size:13px;">Regra de Teclas de Função:</strong> As teclas de função (<kbd>F1</kbd> a <kbd>F12</kbd>) são estritamente reservadas pelo sistema e <strong>não podem ser configuradas como atalho</strong> para nenhuma função ou configuração do jogo.
+                                </div>
+                            </div>
+
+                            <div class="keybinds-table-wrapper">
+                                <table class="keybinds-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Ação</th>
+                                            <th>Teclas Primárias</th>
+                                            <th>Descrição</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Itens Rápidos (1 a 8)</strong></td>
+                                            <td><kbd>Alt+1</kbd> a <kbd>Alt+8</kbd></td>
+                                            <td>Acionar consumíveis, poções e cápsulas na Barra de Ação Rápida</td>
+                                        </tr>
+                                        <tr style="background:rgba(239, 68, 68, 0.08);">
+                                            <td><strong style="color:#f87171;">Teclas de Função (F1 a F12)</strong></td>
+                                            <td><span style="color:#ef4444;font-weight:700;">🚫 Bloqueadas</span></td>
+                                            <td>Não podem ser configuradas como atalho para nenhuma função do jogo</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Movimentação</strong></td>
+                                            <td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> ou <kbd>↑</kbd> <kbd>←</kbd> <kbd>↓</kbd> <kbd>→</kbd></td>
+                                            <td>Mover o treinador pelo mapa (8 direções)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Golpes / Magias</strong></td>
+                                            <td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></td>
+                                            <td>Executar golpes m1 a m4 do seu Pokémon ativo</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Lançar Pokébola</strong></td>
+                                            <td><kbd>C</kbd> ou <kbd>Espaço</kbd></td>
+                                            <td>Lança a melhor cápsula no alvo selecionado</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Auto-Farm</strong></td>
+                                            <td><kbd>F</kbd></td>
+                                            <td>Ligar / Desligar ciclo completo de Auto-Farm</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Abrir Chat</strong></td>
+                                            <td><kbd>Enter</kbd></td>
+                                            <td>Focar no campo de digitação do chat multi-canal</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Responder Whisper</strong></td>
+                                            <td><kbd>/r</kbd> + Mensagem</td>
+                                            <td>Responder rapidamente à última pessoa que te mandou whisper</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Cidade Central</strong></td>
+                                            <td><kbd>H</kbd></td>
+                                            <td>Teleporte instantâneo para a Cidade Central (Hub Social)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Menu Opções</strong></td>
+                                            <td><kbd>Esc</kbd></td>
+                                            <td>Abrir ou fechar o menu de configurações do jogo</td>
+                                        </tr>
+                                                                                <tr>
+                                            <td><strong>Status do Treinador</strong></td>
+                                            <td><kbd>C</kbd></td>
+                                            <td>Abrir menu de status do treinador, equipe, IVs e insígnias</td>
+                                        </tr>
+<tr>
+                                            <td><strong>Farm Offline</strong></td>
+                                            <td><kbd>O</kbd></td>
+                                            <td>Abrir o menu de Expedição e Farm Offline</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 7: FLOATING MODAL — EXPEDIÇÃO & FARM OFFLINE -->
+        <section id="tab-offline" class="tab-pane floating-modal-pane">
+            <div class="floating-modal-window offline-modal-window">
+                <div class="floating-modal-header">
+                    <div class="modal-title-group">
+                        <span class="header-pokeball-svg is-master"></span>
+                        <h2>💤 Expedição & Farm Offline</h2>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Fechar</button>
+                    </div>
+                </div>
+
+                <div class="poke-modal-submenu-bar">
+                    <button class="offline-nav-pill active" data-offline-cat="rewards" onclick="switchOfflineCategory('rewards')">🎁 Recompensas Pendentes</button>
+                    <button class="offline-nav-pill" data-offline-cat="config" onclick="switchOfflineCategory('config')">⚙️ Configurações</button>
+                    <button class="offline-nav-pill" data-offline-cat="simulator" onclick="switchOfflineCategory('simulator')">🧪 Simulador & Testes</button>
+                </div>
+
+                <div class="floating-modal-content offline-modal-body">
+                    <!-- SECTION 1: RECOMPENSAS PENDENTES -->
+                    <div id="offline-section-rewards" class="offline-section-pane active">
+                        <div id="offline-rewards-content">
+                            <!-- Populated dynamically via renderOfflineRewardsSection() -->
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: CONFIGURAÇÕES -->
+                    <div id="offline-section-config" class="offline-section-pane">
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">🧭 Rota de Expedição & Automação</h3>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label>Status do Farm Offline</label>
+                                    <span class="settings-hint">Quando ativo, sua equipe continua derrotando monstros e coletando recompensas mesmo com o jogo fechado.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <button id="btn-modal-toggle-offline" class="autofarm-switch-btn is-on" onclick="toggleOfflineFarmState()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">ON</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="offline-modal-zone-select">Rota Designada</label>
+                                    <span class="settings-hint">Selecione onde seu treinador irá caçar enquanto você estiver fora.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <select id="offline-modal-zone-select" class="settings-select" onchange="changeOfflineExpeditionZone(this.value)"></select>
+                                </div>
+                            </div>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label>Auto-Captura Offline</label>
+                                    <span class="settings-hint">Permite gastar Pokébolas da mochila para capturar novos Pokémon na rota durante o período offline.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <button id="btn-modal-toggle-offline-catch" class="autofarm-switch-btn is-on" onclick="toggleOfflineAutoCatch()">
+                                        <span class="switch-ui-track"><span class="switch-ui-thumb"></span></span>
+                                        <span class="switch-text">ON</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label for="offline-modal-ball-select">Tipo de Pokébola Preferida</label>
+                                    <span class="settings-hint">Selecione qual Pokébola consumir da mochila prioritariamente.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <select id="offline-modal-ball-select" class="settings-select" onchange="changeOfflineCatchBall(this.value)">
+                                        <option value="best" selected>✨ Melhor Disponível</option>
+                                        <option value="capsule_ultra">Ultra Ball (4x)</option>
+                                        <option value="capsule_great">Great Ball (2x)</option>
+                                        <option value="capsule_basic">Poké Ball (1x)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="settings-row">
+                                <div class="settings-label-col">
+                                    <label>Limite Máximo de Armazenamento</label>
+                                    <span class="settings-hint">O progresso offline acumula até 12 horas consecutivas sem perdas.</span>
+                                </div>
+                                <div class="settings-ctrl-col">
+                                    <span style="font-weight:900;color:#38bdf8;font-size:13px;">12 Horas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: SIMULADOR DE TEMPO -->
+                    <div id="offline-section-simulator" class="offline-section-pane">
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">🧪 Simulador de Tempo Offline (Sandbox)</h3>
+                            <p style="font-size:12px;color:#94a3b8;margin:4px 0 12px 0;">Use estes botões rápidos para simular o tempo decorrido como se o jogo estivesse fechado, calculando e resgatando as recompensas instantaneamente:</p>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:10px;">
+                                <button class="tibia-btn poke-cmd-btn" style="padding:12px 8px;font-size:13px;" onclick="triggerOfflineSimulation(0.5)">
+                                    ⏱️ Simular 30 Minutos
+                                </button>
+                                <button class="tibia-btn poke-cmd-btn is-green" style="padding:12px 8px;font-size:13px;" onclick="triggerOfflineSimulation(2.0)">
+                                    ⚡ Simular 2 Horas
+                                </button>
+                                <button class="tibia-btn poke-cmd-btn is-blue" style="padding:12px 8px;font-size:13px;" onclick="triggerOfflineSimulation(8.0)">
+                                    🌙 Simular 8 Horas
+                                </button>
+                                <button class="tibia-btn poke-cmd-btn is-purple" style="padding:12px 8px;font-size:13px;" onclick="triggerOfflineSimulation(12.0)">
+                                    👑 Simular 12 Horas (Máx)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- =========================================================
+         TRANSIT / WARP LOADING SCREEN (BETWEEN HUNTS & CENTRAL PLAZA)
+         ========================================================= -->
+    <div id="pokepixel-transit-loadscreen" class="transit-loadscreen is-hidden" aria-hidden="true" onclick="dismissTransitLoadscreenNow()">
+        <div class="transit-loadscreen-backdrop"></div>
+        <div class="transit-loadscreen-card">
+            <!-- Glowing Orbit Rings & Spinning Pokéball -->
+            <div class="transit-orb-portal">
+                <div class="transit-portal-ring is-ring-1"></div>
+                <div class="transit-portal-ring is-ring-2"></div>
+                <div class="transit-spinning-ball is-master" id="transit-ball-icon">
+                    <span class="transit-ball-halves"></span>
+                    <span class="transit-ball-center-btn"></span>
+                </div>
+            </div>
+
+            <!-- Destination Info -->
+            <div class="transit-meta-group">
+                <span class="transit-destination-tag" id="transit-mode-tag">✦ TELEPORTE ENTRE MAPAS ✦</span>
+                <h2 class="transit-destination-title" id="transit-dest-title">CIDADE CENTRAL (SAFFRON PLAZA)</h2>
+                <div class="transit-destination-sub" id="transit-dest-sub">
+                    <span class="transit-pill-mode" id="transit-pill-mode">🏙️ Cidade Social Segura</span>
+                    <span class="transit-sub-text" id="transit-sub-text">Centro Pokémon, Laboratório de Evolução, GTS e Ginásio</span>
+                </div>
+            </div>
+
+            <!-- Animated Loading Bar -->
+            <div class="transit-progress-box">
+                <div class="transit-progress-track">
+                    <div class="transit-progress-bar" id="transit-progress-fill" style="width:0%;"></div>
+                </div>
+                <div class="transit-progress-meta">
+                    <span class="transit-status-msg" id="transit-status-msg">Sincronizando terreno e entidades...</span>
+                    <span class="transit-progress-pct" id="transit-progress-pct">0%</span>
+                </div>
+            </div>
+
+            <!-- Lore Tip Box -->
+            <div class="transit-tip-box">
+                <span class="transit-tip-icon">💡</span>
+                <p class="transit-tip-text" id="transit-tip-text">Dica: No Centro Pokémon da Cidade Central, a Nurse Joy cura 100% da sua equipe e concede bênçãos especiais!</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/market_and_shops.js?v=pokeland_clean_dex_v20"></script>
+    <script src="/trainer_status.js?v=pokeland_clean_dex_v20"></script>
+    <script src="/endgame_mechanics.js?v=pokeland_clean_dex_v20"></script>
+    <script src="/app.js?v=pokeland_clean_dex_v20"></script>
+
+    <!-- Modal: Configurações do Chat & Comunicação -->
+    <div id="modal-chat-settings" class="floating-modal-backdrop" style="display:none;" onclick="if(event.target===this) closeChatSettingsModal()">
+        <div class="floating-modal-dialog chat-settings-modal-dialog">
+            <div class="modal-header-retro" style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(15,23,42,0.9);border-bottom:1px solid #334155;">
+                <div class="modal-title-left" style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:18px;">💬</span>
+                    <h3 style="margin:0;font-size:15px;color:#f8fafc;font-weight:800;">Configurações do Chat</h3>
+                </div>
+                <button class="modal-close-retro-btn" onclick="closeChatSettingsModal()" title="Fechar" style="background:transparent;border:none;color:#94a3b8;font-size:16px;cursor:pointer;">✕</button>
+            </div>
+            <div class="modal-body-retro chat-settings-body">
+                <div class="chat-settings-section">
+                    <h4>🔒 Isolamento de Canais</h4>
+                    <div class="chat-setting-row">
+                        <div class="setting-text-col">
+                            <label class="setting-title-label">Canais 100% Independentes</label>
+                            <span class="setting-desc-sub">Cada canal opera totalmente isolado (mensagens não se comunicam e não vazam entre abas).</span>
+                        </div>
+                        <label class="poke-toggle-switch">
+                            <input type="checkbox" id="chat-setting-strict-isolation" checked onchange="updateChatSetting('strictIsolation', this.checked)">
+                            <span class="poke-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="chat-setting-row">
+                        <div class="setting-text-col">
+                            <label class="setting-title-label">Avisos do Sistema em outros canais</label>
+                            <span class="setting-desc-sub">Permitir que mensagens de sistema apareçam em outras abas (Desativado por padrão).</span>
+                        </div>
+                        <label class="poke-toggle-switch">
+                            <input type="checkbox" id="chat-setting-system-leak" onchange="updateChatSetting('allowSystemInOtherChannels', this.checked)">
+                            <span class="poke-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="chat-settings-section">
+                    <h4>👁️ Canais Habilitados</h4>
+                    <div class="chat-channel-toggles-grid">
+                        <label class="channel-toggle-item"><input type="checkbox" id="chat-tab-chk-local" checked onchange="toggleChannelTabVisibility('local', this.checked)"> 💬 Local</label>
+                        <label class="channel-toggle-item"><input type="checkbox" id="chat-tab-chk-global" checked onchange="toggleChannelTabVisibility('global', this.checked)"> 🌐 Global</label>
+                        <label class="channel-toggle-item"><input type="checkbox" id="chat-tab-chk-trade" checked onchange="toggleChannelTabVisibility('trade', this.checked)"> 💰 Trade</label>
+                        <label class="channel-toggle-item"><input type="checkbox" id="chat-tab-chk-guild" checked onchange="toggleChannelTabVisibility('guild', this.checked)"> 🛡️ Guild</label>
+                        <label class="channel-toggle-item"><input type="checkbox" id="chat-tab-chk-system" checked onchange="toggleChannelTabVisibility('system', this.checked)"> ⚙️ Sistema</label>
+                        <label class="channel-toggle-item"><input type="checkbox" id="chat-tab-chk-whisper" checked onchange="toggleChannelTabVisibility('whisper', this.checked)"> ✉️ Whisper</label>
+                    </div>
+                </div>
+
+                <div class="chat-settings-section">
+                    <h4>🎨 Visual & Preferências</h4>
+                    <div class="chat-setting-row">
+                        <div class="setting-text-col">
+                            <label class="setting-title-label">Tamanho da Fonte</label>
+                            <span class="setting-desc-sub">Tamanho do texto das mensagens no chat.</span>
+                        </div>
+                        <select id="chat-setting-font-size" class="poke-select" style="width:130px;padding:4px 8px;" onchange="updateChatSetting('fontSize', this.value)">
+                            <option value="small">Pequeno (11px)</option>
+                            <option value="medium" selected>Médio (13px)</option>
+                            <option value="large">Grande (15px)</option>
+                        </select>
+                    </div>
+                    <div class="chat-setting-row">
+                        <div class="setting-text-col">
+                            <label class="setting-title-label">Opacidade da Janela</label>
+                            <span class="setting-desc-sub">Transparência de fundo do chat.</span>
+                        </div>
+                        <select id="chat-setting-opacity" class="poke-select" style="width:130px;padding:4px 8px;" onchange="updateChatSetting('chatOpacity', parseFloat(this.value))">
+                            <option value="0.6">60% Translúcido</option>
+                            <option value="0.8">80% Suave</option>
+                            <option value="0.92" selected>92% Padrão</option>
+                            <option value="1.0">100% Sólido</option>
+                        </select>
+                    </div>
+                    <div class="chat-setting-row">
+                        <div class="setting-text-col">
+                            <label class="setting-title-label">Exibir Horário [HH:MM]</label>
+                            <span class="setting-desc-sub">Exibir timestamp antes de cada mensagem.</span>
+                        </div>
+                        <label class="poke-toggle-switch">
+                            <input type="checkbox" id="chat-setting-timestamps" checked onchange="updateChatSetting('showTimestamps', this.checked)">
+                            <span class="poke-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="chat-setting-row">
+                        <div class="setting-text-col">
+                            <label class="setting-title-label">Mensagens de NPCs do Mundo</label>
+                            <span class="setting-desc-sub">Simulação de conversas de treinadores de Kanto/Johto.</span>
+                        </div>
+                        <label class="poke-toggle-switch">
+                            <input type="checkbox" id="chat-setting-ambient" checked onchange="updateChatSetting('ambientCommunityChat', this.checked)">
+                            <span class="poke-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="chat-settings-footer-actions">
+                    <button class="tibia-btn poke-cmd-btn" onclick="resetChatSettingsToDefault()" style="padding:8px 14px;">Restaurar Padrões</button>
+                    <button class="tibia-btn poke-cmd-btn is-blue" onclick="closeChatSettingsModal()" style="padding:8px 18px;">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal: Central do Playtester (Guia & Kit Inicial) -->
+    <div id="modal-playtester-guide" class="floating-modal-backdrop" style="display:none;" onclick="if(event.target===this) closePlaytesterGuideModal()">
+        <div class="floating-modal-dialog playtester-modal-dialog">
+            <div class="modal-header-retro" style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(15,23,42,0.95);border-bottom:1.5px solid #3b82f6;">
+                <div class="modal-title-left" style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:20px;">🚀</span>
+                    <div>
+                        <h3 style="margin:0;font-size:16px;color:#f8fafc;font-weight:800;">Central do Playtester — PokéLand Beta</h3>
+                        <span style="font-size:11px;color:#94a3b8;">Instruções e recursos para testes da comunidade</span>
+                    </div>
+                </div>
+                <button class="modal-close-retro-btn" onclick="closePlaytesterGuideModal()" title="Fechar" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+            </div>
+            <div class="modal-body-retro chat-settings-body">
+                <!-- Kit Card -->
+                <div class="playtest-kit-banner">
+                    <div class="playtest-kit-details">
+                        <div class="playtest-kit-title">🎁 Kit de Suporte do Playtester</div>
+                        <div class="playtest-kit-sub">Receba instantaneamente +20 Ultra Balls, +15 Great Balls, 15 Pedras Evolutivas, +$5.000 Ouro e +100 Diamantes para acelerar seus testes!</div>
+                    </div>
+                    <button class="tibia-btn poke-cmd-btn is-gold" id="btn-claim-playtest-kit" onclick="claimPlaytesterKit()" style="padding:10px 16px;font-size:12px;white-space:nowrap;">
+                        Resgatar Kit!
+                    </button>
+                </div>
+
+                <!-- Test Checklist -->
+                <div class="chat-settings-section">
+                    <h4>🎯 Funcionalidades Prontas para Teste</h4>
+                    <div class="playtest-feature-grid">
+                        <div class="playtest-feature-card">
+                            <h5>⚔️ Combate Próximo & Golpes</h5>
+                            <p>Golpes manuais (1-4) e Auto-Farm só atacam alvos próximos ao treinador.</p>
+                        </div>
+                        <div class="playtest-feature-card">
+                            <h5>⚡ Itens Rápidos (Alt+1 a Alt+8)</h5>
+                            <p>Barra de ação rápida remapeada para teclas Alt+1 a Alt+8 (F1-F12 bloqueadas).</p>
+                        </div>
+                        <div class="playtest-feature-card">
+                            <h5>💰 Venda de Pokémon na Loja</h5>
+                            <p>Venda Pokémon direto da Mochila ou PC Box na Loja (Atalho: L) com filtros.</p>
+                        </div>
+                        <div class="playtest-feature-card">
+                            <h5>💬 Canais de Chat Independentes</h5>
+                            <p>Canais isolados sem vazamento do Sistema. Ajuste no botão ⚙️ do chat.</p>
+                        </div>
+                        <div class="playtest-feature-card">
+                            <h5>🏆 Grandes Desafios (Endgame)</h5>
+                            <p>GvG, PvP Ranqueado, Ginásios, Safari Zone, World Boss e Dungeons.</p>
+                        </div>
+                        <div class="playtest-feature-card">
+                            <h5>🛒 Mercado Global entre Jogadores</h5>
+                            <p>Compre e venda itens e Pokémon com outros jogadores (Atalho: M).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-settings-section" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:#f1f5f9;">Encontrou algum problema ou tem sugestões?</div>
+                        <div style="font-size:11px;color:#94a3b8;">Use o botão 🐞 Feedback na barra superior para enviar relatórios diretamente aos desenvolvedores.</div>
+                    </div>
+                    <button class="tibia-btn poke-cmd-btn is-blue" onclick="closePlaytesterGuideModal(); openFeedbackModal();" style="padding:8px 14px;white-space:nowrap;">
+                        🐞 Reportar Agora
+                    </button>
+                </div>
+
+                <div class="chat-settings-footer-actions" style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8;cursor:pointer;">
+                        <input type="checkbox" id="chk-dont-show-playtest-guide" onchange="toggleDontShowPlaytestGuide(this.checked)"> Não abrir automaticamente no início
+                    </label>
+                    <button class="tibia-btn poke-cmd-btn is-green" onclick="closePlaytesterGuideModal()" style="padding:8px 24px;">Entendido, Bora Jogar!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Feedback & Reporte de Bugs -->
+    <div id="modal-feedback" class="floating-modal-backdrop" style="display:none;" onclick="if(event.target===this) closeFeedbackModal()">
+        <div class="floating-modal-dialog feedback-modal-dialog">
+            <div class="modal-header-retro" style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(15,23,42,0.95);border-bottom:1.5px solid #f59e0b;">
+                <div class="modal-title-left" style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:20px;">🐞</span>
+                    <div>
+                        <h3 style="margin:0;font-size:16px;color:#f8fafc;font-weight:800;">Reportar Bug / Enviar Feedback</h3>
+                        <span style="font-size:11px;color:#94a3b8;">Sua mensagem é enviada diretamente para a equipe de desenvolvimento</span>
+                    </div>
+                </div>
+                <button class="modal-close-retro-btn" onclick="closeFeedbackModal()" title="Fechar" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+            </div>
+            <div class="modal-body-retro chat-settings-body">
+                <div>
+                    <label style="font-size:12px;font-weight:700;color:#cbd5e1;">Categoria do Feedback:</label>
+                    <div class="feedback-category-pills" id="feedback-category-group">
+                        <button type="button" class="feedback-cat-pill active" data-cat="bug" onclick="selectFeedbackCategory('bug')">🐞 Bug / Erro</button>
+                        <button type="button" class="feedback-cat-pill" data-cat="suggestion" onclick="selectFeedbackCategory('suggestion')">💡 Sugestão</button>
+                        <button type="button" class="feedback-cat-pill" data-cat="balance" onclick="selectFeedbackCategory('balance')">⚖️ Balanceamento</button>
+                        <button type="button" class="feedback-cat-pill" data-cat="visual" onclick="selectFeedbackCategory('visual')">🎨 Visual / Sprite</button>
+                        <button type="button" class="feedback-cat-pill" data-cat="praise" onclick="selectFeedbackCategory('praise')">⭐ Elogio</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;color:#cbd5e1;">Avaliação da Experiência:</label>
+                    <div class="feedback-star-rating" id="feedback-star-rating">
+                        <span class="feedback-star active" data-star="1" onclick="setFeedbackRating(1)">★</span>
+                        <span class="feedback-star active" data-star="2" onclick="setFeedbackRating(2)">★</span>
+                        <span class="feedback-star active" data-star="3" onclick="setFeedbackRating(3)">★</span>
+                        <span class="feedback-star active" data-star="4" onclick="setFeedbackRating(4)">★</span>
+                        <span class="feedback-star active" data-star="5" onclick="setFeedbackRating(5)">★</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;color:#cbd5e1;">Descreva sua mensagem ou o problema encontrado:</label>
+                    <textarea id="feedback-message-input" class="feedback-textarea" placeholder="Explique o que aconteceu, passos para reproduzir ou ideias para melhorar..."></textarea>
+                </div>
+
+                <div style="font-size:11px;color:#64748b;background:rgba(15,23,42,0.6);padding:8px 10px;border-radius:6px;border:1px dashed rgba(51,65,85,0.6);">
+                    ℹ️ Detalhes da sua sessão (posição no mapa, nível, time ativo e navegador) serão anexados automaticamente para facilitar a análise.
+                </div>
+
+                <div class="chat-settings-footer-actions">
+                    <button class="tibia-btn poke-cmd-btn" onclick="closeFeedbackModal()">Cancelar</button>
+                    <button class="tibia-btn poke-cmd-btn is-gold" id="btn-submit-feedback" onclick="submitTesterFeedback()">Enviar Feedback</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- =========================================================
+         POKÉMART: FLOATING MODAL BALCÃO DE VENDA & RESGATE EM LOTE
+         ========================================================= -->
+    <div id="modal-pokemart-sell" class="floating-modal-backdrop" style="display:none;" onclick="if(event.target===this) closePokemartSellModal()">
+        <div class="floating-modal-dialog pokemart-sell-modal-dialog">
+            <div class="modal-header-retro pokemart-sell-modal-header">
+                <div class="modal-title-left" style="display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:26px;filter:drop-shadow(0 0 6px rgba(250,204,21,0.6));">🏪</span>
+                    <div>
+                        <div style="font-size:16px;font-weight:900;color:#fde047;letter-spacing:0.5px;display:flex;align-items:center;gap:8px;">
+                            <span>POKÉMART — BALCÃO DE VENDA EM LOTE</span>
+                            <span class="spk-quality-badge quality-raro" style="font-size:10px;padding:2px 6px;">OFICIAL</span>
+                        </div>
+                        <div style="font-size:11.5px;color:#cbd5e1;">Venda múltiplos Pokémon em lote com rapidez e segurança diretamente da Mochila ou do PC Box por Ouro</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div class="pokemart-sell-gold-counter">
+                        <span style="font-size:11px;color:#94a3b8;font-weight:700;">SALDO:</span>
+                        <span class="gold-badge-pill" id="pokemart-sell-modal-gold-label">$0</span>
+                    </div>
+                    <button class="modal-close-retro-btn" onclick="closePokemartSellModal()" title="Fechar (Esc)" style="background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#fca5a5;font-size:16px;font-weight:800;border-radius:6px;padding:4px 10px;cursor:pointer;transition:all 0.2s;">✕</button>
+                </div>
+            </div>
+
+            <div class="modal-body-retro pokemart-sell-modal-body">
+                <div id="pokemart-sell-modal-content">
+                    <!-- Dynamic rendering by renderPokemartSellModal() -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         POKÉLAND: FLOATING UPDATE LOG MODAL (LAST 3 UPDATES)
+         ========================================================= -->
+    <!-- =========================================================
+         RARITY UPGRADE MODAL (ASCEND QUALITY USING POKÉMON SACRIFICES)
+         ========================================================= -->
+    <div id="modal-rarity-upgrade" class="rarity-upgrade-modal-overlay is-hidden" onclick="if(event.target===this) closeRarityUpgradeModal()" style="display:none;">
+        <div class="rarity-upgrade-modal-card">
+            <div class="modal-card-header" style="background:linear-gradient(135deg, #1e1b4b, #312e81);border-bottom:2px solid #6366f1;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:24px;">⭐</span>
+                    <div>
+                        <h3 style="margin:0;font-size:16px;font-weight:900;color:#f8fafc;letter-spacing:0.5px;">APRIMORAMENTO DE RARIDADE</h3>
+                        <p style="margin:2px 0 0;font-size:11.5px;color:#c7d2fe;">Aumente a qualidade do Pokémon selecionado fundindo Pokémon excedentes do Box</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeRarityUpgradeModal()" title="Fechar Janela">✕ Fechar</button>
+            </div>
+
+            <div class="rarity-upgrade-body">
+                <!-- Left Column: Target Pokémon and Upgrade Preview -->
+                <div class="rarity-upgrade-target-col">
+                    <div class="ru-section-label">1. POKÉMON ALVO</div>
+                    <div id="ru-target-preview-box" class="ru-target-box">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Right Column: Sacrifice Selection and Upgrade Action -->
+                <div class="rarity-upgrade-sacrifices-col">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <div class="ru-section-label" style="margin:0;">2. SELECIONE OS SACRIFÍCIOS (<span id="ru-sacrifices-count">0/2</span>)</div>
+                        <button class="btn btn-xs btn-blue" onclick="autoSelectUpgradeSacrifices()" title="Seleciona automaticamente Pokémon excedentes do Box">⚡ Auto-Selecionar</button>
+                    </div>
+                    <div class="ru-sacrifices-grid" id="ru-sacrifices-grid">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <div class="ru-cost-summary-bar">
+                        <div class="ru-cost-item">
+                            <span class="ru-cost-lbl">Custo em Ouro:</span>
+                            <span class="ru-cost-val" id="ru-gold-cost">$0</span>
+                        </div>
+                        <div class="ru-cost-item">
+                            <span class="ru-cost-lbl">Seu Saldo:</span>
+                            <span class="ru-cost-val" id="ru-player-gold">$0</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;display:flex;gap:10px;align-items:center;">
+                        <button id="ru-action-btn" class="ru-confirm-btn" onclick="executePokemonRarityUpgrade()" style="flex:1;">
+                            ⭐ Realizar Aprimoramento de Raridade
+                        </button>
+                        <button type="button" class="btn" onclick="closeRarityUpgradeModal()" style="padding:12px 18px;border-radius:10px;background:#334155;color:#f8fafc;border:1px solid #475569;cursor:pointer;font-weight:700;">
+                            ✕ Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-update-log" class="update-log-modal-overlay is-hidden" onclick="if(event.target===this) closeUpdateLogModal()">
+        <div class="update-log-window">
+            <div class="update-log-header">
+                <div class="update-log-title-group">
+                    <span class="update-log-icon">📜</span>
+                    <div>
+                        <h3 class="update-log-title">NOTAS DE ATUALIZAÇÃO (UPDATE LOG)</h3>
+                        <div class="update-log-version-sub">
+                            <span class="ver-dot-live"></span>
+                            <span>Versão Atual: <strong id="updatelog-current-ver">v1.7.0</strong> • PokéLand Engine</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeUpdateLogModal()" title="Fechar">✕</button>
+            </div>
+
+            <!-- Version Tabs (Last 3 Updates) -->
+            <div class="update-log-tabs-row" id="update-log-tabs-bar">
+                <button class="updatelog-tab-btn active" data-ver="v1.8.0" onclick="switchUpdateLogTab('v1.8.0')">
+                    <span class="tab-flame-icon">🔥</span>
+                    <span>v1.8.0 (Atual)</span>
+                </button>
+                <button class="updatelog-tab-btn" data-ver="v1.7.0" onclick="switchUpdateLogTab('v1.7.0')">
+                    <span>📦 v1.7.0</span>
+                </button>
+                <button class="updatelog-tab-btn" data-ver="v1.6.0" onclick="switchUpdateLogTab('v1.6.0')">
+                    <span>⚙️ v1.6.0</span>
+                </button>
+            </div>
+
+            <!-- Scrollable Detailed Content Area -->
+            <div class="update-log-body" id="update-log-content-area">
+                <!-- Rendered dynamically by JS with detailed changes and highlights -->
+            </div>
+
+            <!-- Bottom Action Footer -->
+            <div class="update-log-footer">
+                <label class="update-log-dont-show-label">
+                    <input type="checkbox" id="chk-dont-show-current-version" checked>
+                    <span>Não exibir automaticamente ao iniciar nesta versão (<span class="ver-tag-text">v1.8.0</span>)</span>
+                </label>
+                <div class="update-log-footer-btns">
+                    <button class="btn-updatelog-confirm" onclick="confirmUpdateLogEntry()">
+                        🚀 Entendido, Entrar no Jogo!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

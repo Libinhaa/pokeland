@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Databases & local user saves (for clean cloud launch)
+pokeland.db*
+pokepixel.db*
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Ignore all temporary scripts in root except server.py and db.py
+*.py
+!server.py
+!db.py
+
+# Ignore other temp text dumps
+*.txt
+!requirements.txt
+*.png
+scratch/
+
+# OS and Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

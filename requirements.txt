@@ -1,0 +1,2 @@
+# Pokeland utilizes Python 3 Standard Library (http.server, sqlite3, hashlib, json)
+# Zero external pip packages needed for standalone execution
