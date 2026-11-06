@@ -160,8 +160,9 @@ function renderBagModal() {
         `;
     }).join("");
 
-    // Render Pokemons as Capsule Items HTML
+    // Render Pokemons as Capsule Items HTML (using official ORAS Menu Icons)
     const monsHtml = validMons.map(mon => {
+        const boxIconUrl = typeof getPokemonBoxIconUrl === "function" ? getPokemonBoxIconUrl(mon.dex_id || mon.species_id) : `/img/pokemon/icons/${mon.dex_id || 1}.png`;
         const pmdUrl = `/img/pmd/${mon.species_id}/Portrait.png`;
         const ivTotal = mon.iv_total || Object.values(mon.ivs || {}).reduce((a, b) => a + b, 0);
         const hpPct = Math.min(100, Math.max(0, Math.floor(((mon.hp || 1) / (mon.max_hp || 1)) * 100)));
@@ -172,7 +173,7 @@ function renderBagModal() {
             <div class="bag-item-card bag-pokemon-card ${mon.isParty ? 'is-party-mon' : ''}">
                 <div class="bag-item-header">
                     <div class="bag-item-icon-box" style="position:relative;background:radial-gradient(circle,rgba(56,189,248,0.25) 0%,rgba(15,23,42,0.9) 70%);border:1.5px solid ${mon.isParty ? '#eab308' : '#38bdf8'};">
-                        <img src="${pmdUrl}" alt="${mon.name}" style="max-width:32px;max-height:32px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${mon.dex_id || 25}.png';">
+                        <img src="${boxIconUrl}" alt="${mon.name}" style="width:36px;height:36px;image-rendering:pixelated;object-fit:contain;" onerror="this.onerror=null;this.src='${pmdUrl}';">
                         ${mon.is_shiny ? '<span style="position:absolute;top:-4px;right:-4px;font-size:12px;filter:drop-shadow(0 0 3px #facc15);">✨</span>' : ''}
                     </div>
                     <div class="bag-item-title-box">
@@ -487,7 +488,7 @@ function renderGoldShop() {
 
     container.innerHTML = filtered.map(it => {
         const owned = (STATE.player.inventory && STATE.player.inventory[it.id]) || 0;
-        const iconUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${it.icon}.png`;
+        const iconUrl = typeof getItemSpriteUrl === "function" ? getItemSpriteUrl(it.id, it) : `/img/items/${it.icon}.png`;
 
         return `
             <div class="gold-shop-card">
@@ -650,14 +651,14 @@ function renderCashShop() {
     });
 
     container.innerHTML = filtered.map(it => {
-        const iconUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${it.icon}.png`;
+        const iconUrl = typeof getItemSpriteUrl === "function" ? getItemSpriteUrl(it.id, it) : `/img/items/${it.icon}.png`;
 
         return `
             <div class="cashshop-card">
                 <span class="cashshop-card-badge ${it.badgeClass}">${it.badge}</span>
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div style="width:48px;height:48px;background:rgba(8,14,26,0.9);border:1px solid rgba(56,189,248,0.4);border-radius:8px;display:flex;align-items:center;justify-content:center;">
-                        <img src="${iconUrl}" alt="${it.name}" style="max-width:34px;max-height:34px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png';">
+                        <img src="${iconUrl}" alt="${it.name}" style="max-width:34px;max-height:34px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='/img/items/ball_master.png';">
                     </div>
                     <div>
                         <div style="font-size:14px;font-weight:900;color:#f8fafc;">${it.name}</div>

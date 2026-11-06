@@ -838,36 +838,69 @@ function getCachedImage(url) {
 }
 
 function getItemSpriteUrl(itemId, item = null) {
-    if (!itemId) return "/img/items/poke-ball.png";
+    if (!itemId) return "/img/items/ball_poke.png";
     const clean = String(itemId).toLowerCase().trim();
     
-    // Check Pokéball mappings
+    // Check Pokéball mappings (HGSS official ripped sprites)
     if (clean.includes("ball") || clean.startsWith("capsule_")) {
-        let b = clean.replace("capsule_", "").replace("ball_", "");
-        if (b === "basic" || b === "poke") b = "poke";
-        if (b === "super" || b === "great") b = "great";
-        if (b === "hyper" || b === "ultra") b = "ultra";
-        return `/img/items/${b}-ball.png`;
+        let b = clean.replace("capsule_", "").replace("ball_", "").replace("-ball", "");
+        if (b === "basic" || b === "poke" || b === "pokeball") b = "poke";
+        else if (b === "super" || b === "great") b = "great";
+        else if (b === "hyper" || b === "ultra") b = "ultra";
+        else if (b === "master") b = "master";
+        else if (b === "safari") b = "safari";
+        else if (b === "dusk") b = "dusk";
+        else if (b === "net") b = "net";
+        else if (b === "dive") b = "dive";
+        else if (b === "nest") b = "nest";
+        else if (b === "repeat") b = "repeat";
+        else if (b === "timer") b = "timer";
+        else if (b === "luxury") b = "luxury";
+        else if (b === "premier") b = "premier";
+        else if (b === "heal") b = "heal";
+        else if (b === "quick") b = "quick";
+        else if (b === "cherish") b = "cherish";
+        else if (b === "fast") b = "fast";
+        else if (b === "level") b = "level";
+        else if (b === "lure") b = "lure";
+        else if (b === "heavy") b = "heavy";
+        else if (b === "love") b = "love";
+        else if (b === "friend") b = "friend";
+        else if (b === "moon") b = "moon";
+        else if (b === "sport") b = "sport";
+        else if (b === "park") b = "park";
+        else if (b === "dream") b = "dream";
+        else if (b === "beast") b = "beast";
+        return `/img/items/ball_${b}.png`;
     }
     
-    // Check Evolution Stones
-    if (clean.startsWith("stone_")) {
-        const st = clean.replace("stone_", "");
+    // Check Evolution Stones (ORAS official sprites)
+    if (clean.startsWith("stone_") || clean.endsWith("-stone") || clean.endsWith("_stone")) {
+        let st = clean.replace("stone_", "").replace("-stone", "").replace("_stone", "").replace("item_", "");
+        if (st === "electric" || st === "thunder") st = "thunder";
+        else if (st === "grass" || st === "leaf") st = "leaf";
         return `/img/items/${st}-stone.png`;
     }
     
-    // Direct item file
-    const itemClean = clean.replace(/^item_/, "").replace(/_/g, "-");
-    return `/img/items/${itemClean}.png`;
+    // Common consumable items (ORAS official sprites)
+    const norm = clean.replace(/^item_/, "").replace(/_/g, "-");
+    return `/img/items/${norm}.png`;
 }
 window.getItemSpriteUrl = getItemSpriteUrl;
 
 function getPokemonBoxIconUrl(speciesIdOrDex) {
+    if (!speciesIdOrDex) return "/img/pokemon/icons/1.png";
     let dex = 1;
     if (typeof speciesIdOrDex === "number") dex = speciesIdOrDex;
-    else if (typeof speciesIdOrDex === "string" && !isNaN(parseInt(speciesIdOrDex))) dex = parseInt(speciesIdOrDex);
-    else if (STATE.speciesById && STATE.speciesById[speciesIdOrDex]) dex = STATE.speciesById[speciesIdOrDex].dex_id || 1;
-    return `/img/pokemon/icons/${dex}.png`;
+    else if (typeof speciesIdOrDex === "string" && !isNaN(parseInt(speciesIdOrDex, 10))) dex = parseInt(speciesIdOrDex, 10);
+    else if (typeof speciesIdOrDex === "string") {
+        const slug = speciesIdOrDex.toLowerCase().trim();
+        const sp = (STATE && STATE.speciesById && STATE.speciesById[slug]) ||
+                   (STATE && STATE.species && STATE.species.find(s => s.id === slug || s.name.toLowerCase() === slug));
+        dex = sp ? sp.dex_id : 1;
+    }
+    const num = Math.min(251, Math.max(1, parseInt(dex, 10) || 1));
+    return `/img/pokemon/icons/${num}.png`;
 }
 window.getPokemonBoxIconUrl = getPokemonBoxIconUrl;
 
@@ -4667,8 +4700,9 @@ function renderTibiaPokebar(force = false) {
                 </div>
                 <div class="leader-info-col">
                     <div class="leader-title-row">
-                        <div class="leader-name-wrap">
-                            ${renderTypeIconsOnly(lead.elements)}
+                        <div class="leader-name-wrap" style="display:flex;align-items:center;gap:5px;">
+                            <img src="${getPokemonBoxIconUrl(lead.dex_id || lead.species_id)}" style="width:26px;height:26px;image-rendering:pixelated;object-fit:contain;" alt="">
+                            ${renderTypeBadges(lead.elements)}
                             <span>${lead.is_shiny ? "✨ " : ""}${lead.name} ${genderSym}</span>
                         </div>
                         <span class="leader-lvl-pill">Lv.${lead.level}</span>
@@ -4704,15 +4738,17 @@ function renderTibiaPokebar(force = false) {
             const portraitUrl = getPmdPortraitUrl(mon.species_id || mon.dex_id);
             const fallbackUrl = getSpriteUrl(mon.dex_id, mon.is_shiny);
 
+            const boxIcon = getPokemonBoxIconUrl(mon.dex_id || mon.species_id);
+            const orasTypeIcon = getOrasTypeIconUrl(primEl);
             return `<div class="pokebar-slot ${isLead ? "active-summon" : ""} ${mon.hp <= 0 ? "fainted" : ""}" style="--slot-el-color:${elInfo.bg};" onclick="setPartyLead(${idx})" onmouseenter="showPokemonHoverCard(STATE.player.party[${idx}], event)" onmousemove="positionPokemonHoverCard(event)" onmouseleave="hidePokemonHoverCard()" title="Clique para invocar ${mon.name} (ou passe o mouse para ver o Card completo)">
                 <div class="pokebar-portrait-box">
                     <span class="slot-pokeball-indicator"></span>
-                    <img class="pokebar-icon" src="${portraitUrl}" onerror="this.onerror=null;this.src='${fallbackUrl}';" alt="${mon.name}">
+                    <img class="pokebar-icon" src="${boxIcon}" style="width:36px;height:36px;image-rendering:pixelated;object-fit:contain;" onerror="this.onerror=null;this.src='${portraitUrl}';" alt="${mon.name}">
                 </div>
                 <div class="pokebar-info">
                     <div class="pokebar-name-row">
-                        <span style="display:flex;align-items:center;gap:4px;">
-                            <img src="${getGen8TypeIconUrl(primEl)}" style="width:12px;height:12px;object-fit:contain;" alt="">
+                        <span style="display:flex;align-items:center;gap:5px;">
+                            <img src="${orasTypeIcon}" style="height:14px;width:auto;vertical-align:middle;image-rendering:pixelated;" alt="${primEl}">
                             <span>${mon.is_shiny ? "✨" : ""}${mon.name} <small style="color:#94a3b8;">Lv.${mon.level}</small></span>
                         </span>
                         <span style="font-size:9.5px;color:#fde047;font-weight:800;background:rgba(234,179,8,0.15);padding:1px 5px;border-radius:4px;">${mon.quality || "Comum"}</span>
@@ -6785,8 +6821,8 @@ function renderDexTypeFilters() {
             const label = k === "all" ? "Todos" : ELEMENT_PT[k].label;
             const act = STATE.dexElementFilter === k ? "active" : "";
             const iconHtml = k === "all"
-                ? `<span class="mini-pokeball-dot" style="width:12px;height:12px;"></span>`
-                : `<img src="${getGen8TypeIconUrl(k)}" style="width:14px;height:14px;object-fit:contain;" alt="">`;
+                ? `<img src="/img/items/ball_poke.png" style="width:16px;height:16px;vertical-align:middle;image-rendering:pixelated;" alt="All">`
+                : `<img src="${getOrasTypeIconUrl(k)}" style="height:15px;width:auto;vertical-align:middle;image-rendering:pixelated;" alt="${label}">`;
             return `<button class="type-filter-pill ${act}" style="display:inline-flex;align-items:center;gap:5px;" onclick="setDexTypeFilter('${k}')">${iconHtml}<span>${label}</span></button>`;
         })
         .join("");
@@ -6854,7 +6890,10 @@ function renderPokedex() {
             const bst = Object.values(sp.base_stats || {}).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0);
             return `<div class="pvp-card ${inTeam ? "in-team" : ""}">
                 <div class="pvp-card-top">
-                    <span class="pvp-rank-num" style="background:#1e293b;color:#94a3b8;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:800;">#${String(sp.dex_id).padStart(3, "0")}</span>
+                    <span class="pvp-rank-num" style="background:#1e293b;color:#94a3b8;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
+                        <img src="${getPokemonBoxIconUrl(sp.dex_id)}" style="width:22px;height:22px;image-rendering:pixelated;object-fit:contain;" alt="">
+                        #${String(sp.dex_id).padStart(3, "0")}
+                    </span>
                     <span style="font-size:11px;color:#cbd5e1;font-weight:800;">BST ${bst}</span>
                 </div>
                 ${inTeam ? '<span class="seu-time-badge">SEU TIME</span>' : ""}
@@ -7028,8 +7067,8 @@ function renderVerticalTeamCard(mon, idx) {
     return `
         <div class="vertical-team-card ${isLeader ? 'is-team-leader' : ''}">
             <div class="vt-top-row">
-                <div class="vt-portrait-box">
-                    <img src="${pmdUrl}" alt="${mon.name}" style="width:44px;height:44px;image-rendering:pixelated;" onerror="this.onerror=null;this.src='/img/pmd/pikachu/Portrait.png';">
+                <div class="vt-portrait-box" style="display:flex;align-items:center;justify-content:center;">
+                    <img src="${getPokemonBoxIconUrl(mon.dex_id || mon.species_id)}" alt="${mon.name}" style="width:40px;height:40px;image-rendering:pixelated;object-fit:contain;" onerror="this.onerror=null;this.src='${pmdUrl}';">
                     ${isLeader ? '<span class="vt-crown" title="Líder do Time">👑</span>' : ''}
                 </div>
                 <div class="vt-info-col">
@@ -12689,7 +12728,7 @@ function showPokemonHoverCard(mon, event) {
         <div class="phc-header-row">
             <div class="phc-portrait-box">
                 <img src="${portraitUrl}" onerror="this.onerror=null;this.src='${fallbackUrl}';" class="phc-portrait-img">
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" class="phc-ball-badge" title="Pokéball de Captura">
+                <img src="/img/items/ball_poke.png" class="phc-ball-badge" style="width:18px;height:18px;image-rendering:pixelated;" title="Pokéball de Captura">
             </div>
             <div class="phc-info-col">
                 <div class="phc-title-row">

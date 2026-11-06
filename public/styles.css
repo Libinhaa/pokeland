@@ -823,18 +823,19 @@ body {
 
 .slot-pokeball-indicator {
     position: absolute;
-    top: -3px;
-    left: -3px;
-    width: 11px;
-    height: 11px;
+    top: -4px;
+    left: -4px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    border: 1px solid #000;
-    background: linear-gradient(180deg, #ef4444 0%, #dc2626 46%, #000 46%, #000 54%, #fff 54%, #e2e8f0 100%);
+    background: url('/img/items/ball_poke.png') center/contain no-repeat;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+    z-index: 2;
 }
 
 .pokebar-slot.active-summon .slot-pokeball-indicator {
-    background: linear-gradient(180deg, #34d399 0%, #059669 46%, #000 46%, #000 54%, #fff 54%, #d1fae5 100%);
-    box-shadow: 0 0 6px #34d399;
+    background: url('/img/items/ball_ultra.png') center/contain no-repeat;
+    filter: drop-shadow(0 0 5px #34d399);
 }
 
 .pokebar-info {
