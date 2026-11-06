@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokéLand</title>
-    <link rel="stylesheet" href="/styles.css?v=pokeland_v25_real_multiplayer">
+    <link rel="stylesheet" href="/styles.css?v=pokeland_v26_item_overhaul">
 </head>
 <body class="fullscreen-mode">
     <!-- =========================================================
@@ -2527,10 +2527,10 @@
 
     <div id="toast" class="toast"></div>
 
-    <script src="/market_and_shops.js?v=pokeland_v25_real_multiplayer"></script>
-    <script src="/trainer_status.js?v=pokeland_v25_real_multiplayer"></script>
-    <script src="/endgame_mechanics.js?v=pokeland_v25_real_multiplayer"></script>
-    <script src="/app.js?v=pokeland_v25_real_multiplayer"></script>
+    <script src="/market_and_shops.js?v=pokeland_v26_item_overhaul"></script>
+    <script src="/trainer_status.js?v=pokeland_v26_item_overhaul"></script>
+    <script src="/endgame_mechanics.js?v=pokeland_v26_item_overhaul"></script>
+    <script src="/app.js?v=pokeland_v26_item_overhaul"></script>
 
     <!-- Modal: Configurações do Chat & Comunicação -->
     <div id="modal-chat-settings" class="floating-modal-backdrop" style="display:none;" onclick="if(event.target===this) closeChatSettingsModal()">
@@ -2912,6 +2912,226 @@
             </div>
         </div>
     </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ITEM TARGET PICKER MODAL (USE ITEMS ON PARTY POKÉMON)      -->
+    <!-- ========================================================= -->
+    <div id="modal-item-target-picker" class="item-target-modal-overlay is-hidden" onclick="if(event.target===this) closeItemTargetPickerModal()">
+        <div class="item-target-window">
+            <div class="item-target-header">
+                <div class="item-target-header-left">
+                    <div class="item-target-icon-box" id="item-target-icon-wrap">
+                        <img id="item-target-icon-img" src="/img/items/potion.png" alt="Item">
+                    </div>
+                    <div>
+                        <div class="item-target-item-title">
+                            <span id="item-target-name">Poção</span>
+                            <span id="item-target-qty-badge" class="item-target-badge">x1</span>
+                        </div>
+                        <div id="item-target-desc" class="item-target-item-desc">Selecione um Pokémon da sua equipe para usar este item.</div>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeItemTargetPickerModal()" title="Fechar">✕</button>
+            </div>
+
+            <!-- Scrollable Party List -->
+            <div class="item-target-party-list" id="item-target-party-container">
+                <!-- Dynamically rendered 6 party members -->
+            </div>
+
+            <div class="item-target-footer">
+                <div id="item-target-footer-hint" class="item-target-hint">
+                    💡 Dica: Revives recuperam Pokémon desmaiados. Poções curam vida. Candies sobem nível.
+                </div>
+                <button type="button" class="btn btn-slate" onclick="closeItemTargetPickerModal()" style="padding:6px 16px;font-size:12px;font-weight:700;">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .item-target-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 15, 29, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100050;
+            transition: opacity 0.2s ease;
+        }
+        .item-target-modal-overlay.is-hidden {
+            display: none !important;
+        }
+        .item-target-window {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #38bdf8;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(56,189,248,0.3);
+            width: 95%;
+            max-width: 580px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: popInItemModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes popInItemModal {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .item-target-header {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 12px 16px;
+            border-bottom: 1.5px solid rgba(56, 189, 248, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .item-target-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .item-target-icon-box {
+            width: 44px;
+            height: 44px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(15, 23, 42, 0.9) 80%);
+            border: 1.5px solid #38bdf8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .item-target-icon-box img {
+            max-width: 32px;
+            max-height: 32px;
+            image-rendering: pixelated;
+        }
+        .item-target-item-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .item-target-badge {
+            background: #0284c7;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 12px;
+            font-family: var(--font-mono, monospace);
+        }
+        .item-target-item-desc {
+            font-size: 11.5px;
+            color: #cbd5e1;
+            margin-top: 2px;
+        }
+        .item-target-party-list {
+            padding: 12px 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 52vh;
+        }
+        .item-target-mon-row {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1.5px solid #334155;
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all 0.15s ease;
+        }
+        .item-target-mon-row:hover {
+            border-color: #38bdf8;
+            background: rgba(30, 41, 59, 0.95);
+        }
+        .item-target-mon-row.is-fainted {
+            background: rgba(69, 10, 10, 0.45);
+            border-color: #dc2626;
+        }
+        .item-target-mon-row.is-lead {
+            border-color: #eab308;
+            box-shadow: inset 0 0 10px rgba(234, 179, 8, 0.1);
+        }
+        .item-target-mon-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+        .item-target-mon-img {
+            width: 38px;
+            height: 38px;
+            image-rendering: pixelated;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .item-target-mon-info {
+            min-width: 0;
+            flex: 1;
+        }
+        .item-target-mon-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .item-target-hp-bar-bg {
+            width: 100%;
+            max-width: 170px;
+            height: 8px;
+            background: #0f172a;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            margin-top: 4px;
+        }
+        .item-target-hp-bar-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .item-target-footer {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 10px 16px;
+            border-top: 1.5px solid rgba(56, 189, 248, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .item-target-hint {
+            font-size: 11.5px;
+            color: #94a3b8;
+            line-height: 1.3;
+        }
+        @keyframes pulseItemBtn {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+        }
+        @keyframes pulseEvoBtn {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.5); }
+            50% { box-shadow: 0 0 0 6px rgba(234, 179, 8, 0); }
+        }
+        .btn-pulse-green {
+            animation: pulseItemBtn 1.6s infinite !important;
+        }
+        .btn-pulse-gold {
+            animation: pulseEvoBtn 1.6s infinite !important;
+        }
+    </style>
 
 </body>
 </html>

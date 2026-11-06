@@ -880,11 +880,63 @@ function getItemSpriteUrl(itemId, item = null) {
         return `/img/items/ball_${b}.png`;
     }
     
+    // Check Candies
+    if (clean.includes("candy")) {
+        return "/img/items/rare-candy.png";
+    }
+
+    // Check Revives
+    if (clean.includes("max") && clean.includes("revive")) {
+        return "/img/items/max-revive.png";
+    }
+    if (clean.includes("revive")) {
+        return "/img/items/revive.png";
+    }
+
+    // Check Potions
+    if (clean.includes("max") && clean.includes("potion")) {
+        return "/img/items/max-potion.png";
+    }
+    if (clean.includes("hyper")) {
+        return "/img/items/hyper-potion.png";
+    }
+    if (clean.includes("super") || clean.includes("great")) {
+        return "/img/items/super-potion.png";
+    }
+    if (clean.includes("full") && (clean.includes("restore") || clean.includes("potion"))) {
+        return "/img/items/full-restore.png";
+    }
+    if (clean.includes("potion")) {
+        return "/img/items/potion.png";
+    }
+
+    // Check Status Heals
+    if (clean.includes("antidote")) return "/img/items/antidote.png";
+    if (clean.includes("paralyze")) return "/img/items/paralyze-heal.png";
+    if (clean.includes("awakening")) return "/img/items/awakening.png";
+    if (clean.includes("burn")) return "/img/items/burn-heal.png";
+    if (clean.includes("ice") && clean.includes("heal")) return "/img/items/ice-heal.png";
+    if (clean.includes("full") && clean.includes("heal")) return "/img/items/full-heal.png";
+
+    // Check Berries
+    if (clean.includes("oran")) return "/img/items/oran-berry.png";
+    if (clean.includes("sitrus")) return "/img/items/sitrus-berry.png";
+    if (clean.includes("lum")) return "/img/items/lum-berry.png";
+
     // Check Evolution Stones (ORAS official sprites)
-    if (clean.startsWith("stone_") || clean.endsWith("-stone") || clean.endsWith("_stone")) {
+    if (clean.startsWith("stone_") || clean.endsWith("-stone") || clean.endsWith("_stone") || clean.includes("stone")) {
         let st = clean.replace("stone_", "").replace("-stone", "").replace("_stone", "").replace("item_", "");
         if (st === "electric" || st === "thunder") st = "thunder";
         else if (st === "grass" || st === "leaf") st = "leaf";
+        else if (st === "sun" || st === "reference_sun") st = "sun";
+        else if (st === "moon" || st === "reference_moon") st = "moon";
+        else if (st === "shiny") st = "shiny";
+        else if (st === "ice") st = "ice";
+        else if (st === "fire") st = "fire";
+        else if (st === "water") st = "water";
+        else if (st === "dusk") st = "dusk";
+        else if (st === "dawn") st = "dawn";
+        else if (st === "oval") st = "oval";
         return `/img/items/${st}-stone.png`;
     }
     
@@ -12377,65 +12429,507 @@ function renderActionBar() {
     }).join("");
 }
 
+// =========================================================
+// POKÉLAND COMPREHENSIVE ITEM OVERHAUL & TARGET PICKER
+// =========================================================
+
+let CURRENT_PICKER_ITEM_ID = null;
+
+function closeItemTargetPickerModal() {
+    CURRENT_PICKER_ITEM_ID = null;
+    const modal = document.getElementById("modal-item-target-picker");
+    if (modal) modal.classList.add("is-hidden");
+}
+window.closeItemTargetPickerModal = closeItemTargetPickerModal;
+
+function openItemTargetPickerModal(itemId) {
+    if (!STATE.player || !STATE.player.inventory) return;
+    const qty = STATE.player.inventory[itemId] || 0;
+    const item = STATE.itemsMap?.[itemId] || { id: itemId, name: itemId, type: "item" };
+
+    if (qty <= 0) {
+        showToast(`⚠️ Você não possui ${item.name} na mochila!`);
+        closeItemTargetPickerModal();
+        return;
+    }
+
+    CURRENT_PICKER_ITEM_ID = itemId;
+    const modal = document.getElementById("modal-item-target-picker");
+    if (!modal) return;
+
+    // Header info
+    const imgEl = document.getElementById("item-target-icon-img");
+    const nameEl = document.getElementById("item-target-name");
+    const qtyBadgeEl = document.getElementById("item-target-qty-badge");
+    const descEl = document.getElementById("item-target-desc");
+    const hintEl = document.getElementById("item-target-footer-hint");
+
+    const sprite = typeof getItemSpriteUrl === "function" ? getItemSpriteUrl(itemId, item) : "/img/items/potion.png";
+    if (imgEl) {
+        imgEl.src = sprite;
+        imgEl.onerror = () => { imgEl.src = "/img/items/potion.png"; };
+    }
+    if (nameEl) nameEl.textContent = item.name;
+    if (qtyBadgeEl) qtyBadgeEl.textContent = `x${qty.toLocaleString()}`;
+
+    // Item category & descriptive hints
+    const t = (item.type || "").toLowerCase();
+    const isRevive = t === "revive" || itemId.includes("revive");
+    const isCandy = itemId.includes("candy") || itemId === "prof_rare_berry";
+    const isStone = t === "evolution" || itemId.startsWith("stone_") || itemId.includes("stone") || itemId === "shiny_stone";
+    const isPotion = t === "potion" || itemId.includes("potion") || itemId.includes("curas") || itemId === "prof_berry_oran" || itemId === "prof_berry_sitrus" || itemId === "farm_berry";
+    const isStatus = itemId.includes("heal") || itemId.includes("antidote") || itemId.includes("awakening") || itemId.includes("berry_chesto") || itemId.includes("berry_pecha") || itemId.includes("berry_rawst") || itemId === "prof_golden_berry";
+
+    if (descEl) {
+        if (isRevive) descEl.textContent = "Escolha um Pokémon desmaiado da equipe para reviver.";
+        else if (isCandy) descEl.textContent = "Escolha um Pokémon para subir +1 Nível instantaneamente e restaurar HP.";
+        else if (isStone) descEl.textContent = "Escolha um Pokémon compatível na equipe para evoluir.";
+        else if (isPotion) descEl.textContent = "Escolha um Pokémon ferido na equipe para recuperar pontos de vida.";
+        else if (isStatus) descEl.textContent = "Escolha um Pokémon com condição negativa para curar.";
+        else descEl.textContent = item.description || "Escolha um Pokémon da equipe para aplicar o item.";
+    }
+
+    if (hintEl) {
+        if (isRevive) hintEl.textContent = "💡 Revive recupera Pokémon derrotados (HP 0). Não pode ser usado em Pokémon já acordados.";
+        else if (isStone) hintEl.textContent = "🧬 Pedras de Evolução transformam certas espécies quando atingem o nível requerido.";
+        else if (isCandy) hintEl.textContent = "🍬 Rare Candies aumentam o nível em +1 (máx. 100) e curam todo o HP.";
+        else hintEl.textContent = "💡 Poções e Bagas recuperam a saúde de Pokémon conscientes.";
+    }
+
+    const partyContainer = document.getElementById("item-target-party-container");
+    if (!partyContainer) return;
+
+    const party = STATE.player.party || [];
+    if (!party.length) {
+        partyContainer.innerHTML = `<div style="padding:20px;text-align:center;color:#94a3b8;">⚠️ Sua equipe está vazia!</div>`;
+        modal.classList.remove("is-hidden");
+        return;
+    }
+
+    // Render 6 party members
+    partyContainer.innerHTML = party.map((mon, idx) => {
+        const isFainted = (mon.hp || 0) <= 0;
+        const isLead = idx === 0;
+        const hpPct = Math.max(0, Math.min(100, Math.floor(((mon.hp || 0) / (mon.max_hp || 1)) * 100)));
+        const hpCol = isFainted ? "#ef4444" : hpPct < 25 ? "#ef4444" : hpPct < 60 ? "#f59e0b" : "#10b981";
+        const boxIcon = typeof getPokemonBoxIconUrl === "function" ? getPokemonBoxIconUrl(mon.dex_id || mon.species_id) : `/img/pokemon/icons/${mon.dex_id || 1}.png`;
+        const pmdUrl = `/img/pmd/${mon.species_id}/Portrait.png`;
+        const primEl = (mon.elements && mon.elements[0]) || "normal";
+        const orasTypeIcon = typeof getOrasTypeIconUrl === "function" ? getOrasTypeIconUrl(primEl) : "";
+
+        // Status pill
+        let statusBadge = "";
+        if (isFainted) {
+            statusBadge = `<span style="font-size:10px;font-weight:900;color:#ef4444;background:rgba(239,68,68,0.2);padding:1px 6px;border-radius:4px;border:1px solid #ef4444;">💀 DESMAIADO</span>`;
+        } else if (mon.status) {
+            statusBadge = `<span style="font-size:10px;font-weight:800;color:#f59e0b;background:rgba(245,158,11,0.2);padding:1px 6px;border-radius:4px;border:1px solid #f59e0b;">⚠️ ${String(mon.status).toUpperCase()}</span>`;
+        }
+
+        // Action Button logic based on item type
+        let actionBtnHtml = "";
+
+        if (isRevive) {
+            if (isFainted) {
+                let pctText = itemId.includes("max") ? "100%" : itemId.includes("minor") ? "35%" : "50%";
+                actionBtnHtml = `<button class="btn btn-green btn-pulse-green" onclick="applyItemToPokemon('${itemId}', '${mon.uid}')" style="min-width:130px;font-weight:800;padding:7px 12px;">✨ Reviver (+${pctText})</button>`;
+            } else {
+                actionBtnHtml = `<button class="btn btn-slate" disabled style="min-width:130px;opacity:0.45;cursor:not-allowed;padding:7px 12px;">Consciente</button>`;
+            }
+        } else if (isCandy) {
+            if ((mon.level || 1) < 100) {
+                actionBtnHtml = `<button class="btn btn-green btn-pulse-green" onclick="applyItemToPokemon('${itemId}', '${mon.uid}')" style="min-width:130px;font-weight:800;padding:7px 12px;">🍬 Subir p/ Lv.${(mon.level || 1) + 1}</button>`;
+            } else {
+                actionBtnHtml = `<button class="btn btn-slate" disabled style="min-width:130px;opacity:0.45;cursor:not-allowed;padding:7px 12px;">Nível Máximo</button>`;
+            }
+        } else if (isStone) {
+            const sp = STATE.speciesById?.[mon.species_id] || {};
+            const evoOpts = (mon.evolution_options && mon.evolution_options.length) ? mon.evolution_options : (sp.evolution_options || []);
+            const match = evoOpts.find(opt => opt.required_item_id === itemId || (itemId === "shiny_stone" && opt.shiny_additional_requirements?.some(r => r.item_id === "shiny_stone")));
+            
+            if (match) {
+                const reqLv = match.level || sp.evolve_level || 20;
+                if ((mon.level || 1) >= reqLv) {
+                    actionBtnHtml = `<button class="btn btn-gold btn-pulse-gold" onclick="applyItemToPokemon('${itemId}', '${mon.uid}')" style="min-width:140px;font-weight:800;padding:7px 12px;">🧬 Evoluir (${match.name})</button>`;
+                } else {
+                    actionBtnHtml = `<button class="btn btn-slate" disabled style="min-width:140px;opacity:0.6;cursor:not-allowed;padding:7px 12px;">Requer Lv.${reqLv}</button>`;
+                }
+            } else {
+                actionBtnHtml = `<button class="btn btn-slate" disabled style="min-width:140px;opacity:0.35;cursor:not-allowed;padding:7px 12px;">Incompatível</button>`;
+            }
+        } else if (isStatus) {
+            if (isFainted) {
+                actionBtnHtml = `<button class="btn btn-slate" disabled style="min-width:130px;opacity:0.45;cursor:not-allowed;padding:7px 12px;">Desmaiado</button>`;
+            } else if (mon.status || itemId === "prof_golden_berry") {
+                actionBtnHtml = `<button class="btn btn-green btn-pulse-green" onclick="applyItemToPokemon('${itemId}', '${mon.uid}')" style="min-width:130px;font-weight:800;padding:7px 12px;">💊 Curar Status</button>`;
+            } else {
+                actionBtnHtml = `<button class="btn btn-slate" disabled style="min-width:130px;opacity:0.45;cursor:not-allowed;padding:7px 12px;">Sem Condição</button>`;
+            }
+        } else {
+            // Potions & Healing berries
+            if (isFainted) {
+                actionBtnHtml = `<button class="btn btn-slate" disabled style="min-width:130px;opacity:0.45;cursor:not-allowed;padding:7px 12px;">Desmaiado</button>`;
+            } else if ((mon.hp || 0) < mon.max_hp) {
+                let healLabel = "+200 HP";
+                if (itemId.includes("super") || itemId.includes("great")) healLabel = "+500 HP";
+                else if (itemId.includes("hyper")) healLabel = "+1200 HP";
+                else if (itemId.includes("max") || itemId.includes("full") || itemId.includes("ultimate") || itemId.includes("restore")) healLabel = "100% HP";
+                else if (itemId === "prof_berry_sitrus") healLabel = "+25% HP";
+                else if (itemId === "prof_berry_oran") healLabel = "+150 HP";
+
+                actionBtnHtml = `<button class="btn btn-green btn-pulse-green" onclick="applyItemToPokemon('${itemId}', '${mon.uid}')" style="min-width:130px;font-weight:800;padding:7px 12px;">🧪 Curar (${healLabel})</button>`;
+            } else {
+                actionBtnHtml = `<button class="btn btn-slate" disabled style="min-width:130px;opacity:0.45;cursor:not-allowed;padding:7px 12px;">HP Cheio</button>`;
+            }
+        }
+
+        return `
+            <div class="item-target-mon-row ${isFainted ? 'is-fainted' : ''} ${isLead ? 'is-lead' : ''}">
+                <div class="item-target-mon-left">
+                    <img class="item-target-mon-img" src="${boxIcon}" alt="${mon.name}" onerror="this.onerror=null;this.src='${pmdUrl}';">
+                    <div class="item-target-mon-info">
+                        <div class="item-target-mon-name">
+                            <span>${mon.is_shiny ? "✨" : ""}${mon.name}</span>
+                            <span style="font-family:var(--font-mono);color:#fde047;font-size:11px;">Lv.${mon.level}</span>
+                            ${orasTypeIcon ? `<img src="${orasTypeIcon}" style="height:13px;width:auto;vertical-align:middle;" alt="${primEl}">` : ''}
+                            ${statusBadge}
+                        </div>
+                        <div class="item-target-hp-bar-bg">
+                            <div class="item-target-hp-bar-fill" style="width:${hpPct}%;background:${hpCol};"></div>
+                        </div>
+                        <div style="font-size:10px;color:#94a3b8;margin-top:2px;display:flex;gap:6px;">
+                            <span>HP: <strong style="color:#f8fafc;">${mon.hp || 0}/${mon.max_hp}</strong> (${hpPct}%)</span>
+                            ${isLead ? '<span style="color:#eab308;font-weight:800;">[Líder]</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    ${actionBtnHtml}
+                </div>
+            </div>
+        `;
+    }).join("");
+
+    modal.classList.remove("is-hidden");
+}
+window.openItemTargetPickerModal = openItemTargetPickerModal;
+
+function applyItemToPokemon(itemId, monUid) {
+    if (!STATE.player || !STATE.player.inventory) return;
+    const qty = STATE.player.inventory[itemId] || 0;
+    if (qty <= 0) {
+        showToast("⚠️ Você não possui este item na mochila!");
+        closeItemTargetPickerModal();
+        return;
+    }
+
+    const mon = (STATE.player.party || []).find(m => m.uid === monUid);
+    if (!mon) {
+        showToast("⚠️ Pokémon não encontrado na equipe!");
+        return;
+    }
+
+    const item = STATE.itemsMap?.[itemId] || { id: itemId, name: itemId, type: "item" };
+    const t = (item.type || "").toLowerCase();
+    let consumed = false;
+
+    // A. REVIVES
+    if (t === "revive" || itemId.includes("revive")) {
+        if ((mon.hp || 0) > 0) {
+            showToast(`⚠️ ${mon.name} já está consciente!`);
+            return;
+        }
+        let pct = 0.5;
+        if (itemId.includes("max")) pct = 1.0;
+        else if (itemId.includes("minor")) pct = 0.35;
+        else if (item.heal_percent) pct = item.heal_percent / 100;
+
+        mon.hp = Math.max(1, Math.floor(mon.max_hp * pct));
+        mon.status = null;
+        consumed = true;
+        showToast(`✨ ${mon.name} foi revivido com ${Math.round(pct * 100)}% de HP!`);
+        
+        // If revived mon was lead or summoned mon, sync combat state
+        const lead = getLeadPokemon();
+        if (lead && lead.uid === mon.uid && STATE.tibia && STATE.tibia.lead) {
+            STATE.tibia.lead.hp = mon.hp;
+        }
+    }
+    // B. POTIONS & HP BERRIES
+    else if (t === "potion" || itemId.includes("potion") || itemId.includes("curas") || itemId === "prof_berry_oran" || itemId === "prof_berry_sitrus" || itemId === "farm_berry") {
+        if ((mon.hp || 0) <= 0) {
+            showToast(`⚠️ ${mon.name} está desmaiado! Use um Revive.`);
+            return;
+        }
+        if (mon.hp >= mon.max_hp && !itemId.includes("full") && !itemId.includes("restore") && !itemId.includes("medicine")) {
+            showToast(`❤️ ${mon.name} já está com 100% de HP!`);
+            return;
+        }
+        let healAmt = 200;
+        if (itemId.includes("super") || itemId.includes("great")) healAmt = Math.max(500, Math.floor(mon.max_hp * 0.35));
+        else if (itemId.includes("ultra")) healAmt = Math.max(800, Math.floor(mon.max_hp * 0.5));
+        else if (itemId.includes("hyper")) healAmt = Math.max(1200, Math.floor(mon.max_hp * 0.75));
+        else if (itemId.includes("max") || itemId.includes("ultimate") || itemId.includes("restore") || itemId.includes("full")) healAmt = mon.max_hp;
+        else if (itemId === "prof_berry_sitrus") healAmt = Math.max(100, Math.floor(mon.max_hp * 0.25));
+        else if (itemId === "prof_berry_oran") healAmt = 150;
+        else if (itemId === "farm_berry") healAmt = 100;
+
+        mon.hp = Math.min(mon.max_hp, mon.hp + healAmt);
+        if (itemId.includes("full") || itemId.includes("restore") || itemId.includes("medicine")) {
+            mon.status = null;
+        }
+        consumed = true;
+        showToast(`🧪 ${mon.name} recuperou +${healAmt} HP!`);
+
+        const lead = getLeadPokemon();
+        if (lead && lead.uid === mon.uid && STATE.tibia && STATE.tibia.lead) {
+            STATE.tibia.lead.hp = mon.hp;
+        }
+    }
+    // C. STATUS CURES & STATUS BERRIES
+    else if (itemId.includes("heal") || itemId.includes("antidote") || itemId.includes("awakening") || itemId.includes("berry_chesto") || itemId.includes("berry_pecha") || itemId.includes("berry_rawst") || itemId === "prof_golden_berry") {
+        if ((mon.hp || 0) <= 0) {
+            showToast(`⚠️ ${mon.name} está desmaiado! Use um Revive.`);
+            return;
+        }
+        if (!mon.status && itemId !== "prof_golden_berry") {
+            showToast(`⚠️ ${mon.name} não possui nenhuma condição de status!`);
+            return;
+        }
+        mon.status = null;
+        if (itemId === "prof_golden_berry") {
+            mon.hp = Math.min(mon.max_hp, mon.hp + Math.floor(mon.max_hp * 0.5));
+        }
+        consumed = true;
+        showToast(`💊 Condição negativa de ${mon.name} foi curada!`);
+    }
+    // D. RARE CANDIES
+    else if (itemId.includes("candy") || itemId === "prof_rare_berry") {
+        if ((mon.level || 1) >= 100) {
+            showToast(`⭐ ${mon.name} já atingiu o Nível Máximo (Lv.100)!`);
+            return;
+        }
+        mon.level = (mon.level || 1) + 1;
+        if (typeof levelUpPokemon === "function") levelUpPokemon(mon, 0);
+        mon.hp = mon.max_hp;
+        consumed = true;
+        showToast(`🍬 ${mon.name} subiu para o Nível ${mon.level}! Vida 100% restaurada!`);
+
+        const sp = STATE.speciesById?.[mon.species_id] || {};
+        if (sp.evolves_to && mon.level >= (sp.evolve_level || 999)) {
+            showToast(`✨ ${mon.name} está pronto para evoluir para ${sp.evolves_to.toUpperCase()}!`);
+        }
+    }
+    // E. EVOLUTION STONES
+    else if (t === "evolution" || itemId.startsWith("stone_") || itemId === "shiny_stone" || itemId.includes("stone")) {
+        const sp = STATE.speciesById?.[mon.species_id] || {};
+        const evoOpts = (mon.evolution_options && mon.evolution_options.length) ? mon.evolution_options : (sp.evolution_options || []);
+        const match = evoOpts.find(opt => opt.required_item_id === itemId || (itemId === "shiny_stone" && opt.shiny_additional_requirements?.some(r => r.item_id === "shiny_stone")));
+
+        if (!match) {
+            showToast(`⚠️ ${mon.name} não evolui usando ${item.name}!`);
+            return;
+        }
+        const reqLv = match.level || sp.evolve_level || 20;
+        if ((mon.level || 1) < reqLv) {
+            showToast(`⚠️ ${mon.name} precisa atingir o Nível ${reqLv} para evoluir!`);
+            return;
+        }
+        closeItemTargetPickerModal();
+        evolvePokemon(mon.uid, match.species_id, reqLv, match.required_item_id || itemId, match.required_item_qty || 1);
+        return;
+    }
+
+    if (consumed) {
+        STATE.player.inventory[itemId] = qty - 1;
+        if (STATE.player.inventory[itemId] <= 0) {
+            delete STATE.player.inventory[itemId];
+        }
+        scheduleStateSave(1000);
+        renderAll();
+        if (typeof renderBagModal === "function") renderBagModal();
+        if (typeof renderActionBar === "function") renderActionBar();
+
+        // Refresh Target Picker if still open and has remaining items
+        const remaining = STATE.player.inventory[itemId] || 0;
+        if (remaining > 0) {
+            openItemTargetPickerModal(itemId);
+        } else {
+            closeItemTargetPickerModal();
+            showToast(`📦 Todos os exemplares de ${item.name} foram utilizados!`);
+        }
+    }
+}
+window.applyItemToPokemon = applyItemToPokemon;
+
+function openChestItem(itemId) {
+    if (!STATE.player || !STATE.player.inventory || !STATE.player.inventory[itemId]) {
+        showToast("⚠️ Baú não encontrado na mochila!");
+        return;
+    }
+    const item = STATE.itemsMap?.[itemId] || { id: itemId, name: itemId };
+    STATE.player.inventory[itemId]--;
+    if (STATE.player.inventory[itemId] <= 0) delete STATE.player.inventory[itemId];
+
+    const isLegendary = itemId.startsWith("legendary_chest_");
+    const goldEarned = isLegendary ? Math.floor(40000 + Math.random() * 60000) : Math.floor(15000 + Math.random() * 25000);
+    const diaEarned = isLegendary ? Math.floor(50 + Math.random() * 150) : Math.floor(20 + Math.random() * 50);
+    const ultraBalls = isLegendary ? Math.floor(8 + Math.random() * 12) : Math.floor(4 + Math.random() * 6);
+    const candies = isLegendary ? Math.floor(2 + Math.random() * 3) : 1;
+    const gotMasterBall = isLegendary && Math.random() < 0.20;
+
+    STATE.player.gold = (STATE.player.gold || 0) + goldEarned;
+    STATE.player.diamonds = (STATE.player.diamonds || 0) + diaEarned;
+    STATE.player.inventory["capsule_ultra"] = (STATE.player.inventory["capsule_ultra"] || 0) + ultraBalls;
+    STATE.player.inventory["candy_rare"] = (STATE.player.inventory["candy_rare"] || 0) + candies;
+    if (gotMasterBall) {
+        STATE.player.inventory["capsule_master"] = (STATE.player.inventory["capsule_master"] || 0) + 1;
+    }
+
+    let msg = `🎁 Você abriu ${item.name}!
++$${goldEarned.toLocaleString()} Ouro • +${diaEarned} Diamantes • +${ultraBalls}x Ultra Balls • +${candies}x Rare Candies`;
+    if (gotMasterBall) msg += ` • 🌟 1x MASTER BALL!`;
+    showToast(msg);
+
+    scheduleStateSave(1000);
+    renderAll();
+    if (typeof renderBagModal === "function") renderBagModal();
+    if (typeof renderActionBar === "function") renderActionBar();
+}
+window.openChestItem = openChestItem;
+
+function activateBoostItem(itemId) {
+    if (!STATE.player || !STATE.player.inventory || !STATE.player.inventory[itemId]) {
+        showToast("⚠️ Item não encontrado na mochila!");
+        return;
+    }
+    const item = STATE.itemsMap?.[itemId] || { id: itemId, name: itemId };
+    STATE.player.inventory[itemId]--;
+    if (STATE.player.inventory[itemId] <= 0) delete STATE.player.inventory[itemId];
+
+    STATE.player.activeBuffs = STATE.player.activeBuffs || {};
+    STATE.player.activeBuffs[itemId] = Date.now() + 3600 * 1000;
+
+    let buffName = "Bônus Geral";
+    if (itemId.includes("exp")) buffName = "+50% EXP BÔNUS";
+    else if (itemId.includes("drop")) buffName = "+50% TAXA DE DROPS";
+    else if (itemId.includes("shiny")) buffName = "+100% CHANCE DE SHINY";
+    else if (itemId.includes("sell")) buffName = "AUTO-VENDA 24H";
+
+    showToast(`⚡ ${buffName} ativado por 1 hora (${item.name})!`);
+    scheduleStateSave(1000);
+    renderAll();
+    if (typeof renderBagModal === "function") renderBagModal();
+    if (typeof renderActionBar === "function") renderActionBar();
+}
+window.activateBoostItem = activateBoostItem;
+
+function equipBallFromBag(itemId) {
+    if (!STATE.player || !STATE.player.inventory || !STATE.player.inventory[itemId]) {
+        showToast("⚠️ Pokébola não encontrada na mochila!");
+        return;
+    }
+    const item = STATE.itemsMap?.[itemId] || { id: itemId, name: itemId };
+    STATE.tibia.selectedBallId = itemId;
+    showToast(`🎯 ${item.name} equipada como Pokébola padrão!`);
+    scheduleStateSave(1000);
+    renderAll();
+    if (typeof renderActionBar === "function") renderActionBar();
+}
+window.equipBallFromBag = equipBallFromBag;
+
 function useActionBarSlot(slotIdx) {
     if (!STATE.player || !STATE.actionBarSlots) return;
     const itemId = STATE.actionBarSlots[slotIdx];
     if (!itemId) return;
 
-    const qty = STATE.player.inventory[itemId] || 0;
-    const item = STATE.itemsMap?.[itemId] || { name: itemId };
+    const qty = STATE.player.inventory?.[itemId] || 0;
+    const item = STATE.itemsMap?.[itemId] || { id: itemId, name: itemId };
 
     if (qty <= 0) {
         showToast(`⚠️ Você não possui ${item.name} na mochila!`);
         return;
     }
 
-    // If it's a Pokeball, throw it at the target
-    if (itemId.startsWith("capsule_") || itemId.includes("ball")) {
+    const t = (item.type || "").toLowerCase();
+
+    // 1. Pokeball / Capsule: Throw at target
+    if (t === "capsule" || itemId.startsWith("capsule_") || itemId.includes("ball")) {
         STATE.tibia.selectedBallId = itemId;
         throwCapsule(itemId, false);
         renderActionBar();
         return;
     }
 
-    // If it's a consumable (potion, revive, candy, stone)
-    const lead = getLeadPokemon();
-    if (!lead) {
-        showToast("⚠️ Nenhum Pokémon ativo na equipe para usar este item!");
+    // 2. Chest: Open
+    if (t === "chest" || itemId.startsWith("chest_") || itemId.startsWith("legendary_chest_")) {
+        openChestItem(itemId);
+        renderActionBar();
         return;
     }
 
-    if (itemId.includes("potion")) {
-        if (lead.hp >= lead.max_hp) {
-            showToast(`❤️ ${lead.name} já está com 100% de HP!`);
-            return;
-        }
-        lead.hp = Math.min(lead.max_hp, lead.hp + 200);
-        STATE.player.inventory[itemId] = qty - 1;
-        showToast(`🧪 Você usou ${item.name} em ${lead.name} (+200 HP)!`);
-    } else if (itemId.includes("revive")) {
-        if (lead.hp > 0) {
-            showToast(`❤️ ${lead.name} ainda está consciente!`);
-            return;
-        }
-        lead.hp = Math.floor(lead.max_hp / 2);
-        STATE.player.inventory[itemId] = qty - 1;
-        showToast(`✨ ${lead.name} foi revivido com 50% de HP!`);
-    } else if (itemId.includes("candy")) {
-        lead.level = Math.min(100, lead.level + 1);
-        lead.exp = 0;
-        lead.max_hp = Math.floor(lead.max_hp * 1.05);
-        lead.hp = lead.max_hp;
-        STATE.player.inventory[itemId] = qty - 1;
-        showToast(`🍬 ${lead.name} subiu para o Nível ${lead.level}!`);
-    } else {
-        showToast(`📦 Item ${item.name} ativado com sucesso!`);
+    // 3. Boost: Activate
+    if (t === "boost" || itemId.startsWith("boost_")) {
+        activateBoostItem(itemId);
+        renderActionBar();
+        return;
     }
 
-    scheduleStateSave(1000);
-    renderAll();
-    renderActionBar();
+    const party = STATE.player.party || [];
+    if (!party.length) {
+        showToast("⚠️ Nenhum Pokémon na equipe!");
+        return;
+    }
+
+    // 4. Revive: Smart-target first fainted party mon
+    if (t === "revive" || itemId.includes("revive")) {
+        const fainted = party.find(m => (m.hp || 0) <= 0);
+        if (!fainted) {
+            showToast("⚠️ Nenhum Pokémon desmaiado no time!");
+            return;
+        }
+        applyItemToPokemon(itemId, fainted.uid);
+        renderActionBar();
+        return;
+    }
+
+    // 5. Potion or HP Berry: Smart-target conscious mon with lowest % HP
+    if (t === "potion" || itemId.includes("potion") || itemId.includes("curas") || itemId === "prof_berry_oran" || itemId === "prof_berry_sitrus" || itemId === "farm_berry") {
+        const damaged = party
+            .filter(m => (m.hp || 0) > 0 && m.hp < m.max_hp)
+            .sort((a, b) => ((a.hp || 0) / a.max_hp) - ((b.hp || 0) / b.max_hp))[0];
+        if (!damaged) {
+            showToast("❤️ Todos os Pokémon conscientes estão com 100% de HP!");
+            return;
+        }
+        applyItemToPokemon(itemId, damaged.uid);
+        renderActionBar();
+        return;
+    }
+
+    // 6. Status Heal / Status Berry: Smart-target first afflicted mon
+    if (itemId.includes("heal") || itemId.includes("antidote") || itemId.includes("awakening") || itemId.includes("berry_chesto") || itemId.includes("berry_pecha") || itemId.includes("berry_rawst")) {
+        const afflicted = party.find(m => (m.hp || 0) > 0 && m.status);
+        if (!afflicted) {
+            showToast("💊 Nenhum Pokémon com condição negativa!");
+            return;
+        }
+        applyItemToPokemon(itemId, afflicted.uid);
+        renderActionBar();
+        return;
+    }
+
+    // 7. Rare Candy: Target lead or first < Lv 100
+    if (itemId.includes("candy") || itemId === "prof_rare_berry") {
+        const target = party.find(m => (m.level || 1) < 100) || party[0];
+        applyItemToPokemon(itemId, target.uid);
+        renderActionBar();
+        return;
+    }
+
+    // 8. Stone or other targetable item: Open target picker modal
+    openItemTargetPickerModal(itemId);
 }
+window.useActionBarSlot = useActionBarSlot;
 
 
 // =========================================================

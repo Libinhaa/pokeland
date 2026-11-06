@@ -137,7 +137,26 @@ function renderBagModal() {
         const item = STATE.itemsMap[itemId] || { name: itemId, type: "material", sell_price: 10, description: "Item coletado em PokéLand." };
         const sprite = getItemSpriteUrl(itemId, item);
         const sellPrice = item.sell_price || Math.max(5, Math.floor((item.price || 20) / 2));
-        const isConsumable = itemId.includes("potion") || itemId.includes("revive") || itemId.includes("candy") || itemId.startsWith("stone_");
+        const t = (item.type || "").toLowerCase();
+        const isChest = t === "chest" || itemId.startsWith("chest_") || itemId.startsWith("legendary_chest_");
+        const isBoost = t === "boost" || itemId.startsWith("boost_");
+        const isBall = t === "capsule" || itemId.startsWith("capsule_") || itemId.includes("ball");
+        const isTargetable = t === "potion" || t === "revive" || t === "evolution" || t === "candy" ||
+            itemId.includes("potion") || itemId.includes("revive") || itemId.includes("candy") ||
+            itemId.startsWith("stone_") || itemId.endsWith("-stone") || itemId.endsWith("_stone") || itemId === "shiny_stone" ||
+            itemId.includes("heal") || itemId.includes("antidote") || itemId.includes("awakening") ||
+            itemId.includes("berry") || itemId.includes("curas");
+
+        let useBtn = "";
+        if (isChest) {
+            useBtn = `<button class="btn btn-gold" onclick="openChestItem('${itemId}')" title="Abrir Baú e resgatar recompensas">🎁 Abrir</button>`;
+        } else if (isBoost) {
+            useBtn = `<button class="btn btn-purple" onclick="activateBoostItem('${itemId}')" title="Ativar bônus por 1 hora">⚡ Ativar</button>`;
+        } else if (isBall) {
+            useBtn = `<button class="btn btn-blue" onclick="equipBallFromBag('${itemId}')" title="Equipar como Pokébola padrão">🎯 Equipar</button>`;
+        } else if (isTargetable) {
+            useBtn = `<button class="btn btn-green" onclick="openItemTargetPickerModal('${itemId}')" title="Usar em um Pokémon da equipe">✨ Usar</button>`;
+        }
 
         return `
             <div class="bag-item-card">
@@ -152,7 +171,7 @@ function renderBagModal() {
                 </div>
                 <div class="bag-item-desc" title="${item.description || ''}">${item.description || 'Suprimento do Treinador.'}</div>
                 <div class="bag-item-actions">
-                    ${isConsumable ? `<button class="btn btn-green" onclick="useBagItem('${itemId}')" title="Usar item no Pokémon ativo">🧪 Usar</button>` : ''}
+                    ${useBtn}
                     <button class="btn btn-amber" onclick="sellItemToNpc('${itemId}', 1)" title="Vender 1x ao NPC por $${sellPrice}">💰 Vender ($${sellPrice})</button>
                     <button class="btn btn-blue" onclick="openMarketSellFromBag('${itemId}')" title="Criar anúncio deste item no Mercado Global">⚖️ Anunciar</button>
                 </div>
@@ -347,52 +366,24 @@ function getItemSpriteUrl(itemId, item) {
 }
 
 function useBagItem(itemId) {
-    if (!STATE.player || !STATE.player.inventory[itemId] || STATE.player.inventory[itemId] <= 0) return;
-    const lead = getLeadPokemon();
-    if (!lead) {
-        showToast("⚠️ Nenhum Pokémon ativo na equipe para usar este item.");
-        return;
+    if (!STATE.player || !STATE.player.inventory || !STATE.player.inventory[itemId]) return;
+    const item = STATE.itemsMap?.[itemId] || { id: itemId, name: itemId };
+    const t = (item.type || "").toLowerCase();
+
+    if (t === "chest" || itemId.startsWith("chest_") || itemId.startsWith("legendary_chest_")) {
+        if (typeof openChestItem === "function") return openChestItem(itemId);
     }
-
-    if (itemId.includes("potion") || itemId.includes("curas")) {
-        let healAmt = 200;
-        if (itemId.includes("super")) healAmt = 500;
-        else if (itemId.includes("hyper")) healAmt = 1200;
-        else if (itemId.includes("max")) healAmt = lead.max_hp;
-
-        if (lead.hp >= lead.max_hp) {
-            showToast(`❤️ ${lead.name} já está com HP máximo!`);
-            return;
-        }
-        lead.hp = Math.min(lead.max_hp, lead.hp + healAmt);
-        STATE.player.inventory[itemId]--;
-        showToast(`✨ ${lead.name} recuperou +${healAmt} HP!`);
-        scheduleStateSave(1000);
-        renderAll();
-    } else if (itemId.includes("revive")) {
-        if (lead.hp > 0) {
-            showToast(`⚠️ ${lead.name} não está derrotado!`);
-            return;
-        }
-        lead.hp = Math.floor(lead.max_hp * (itemId.includes("max") ? 1.0 : 0.5));
-        STATE.player.inventory[itemId]--;
-        showToast(`💖 ${lead.name} foi revivido e voltou ao combate!`);
-        scheduleStateSave(1000);
-        renderAll();
-    } else if (itemId.includes("candy")) {
-        lead.level = (lead.level || 1) + 1;
-        lead.max_hp = Math.floor(lead.max_hp * 1.04) + 10;
-        lead.hp = lead.max_hp;
-        STATE.player.inventory[itemId]--;
-        showToast(`🎉 ${lead.name} subiu para o Nível ${lead.level}!`);
-        scheduleStateSave(1000);
-        renderAll();
-    } else if (itemId.startsWith("stone_")) {
-        showToast(`💎 Use a Pedra de Evolução diretamente na aba PC Box ou Pokédex para evoluir.`);
-    } else {
-        showToast("ℹ️ Este item é usado em cenários ou missões específicas.");
+    if (t === "boost" || itemId.startsWith("boost_")) {
+        if (typeof activateBoostItem === "function") return activateBoostItem(itemId);
+    }
+    if (t === "capsule" || itemId.startsWith("capsule_") || itemId.includes("ball")) {
+        if (typeof equipBallFromBag === "function") return equipBallFromBag(itemId);
+    }
+    if (typeof openItemTargetPickerModal === "function") {
+        return openItemTargetPickerModal(itemId);
     }
 }
+window.useBagItem = useBagItem;
 
 function sellItemToNpc(itemId, qty = 1) {
     const inv = STATE.player.inventory || {};
