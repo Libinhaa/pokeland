@@ -17,6 +17,8 @@ def get_connection():
     conn.execute("PRAGMA journal_mode = WAL")
     conn.execute("PRAGMA synchronous = NORMAL")
     conn.execute("PRAGMA busy_timeout = 5000")
+    conn.execute("PRAGMA cache_size = -64000")
+    conn.execute("PRAGMA temp_store = MEMORY")
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
@@ -87,6 +89,10 @@ def init_db(existing_save=None, existing_config=None, default_player_func=None, 
         if "role" not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'player'")
         cursor.execute("UPDATE users SET role = 'admin' WHERE username = 'Admin' COLLATE NOCASE")
+        # High-performance indexes
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_market_status ON market_listings(status, category)")
 
         # 5. Global Market Listings Table
         cursor.execute(

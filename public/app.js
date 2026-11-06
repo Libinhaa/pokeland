@@ -1694,6 +1694,12 @@ async function syncStateToServer(immediate = false) {
         _saveDebounceTimer = null;
     }
     _hasPendingSave = false;
+    // Resilient client-side backup before server dispatch
+    try {
+        if (STATE.player) {
+            localStorage.setItem("pokepixel_local_save_backup", JSON.stringify({ player: STATE.player, config: STATE.config, timestamp: Date.now() }));
+        }
+    } catch (e) {}
     const headers = getAuthHeaders();
     try {
         await fetch("/api/save", {
@@ -2969,6 +2975,211 @@ function toggleAutoLoot(forceVal) {
 }
 
 // ====================================================
+// NATIVE PROCEDURAL WEB AUDIO SFX SYNTHESIZER
+// Zero external files, zero latency, 100% reactive
+// ====================================================
+let _audioCtx = null;
+let _audioUnlocked = false;
+
+function getAudioContext() {
+    if (!_audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+            _audioCtx = new AudioContextClass();
+        }
+    }
+    if (_audioCtx && _audioCtx.state === "suspended") {
+        _audioCtx.resume();
+    }
+    return _audioCtx;
+}
+
+function unlockAudioContext() {
+    if (_audioUnlocked) return;
+    const ctx = getAudioContext();
+    if (ctx) {
+        _audioUnlocked = true;
+    }
+}
+window.addEventListener("click", unlockAudioContext, { once: true });
+window.addEventListener("keydown", unlockAudioContext, { once: true });
+window.addEventListener("touchstart", unlockAudioContext, { once: true });
+
+function playSfx(sfxType) {
+    const s = STATE.settings || {};
+    if (s.sfxEnabled === false) return;
+    const vol = (s.masterVolume !== undefined ? s.masterVolume : 80) / 100;
+    if (vol <= 0) return;
+
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    try {
+        const now = ctx.currentTime;
+        const masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(vol * 0.35, now);
+        masterGain.connect(ctx.destination);
+
+        if (sfxType === "hit_physical") {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.exponentialRampToValueAtTime(45, now + 0.10);
+            gain.gain.setValueAtTime(0.8, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.10);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.10);
+        } else if (sfxType === "hit_special") {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(120, now + 0.15);
+            gain.gain.setValueAtTime(0.6, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.15);
+        } else if (sfxType === "heal") {
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const noteTime = now + i * 0.055;
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(freq, noteTime);
+                gain.gain.setValueAtTime(0, noteTime);
+                gain.gain.linearRampToValueAtTime(0.5, noteTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.3);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(noteTime);
+                osc.stop(noteTime + 0.3);
+            });
+        } else if (sfxType === "revive") {
+            const notes = [392.00, 523.25, 659.25, 1046.50];
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const noteTime = now + i * 0.075;
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(freq, noteTime);
+                gain.gain.setValueAtTime(0.6, noteTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.38);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(noteTime);
+                osc.stop(noteTime + 0.38);
+            });
+        } else if (sfxType === "capture") {
+            for (let i = 0; i < 3; i++) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const t = now + i * 0.12;
+                osc.type = "square";
+                osc.frequency.setValueAtTime(400, t);
+                gain.gain.setValueAtTime(0.35, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.045);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(t);
+                osc.stop(t + 0.045);
+            }
+            const bell = ctx.createOscillator();
+            const bellGain = ctx.createGain();
+            const bellTime = now + 0.40;
+            bell.type = "sine";
+            bell.frequency.setValueAtTime(1318.51, bellTime);
+            bellGain.gain.setValueAtTime(0.7, bellTime);
+            bellGain.gain.exponentialRampToValueAtTime(0.001, bellTime + 0.55);
+            bell.connect(bellGain);
+            bellGain.connect(masterGain);
+            bell.start(bellTime);
+            bell.stop(bellTime + 0.55);
+        } else if (sfxType === "levelup") {
+            const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const t = now + i * 0.085;
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0.7, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.32);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(t);
+                osc.stop(t + 0.32);
+            });
+        } else if (sfxType === "sell") {
+            [987.77, 1318.51].forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const t = now + i * 0.065;
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0.5, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(t);
+                osc.stop(t + 0.22);
+            });
+        } else if (sfxType === "click") {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(750, now);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.025);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.025);
+        }
+    } catch (e) {
+        // Safe fallback
+    }
+}
+window.playSfx = playSfx;
+
+function sortBagInventory() {
+    if (!STATE.player || !STATE.player.inventory) return;
+    const inv = STATE.player.inventory;
+    const getCategoryPriority = (itemId) => {
+        const id = itemId.toLowerCase();
+        if (id.startsWith("capsule_") || id.includes("ball")) return 1; // Pokébolas
+        if (id.includes("potion") || id.includes("revive")) return 2; // Cura & Revive
+        if (id.startsWith("stone_")) return 3; // Pedras Evolutivas
+        if (id === "rare_candy" || id === "master_key") return 4; // Raros & Chaves
+        if (id.includes("amulet") || id.includes("exp_share")) return 5; // Held items
+        return 6; // Drops de monstros
+    };
+
+    const sortedKeys = Object.keys(inv).sort((a, b) => {
+        const pA = getCategoryPriority(a);
+        const pB = getCategoryPriority(b);
+        if (pA !== pB) return pA - pB;
+        return a.localeCompare(b);
+    });
+
+    const sortedInv = {};
+    for (const k of sortedKeys) {
+        sortedInv[k] = inv[k];
+    }
+    STATE.player.inventory = sortedInv;
+    if (typeof renderBagModal === "function") renderBagModal();
+    if (typeof playSfx === "function") playSfx("click");
+    showToast("🎒 Mochila organizada por categorias e raridade com sucesso!");
+    if (typeof scheduleStateSave === "function") scheduleStateSave(1500);
+}
+window.sortBagInventory = sortBagInventory;
+
+// ====================================================
 // TIBIA REAL-TIME SQM SIMULATION & RENDERING LOOP
 // ====================================================
 let _lastGameLoopTime = 0;
@@ -2984,6 +3195,13 @@ function tibiaGameLoop(timestamp) {
     const timeScale = Math.min(2.2, Math.max(0.45, dt / 16.667));
 
     updateTibiaSimulation(timeScale);
+
+    // Background tab optimization: skip heavy canvas draws when tab is hidden to save GPU/CPU
+    if (document.hidden) {
+        requestAnimationFrame(tibiaGameLoop);
+        return;
+    }
+
     drawTibiaMainCanvas();
     drawTibiaMinimap();
     requestAnimationFrame(tibiaGameLoop);
@@ -3590,6 +3808,9 @@ function drawTibiaMainCanvas() {
     const canvas = document.getElementById("tibia-game-canvas");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    if ("mozImageSmoothingEnabled" in ctx) ctx.mozImageSmoothingEnabled = false;
+    if ("webkitImageSmoothingEnabled" in ctx) ctx.webkitImageSmoothingEnabled = false;
     const scaleX = canvas.width / (GRID_COLS * SQM_SIZE);
     const scaleY = canvas.height / (GRID_ROWS * SQM_SIZE);
     ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
@@ -5025,6 +5246,9 @@ function executeCombatTurn(moveId, isSilentAutoSwing = false, pickIdx = -1) {
         return dist <= radius;
     });
 
+    if (hitMonsters.length > 0 && typeof playSfx === "function") {
+        playSfx(mv.category === "special" ? "hit_special" : "hit_physical");
+    }
     const defeatedList = [];
     for (const mon of hitMonsters) {
         mon.hitFlinchTicks = 16; // Trigger PMD Hurt Sheet & recoil flinch shake
@@ -5345,6 +5569,7 @@ function throwBallAtTargetMonster(mon, capsuleId, fromAuto = false) {
 
 function finalizeTibiaCapture(targetInfo, cap, chancePct, roll, isSuccess) {
     if (isSuccess) {
+        if (typeof playSfx === "function") playSfx("capture");
         // Success: Mark as caught, release lock, and remove from the floor
         targetInfo.caught = true;
         targetInfo.isCatching = false;
@@ -5555,6 +5780,7 @@ function checkAndExecuteAutoHeal() {
     STATE._lastAutoHealTime = now;
     const healAmt = Math.max(25, Math.min(lead.max_hp - lead.hp, Math.floor(lead.max_hp * chosen.healPct)));
     lead.hp = Math.min(lead.max_hp, lead.hp + healAmt);
+    if (typeof playSfx === "function") playSfx("heal");
 
     const sum = STATE.tibia?.summon || { gx: 10, gy: 10 };
     if (typeof spawnFloatingText === "function") {
@@ -5641,6 +5867,7 @@ function checkAndExecuteAutoRevive() {
 
     STATE._lastAutoReviveTime = now;
     lead.hp = Math.max(1, Math.floor(lead.max_hp * chosen.revivePct));
+    if (typeof playSfx === "function") playSfx("revive");
 
     const sum = STATE.tibia?.summon || { gx: 10, gy: 10 };
     if (typeof spawnFloatingText === "function") {
@@ -5721,6 +5948,7 @@ function checkAndExecuteAutoSellPokemon(newMon) {
 
     STATE.player.gold = (STATE.player.gold || 0) + gold;
     STATE.player.stats = STATE.player.stats || {};
+    if (typeof playSfx === "function") playSfx("sell");
     STATE.player.stats.auto_sold_mons = (STATE.player.stats.auto_sold_mons || 0) + 1;
     STATE.player.stats.auto_sold_gold = (STATE.player.stats.auto_sold_gold || 0) + gold;
 
