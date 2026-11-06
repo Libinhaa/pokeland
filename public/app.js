@@ -696,6 +696,7 @@ let STATE = {
         spriteCache: {},
     },
 };
+window.STATE = STATE;
 
 const ELEMENT_PT = {
     normal: { label: "Normal", bg: "#4b5563", fg: "#f3f4f6", spellColor: "#e5e7eb" },
@@ -8090,7 +8091,11 @@ function handleCentralHubTileClick(gx, gy) {
         (hp) => (hp.gx === gx && hp.gy === gy) || (hp.monGx === gx && hp.monGy === gy)
     );
     if (clickedPlayer) {
-        selectHubPlayerOnMap(clickedPlayer.id);
+        if (typeof openPlayerContextMenu === "function") {
+            openPlayerContextMenu(clickedPlayer);
+        } else {
+            selectHubPlayerOnMap(clickedPlayer.id);
+        }
         return true;
     }
 
@@ -9310,8 +9315,9 @@ function renderCentralSocialTab(container) {
                     </div>
                 </div>
                 <div style="display:flex;gap:5px;">
-                    <button class="btn" onclick="quickWhisperTo('${hp.name}')" title="Enviar mensagem privada">💬 Sussurrar</button>
-                    <button class="btn btn-primary" onclick="challengeHubPlayerDuel('${hp.id}')" title="Desafiar para duelo 1v1">⚔️ Duelo 1v1</button>
+                    <button class="btn btn-primary" onclick="openPlayerContextMenu('${hp.name}')" style="font-weight:800;" title="Abrir menu completo de interação">⚡ Interagir</button>
+                    <button class="btn" onclick="inspectPlayerProfile('${hp.name}')" title="Inspecionar Perfil e Equipe">🔍 Inspecionar</button>
+                    <button class="btn btn-green" onclick="sendP2PTradeInvite('${hp.name}')" title="Propor Troca Direta">🤝 Trocar</button>
                 </div>
             </div>`;
         })
@@ -11310,7 +11316,7 @@ function appendChatMessageToDom(m) {
         }
     }
 
-    const senderClick = !isSystem && !isMe ? `onclick="quickWhisperTo('${m.sender}')" style="cursor:pointer;" title="Clique para sussurrar (/w)"` : "";
+    const senderClick = !isSystem && !isMe ? `onclick="openPlayerContextMenu('${m.sender}')" style="cursor:pointer;text-decoration:underline dotted rgba(56,189,248,0.5);" title="Clique para interagir com ${m.sender}"` : "";
 
     const div = document.createElement("div");
     div.className = `chat-line ${isWhisper ? "is-whisper-row" : ""} ${isSystem ? "is-system-row" : ""}`;
@@ -15054,3 +15060,958 @@ window.addEventListener("keydown", (e) => {
         }
     }
 });
+
+// =====================================================================
+// POKÉLAND COMPREHENSIVE PLAYER INTERACTION & P2P MULTIPLAYER SYSTEM
+// =====================================================================
+
+let CURRENT_CTX_PLAYER = null;
+let ACTIVE_P2P_INVITE_ID = null;
+let CURRENT_P2P_TRADE_ID = null;
+let P2P_TRADE_POLL_TIMER = null;
+let MY_LOCAL_P2P_OFFER = { gold: 0, items: [], mon_uid: null, mon: null };
+let P2P_INVITE_POLL_INTERVAL = null;
+
+// 1. PLAYER CONTEXT MENU
+function openPlayerContextMenu(playerOrName, userId = null, level = 1, avatar = "ethan_gold") {
+    let p = null;
+    if (typeof playerOrName === "object" && playerOrName !== null) {
+        p = playerOrName;
+    } else {
+        const nameStr = String(playerOrName || "").trim();
+        const found = (STATE.tibia?.hubPlayers || []).find(hp => (hp.name || "").toLowerCase() === nameStr.toLowerCase());
+        if (found) {
+            p = found;
+        } else {
+            p = {
+                name: nameStr,
+                user_id: userId,
+                level: level,
+                avatarModelId: avatar,
+                monSpecies: "pikachu",
+                monDex: 25,
+                monName: "Pokémon",
+                monShiny: false,
+                monQuality: "Comum"
+            };
+        }
+    }
+
+    const myName = (STATE.player?.name || STATE.currentUser?.username || "Treinador").toLowerCase();
+    if ((p.name || "").toLowerCase() === myName) {
+        showToast("ℹ️ Este é você mesmo!");
+        return;
+    }
+
+    CURRENT_CTX_PLAYER = p;
+    const modal = document.getElementById("modal-player-context-menu");
+    if (!modal) return;
+
+    const avImg = document.getElementById("ctx-player-avatar");
+    const nameEl = document.getElementById("ctx-player-name");
+    const subEl = document.getElementById("ctx-player-sub");
+    const monIcon = document.getElementById("ctx-mon-icon");
+    const monName = document.getElementById("ctx-mon-name");
+
+    const avatarSrc = typeof getTrainerModelDataUrl === "function" ? getTrainerModelDataUrl(p.avatarModelId || "ethan_gold") : "/img/trainers/ethan_gold.png";
+    if (avImg) avImg.src = avatarSrc;
+    if (nameEl) nameEl.textContent = p.name;
+    if (subEl) subEl.textContent = `Treinador Lv.${p.level || 1} • PokéLand World`;
+
+    const boxIcon = typeof getPokemonBoxIconUrl === "function" ? getPokemonBoxIconUrl(p.monDex || 25) : `/img/pokemon/icons/${p.monDex || 25}.png`;
+    if (monIcon) monIcon.src = boxIcon;
+    if (monName) monName.textContent = `${p.monShiny ? "✨ " : ""}${p.monName || "Pokémon"} (${p.monQuality || "Comum"})`;
+
+    modal.classList.remove("is-hidden");
+}
+window.openPlayerContextMenu = openPlayerContextMenu;
+
+function closePlayerContextMenu() {
+    const modal = document.getElementById("modal-player-context-menu");
+    if (modal) modal.classList.add("is-hidden");
+}
+window.closePlayerContextMenu = closePlayerContextMenu;
+
+function triggerCtxInspect() {
+    if (!CURRENT_CTX_PLAYER) return;
+    const name = CURRENT_CTX_PLAYER.name;
+    closePlayerContextMenu();
+    inspectPlayerProfile(name);
+}
+window.triggerCtxInspect = triggerCtxInspect;
+
+function triggerCtxTrade() {
+    if (!CURRENT_CTX_PLAYER) return;
+    const name = CURRENT_CTX_PLAYER.name;
+    closePlayerContextMenu();
+    sendP2PTradeInvite(name);
+}
+window.triggerCtxTrade = triggerCtxTrade;
+
+function triggerCtxDuel() {
+    if (!CURRENT_CTX_PLAYER) return;
+    const name = CURRENT_CTX_PLAYER.name;
+    closePlayerContextMenu();
+    sendP2PDuelInvite(name);
+}
+window.triggerCtxDuel = triggerCtxDuel;
+
+function triggerCtxWhisper() {
+    if (!CURRENT_CTX_PLAYER) return;
+    const name = CURRENT_CTX_PLAYER.name;
+    closePlayerContextMenu();
+    quickWhisperTo(name);
+}
+window.triggerCtxWhisper = triggerCtxWhisper;
+
+function triggerCtxAddFriend() {
+    if (!CURRENT_CTX_PLAYER) return;
+    const name = CURRENT_CTX_PLAYER.name;
+    closePlayerContextMenu();
+    addFriendAction(name);
+}
+window.triggerCtxAddFriend = triggerCtxAddFriend;
+
+
+// 2. INSPECT PLAYER PROFILE & ACTIVE TEAM
+let CURRENT_INSPECTED_USER = null;
+
+async function inspectPlayerProfile(usernameOrId) {
+    if (!usernameOrId) return;
+    try {
+        const res = await fetch(`/api/player/inspect?username=${encodeURIComponent(usernameOrId)}`, {
+            headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (!data || !data.ok) {
+            showToast(`⚠️ ${data?.error || "Treinador não encontrado!"}`);
+            return;
+        }
+
+        CURRENT_INSPECTED_USER = data;
+        const modal = document.getElementById("modal-inspect-player");
+        if (!modal) return;
+
+        const titleEl = document.getElementById("inspect-title-name");
+        const nameText = document.getElementById("inspect-name-text");
+        const lvBadge = document.getElementById("inspect-level-badge");
+        const heroAvatar = document.getElementById("inspect-hero-avatar");
+        const dexCount = document.getElementById("inspect-dex-count");
+        const goldVal = document.getElementById("inspect-gold-val");
+        const createdAt = document.getElementById("inspect-created-at");
+        const partyContainer = document.getElementById("inspect-party-container");
+
+        if (titleEl) titleEl.textContent = data.username;
+        if (nameText) nameText.textContent = data.username;
+        if (lvBadge) lvBadge.textContent = `Treinador Lv.${data.level || 1}`;
+        if (dexCount) dexCount.textContent = `${data.pokedex_count || 0} / 400`;
+        if (goldVal) goldVal.textContent = `$${(data.gold || 0).toLocaleString()}`;
+        if (createdAt) createdAt.textContent = (data.created_at || "").substring(0, 10) || "Novembro 2026";
+
+        const avSrc = typeof getTrainerModelDataUrl === "function" ? getTrainerModelDataUrl(data.avatar_model || "ethan_gold") : "/img/trainers/ethan_gold.png";
+        if (heroAvatar) heroAvatar.src = avSrc;
+
+        // Render 6 party cards
+        if (partyContainer) {
+            const party = data.party || [];
+            if (!party.length) {
+                partyContainer.innerHTML = `<div style="grid-column:1/-1;padding:20px;text-align:center;color:#94a3b8;">Nenhum Pokémon na equipe ativa no momento.</div>`;
+            } else {
+                partyContainer.innerHTML = party.map((mon, idx) => {
+                    const boxIcon = typeof getPokemonBoxIconUrl === "function" ? getPokemonBoxIconUrl(mon.dex_id || mon.species_id) : `/img/pokemon/icons/${mon.dex_id || 1}.png`;
+                    const pmdUrl = `/img/pmd/${mon.species_id}/Portrait.png`;
+                    const hpPct = Math.max(0, Math.min(100, Math.floor(((mon.hp || 1) / (mon.max_hp || 1)) * 100)));
+                    const hpCol = hpPct < 25 ? "#ef4444" : hpPct < 60 ? "#f59e0b" : "#10b981";
+                    const primEl = (mon.elements && mon.elements[0]) || "normal";
+                    const orasType = typeof getOrasTypeIconUrl === "function" ? getOrasTypeIconUrl(primEl) : "";
+                    const movesStr = (mon.moves || ["tackle"]).join(" • ");
+
+                    return `
+                        <div class="inspect-mon-card">
+                            <div class="inspect-mon-icon-box">
+                                <img src="${boxIcon}" alt="${mon.name}" onerror="this.onerror=null;this.src='${pmdUrl}';">
+                                ${mon.is_shiny ? '<span style="position:absolute;top:-3px;right:-3px;font-size:11px;">✨</span>' : ''}
+                            </div>
+                            <div class="inspect-mon-card-info">
+                                <div class="inspect-mon-top-line">
+                                    <span class="inspect-mon-name">${mon.name}</span>
+                                    <span class="inspect-mon-lv">Lv.${mon.level}</span>
+                                </div>
+                                <div class="inspect-mon-badges-line">
+                                    <span style="font-size:9.5px;color:#fde047;font-weight:800;background:rgba(234,179,8,0.15);padding:1px 5px;border-radius:4px;">${mon.quality || "Comum"}</span>
+                                    ${orasType ? `<img src="${orasType}" style="height:12px;width:auto;vertical-align:middle;" alt="${primEl}">` : ''}
+                                    <span style="font-size:9.5px;color:#94a3b8;font-family:var(--font-mono);margin-left:auto;">IV:${mon.iv_total}/186</span>
+                                </div>
+                                <div class="item-target-hp-bar-bg" style="max-width:100%;margin:2px 0;">
+                                    <div class="item-target-hp-bar-fill" style="width:${hpPct}%;background:${hpCol};"></div>
+                                </div>
+                                <div class="inspect-mon-moves-text" title="${movesStr}">⚔️ ${movesStr}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+            }
+        }
+
+        modal.classList.remove("is-hidden");
+    } catch (err) {
+        console.error("Erro ao inspecionar jogador:", err);
+        showToast("⚠️ Falha na conexão ao carregar perfil.");
+    }
+}
+window.inspectPlayerProfile = inspectPlayerProfile;
+
+function closeInspectPlayerModal() {
+    const modal = document.getElementById("modal-inspect-player");
+    if (modal) modal.classList.add("is-hidden");
+}
+window.closeInspectPlayerModal = closeInspectPlayerModal;
+
+function inspectToTrade() {
+    if (!CURRENT_INSPECTED_USER) return;
+    const name = CURRENT_INSPECTED_USER.username;
+    closeInspectPlayerModal();
+    sendP2PTradeInvite(name);
+}
+window.inspectToTrade = inspectToTrade;
+
+function inspectToDuel() {
+    if (!CURRENT_INSPECTED_USER) return;
+    const name = CURRENT_INSPECTED_USER.username;
+    closeInspectPlayerModal();
+    sendP2PDuelInvite(name);
+}
+window.inspectToDuel = inspectToDuel;
+
+function inspectToWhisper() {
+    if (!CURRENT_INSPECTED_USER) return;
+    const name = CURRENT_INSPECTED_USER.username;
+    closeInspectPlayerModal();
+    quickWhisperTo(name);
+}
+window.inspectToWhisper = inspectToWhisper;
+
+function inspectToAddFriend() {
+    if (!CURRENT_INSPECTED_USER) return;
+    const name = CURRENT_INSPECTED_USER.username;
+    addFriendAction(name);
+}
+window.inspectToAddFriend = inspectToAddFriend;
+
+
+// 3. P2P INVITATIONS & NOTIFICATION BANNER
+async function sendP2PTradeInvite(targetUsername) {
+    if (!targetUsername) return;
+    try {
+        const res = await fetch("/api/p2p/invite", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ type: "trade", target_username: targetUsername })
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+            showToast(`🤝 Convite de troca enviado para ${targetUsername}! Aguardando resposta...`);
+        } else {
+            showToast(`⚠️ ${data?.error || "Falha ao enviar convite de troca."}`);
+        }
+    } catch (e) {
+        showToast("⚠️ Erro de rede ao enviar convite.");
+    }
+}
+window.sendP2PTradeInvite = sendP2PTradeInvite;
+
+async function sendP2PDuelInvite(targetUsername) {
+    if (!targetUsername) return;
+    try {
+        const res = await fetch("/api/p2p/invite", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ type: "duel", target_username: targetUsername })
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+            showToast(`⚔️ Desafio para Duelo PvP enviado para ${targetUsername}!`);
+        } else {
+            showToast(`⚠️ ${data?.error || "Falha ao enviar desafio para duelo."}`);
+        }
+    } catch (e) {
+        showToast("⚠️ Erro de rede ao enviar desafio.");
+    }
+}
+window.sendP2PDuelInvite = sendP2PDuelInvite;
+
+async function checkP2PIncomingInvites() {
+    try {
+        const res = await fetch("/api/p2p/invites", { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (!data || !data.ok) return;
+
+        const incoming = data.incoming || [];
+        const banner = document.getElementById("p2p-incoming-invite-banner");
+        if (!banner) return;
+
+        if (incoming.length > 0) {
+            const inv = incoming[0];
+            ACTIVE_P2P_INVITE_ID = inv.id;
+
+            const iconEl = document.getElementById("p2p-invite-icon");
+            const titleEl = document.getElementById("p2p-invite-title");
+            const subEl = document.getElementById("p2p-invite-subtitle");
+
+            if (inv.type === "trade") {
+                if (iconEl) iconEl.textContent = "🤝";
+                if (titleEl) titleEl.textContent = "Solicitação de Troca Direta";
+                if (subEl) subEl.textContent = `${inv.from_name} quer negociar itens e Pokémon com você!`;
+            } else {
+                if (iconEl) iconEl.textContent = "⚔️";
+                if (titleEl) titleEl.textContent = "Desafio para Duelo PvP";
+                if (subEl) subEl.textContent = `${inv.from_name} desafiou você para um combate 1v1!`;
+            }
+
+            banner.classList.remove("is-hidden");
+        } else {
+            banner.classList.add("is-hidden");
+            ACTIVE_P2P_INVITE_ID = null;
+        }
+
+        // Also check if our outgoing trade invite was accepted
+        const outgoing = data.outgoing || [];
+        for (const outInv of outgoing) {
+            if (outInv.status === "accepted" && outInv.type === "trade" && outInv.trade_id && (!CURRENT_P2P_TRADE_ID || CURRENT_P2P_TRADE_ID !== outInv.trade_id)) {
+                openP2PTradeWindow(outInv.trade_id, outInv.to_name);
+                break;
+            } else if (outInv.status === "accepted" && outInv.type === "duel") {
+                showToast(`⚔️ ${outInv.to_name} aceitou seu desafio de Duelo!`);
+                simulatePvPDuel();
+                break;
+            }
+        }
+    } catch (e) {}
+}
+
+async function acceptCurrentP2PInvite() {
+    if (!ACTIVE_P2P_INVITE_ID) return;
+    try {
+        const res = await fetch("/api/p2p/respond", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ invite_id: ACTIVE_P2P_INVITE_ID, accept: true })
+        });
+        const data = await res.json();
+        const banner = document.getElementById("p2p-incoming-invite-banner");
+        if (banner) banner.classList.add("is-hidden");
+
+        if (data && data.ok) {
+            if (data.type === "trade" && data.trade_id) {
+                openP2PTradeWindow(data.trade_id);
+            } else if (data.type === "duel") {
+                showToast(`⚔️ Duelo PvP iniciado com ${data.challenger || "Adversário"}!`);
+                simulatePvPDuel();
+            }
+        }
+    } catch (e) {
+        showToast("⚠️ Erro ao aceitar convite.");
+    }
+}
+window.acceptCurrentP2PInvite = acceptCurrentP2PInvite;
+
+async function declineCurrentP2PInvite() {
+    if (!ACTIVE_P2P_INVITE_ID) return;
+    try {
+        await fetch("/api/p2p/respond", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ invite_id: ACTIVE_P2P_INVITE_ID, accept: false })
+        });
+        const banner = document.getElementById("p2p-incoming-invite-banner");
+        if (banner) banner.classList.add("is-hidden");
+        ACTIVE_P2P_INVITE_ID = null;
+    } catch (e) {}
+}
+window.declineCurrentP2PInvite = declineCurrentP2PInvite;
+
+
+// 4. LIVE P2P TRADING DESK
+function openP2PTradeWindow(tradeId, partnerName = null) {
+    CURRENT_P2P_TRADE_ID = tradeId;
+    MY_LOCAL_P2P_OFFER = { gold: 0, items: [], mon_uid: null, mon: null };
+
+    const modal = document.getElementById("modal-p2p-trade");
+    if (!modal) return;
+
+    const namesEl = document.getElementById("p2p-trade-names");
+    const myName = STATE.player?.name || STATE.currentUser?.username || "Você";
+    if (namesEl) namesEl.textContent = `${myName} ⇄ ${partnerName || "Outro Treinador"}`;
+
+    const goldInput = document.getElementById("p2p-my-gold-input");
+    if (goldInput) goldInput.value = "0";
+
+    renderMyOfferSlots();
+    modal.classList.remove("is-hidden");
+
+    if (P2P_TRADE_POLL_TIMER) clearInterval(P2P_TRADE_POLL_TIMER);
+    P2P_TRADE_POLL_TIMER = setInterval(pollP2PTradeState, 1000);
+    pollP2PTradeState();
+}
+window.openP2PTradeWindow = openP2PTradeWindow;
+
+async function pollP2PTradeState() {
+    if (!CURRENT_P2P_TRADE_ID) return;
+    try {
+        const res = await fetch(`/api/p2p/trade/state?trade_id=${encodeURIComponent(CURRENT_P2P_TRADE_ID)}`, {
+            headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (!data || !data.ok || !data.trade) {
+            closeP2PTradeWindow();
+            return;
+        }
+
+        renderP2PTradeState(data.trade);
+    } catch (e) {}
+}
+
+function renderP2PTradeState(trade) {
+    const myId = STATE.currentUser?.id;
+    const myName = (STATE.player?.name || STATE.currentUser?.username || "").toLowerCase();
+
+    const isSideA = (trade.player_a.user_id && trade.player_a.user_id === myId) || (trade.player_a.name || "").toLowerCase() === myName;
+    const mySide = isSideA ? trade.player_a : trade.player_b;
+    const theirSide = isSideA ? trade.player_b : trade.player_a;
+
+    // 1. My lock & button
+    const myLockBadge = document.getElementById("p2p-my-lock-badge");
+    const myLockBtn = document.getElementById("btn-p2p-my-lock");
+    if (myLockBadge) {
+        myLockBadge.className = `p2p-lock-badge ${mySide.locked ? "locked" : "unlocked"}`;
+        myLockBadge.textContent = mySide.locked ? "🔒 Oferta Travada" : "🔓 Oferta Aberta";
+    }
+    if (myLockBtn) {
+        myLockBtn.textContent = mySide.locked ? "🔓 Destravar Oferta" : "🔒 Travar Minha Oferta";
+        myLockBtn.className = `btn ${mySide.locked ? "btn-slate" : "btn-gold"}`;
+    }
+
+    // 2. Their Side Header & Lock
+    const theirTitle = document.getElementById("p2p-their-side-title");
+    const theirLockBadge = document.getElementById("p2p-their-lock-badge");
+    const theirGoldDisplay = document.getElementById("p2p-their-gold-display");
+    const theirMonSlot = document.getElementById("p2p-their-mon-slot");
+    const theirItemsList = document.getElementById("p2p-their-items-list");
+    const theirConfirmStatus = document.getElementById("p2p-their-confirm-status");
+
+    if (theirTitle) theirTitle.textContent = `OFERTA DE ${theirSide.name.toUpperCase()}`;
+    if (theirLockBadge) {
+        theirLockBadge.className = `p2p-lock-badge ${theirSide.locked ? "locked" : "unlocked"}`;
+        theirLockBadge.textContent = theirSide.locked ? "🔒 Oferta Travada" : "🔓 Modificando...";
+    }
+    if (theirGoldDisplay) theirGoldDisplay.textContent = `$${(theirSide.gold || 0).toLocaleString()}`;
+
+    if (theirMonSlot) {
+        if (theirSide.mon) {
+            const m = theirSide.mon;
+            const boxIcon = typeof getPokemonBoxIconUrl === "function" ? getPokemonBoxIconUrl(m.dex_id || m.species_id) : `/img/pokemon/icons/${m.dex_id || 1}.png`;
+            theirMonSlot.innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;width:100%;">
+                    <img src="${boxIcon}" style="width:36px;height:36px;image-rendering:pixelated;" alt="${m.name}">
+                    <div>
+                        <div style="font-weight:800;font-size:12px;color:#f8fafc;">${m.is_shiny ? "✨ " : ""}${m.name} <small style="color:#fde047;">Lv.${m.level}</small></div>
+                        <div style="font-size:10px;color:#94a3b8;">${m.quality || "Comum"} • IV: ${m.iv_total || 0}/186</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            theirMonSlot.innerHTML = `<span class="p2p-slot-placeholder">Nenhum Pokémon oferecido</span>`;
+        }
+    }
+
+    if (theirItemsList) {
+        const items = theirSide.items || [];
+        if (!items.length) {
+            theirItemsList.innerHTML = `<span style="font-size:11px;color:#64748b;">Nenhum item oferecido.</span>`;
+        } else {
+            theirItemsList.innerHTML = items.map(it => {
+                const itemObj = STATE.itemsMap?.[it.item_id] || { name: it.item_id };
+                const sprite = typeof getItemSpriteUrl === "function" ? getItemSpriteUrl(it.item_id, itemObj) : "/img/items/potion.png";
+                return `
+                    <div class="p2p-item-chip">
+                        <img src="${sprite}" alt="${itemObj.name}">
+                        <span>${itemObj.name} x${it.qty}</span>
+                    </div>
+                `;
+            }).join("");
+        }
+    }
+
+    // 3. Confirm State & Center
+    const statusMsg = document.getElementById("p2p-trade-status-msg");
+    const confirmBtn = document.getElementById("btn-p2p-confirm");
+
+    const bothLocked = mySide.locked && theirSide.locked;
+    if (confirmBtn) {
+        confirmBtn.disabled = !bothLocked;
+        if (mySide.confirmed) {
+            confirmBtn.textContent = "⏳ AGUARDANDO TREINADOR...";
+            confirmBtn.className = "btn btn-slate";
+        } else if (bothLocked) {
+            confirmBtn.textContent = "✅ CONFIRMAR TROCA!";
+            confirmBtn.className = "btn btn-green btn-pulse-green";
+        } else {
+            confirmBtn.textContent = "🔒 TRAVE AMBAS AS OFERTAS";
+            confirmBtn.className = "btn btn-slate";
+        }
+    }
+
+    if (statusMsg) {
+        if (trade.status === "completed") {
+            statusMsg.textContent = "🎉 TROCA CONCLUÍDA!";
+            statusMsg.style.borderColor = "#10b981";
+            statusMsg.style.color = "#4ade80";
+        } else if (bothLocked) {
+            statusMsg.textContent = "⭐ AMBOS TRAVADOS!";
+            statusMsg.style.borderColor = "#eab308";
+            statusMsg.style.color = "#fde047";
+        } else {
+            statusMsg.textContent = "Negociando ofertas...";
+            statusMsg.style.borderColor = "#38bdf8";
+            statusMsg.style.color = "#38bdf8";
+        }
+    }
+
+    if (theirConfirmStatus) {
+        if (theirSide.confirmed) {
+            theirConfirmStatus.innerHTML = `<strong style="color:#4ade80;">✅ ${theirSide.name} já confirmou a troca!</strong>`;
+        } else if (theirSide.locked) {
+            theirConfirmStatus.innerHTML = `<span style="color:#fde047;">🔒 ${theirSide.name} travou a oferta.</span>`;
+        } else {
+            theirConfirmStatus.textContent = "Aguardando o outro jogador travar a oferta...";
+        }
+    }
+
+    // Completed or cancelled
+    if (trade.status === "completed") {
+        clearInterval(P2P_TRADE_POLL_TIMER);
+        P2P_TRADE_POLL_TIMER = null;
+        showToast("🎉 Troca concluída com sucesso! Recarregando mochila...");
+        setTimeout(() => {
+            closeP2PTradeWindow();
+            window.location.reload();
+        }, 2200);
+    } else if (trade.status === "cancelled") {
+        clearInterval(P2P_TRADE_POLL_TIMER);
+        P2P_TRADE_POLL_TIMER = null;
+        showToast("⚠️ Negociação cancelada pelo jogador.");
+        closeP2PTradeWindow();
+    }
+}
+
+function renderMyOfferSlots() {
+    const monSlot = document.getElementById("p2p-my-mon-slot");
+    const itemsList = document.getElementById("p2p-my-items-list");
+
+    if (monSlot) {
+        if (MY_LOCAL_P2P_OFFER.mon) {
+            const m = MY_LOCAL_P2P_OFFER.mon;
+            const boxIcon = typeof getPokemonBoxIconUrl === "function" ? getPokemonBoxIconUrl(m.dex_id || m.species_id) : `/img/pokemon/icons/${m.dex_id || 1}.png`;
+            monSlot.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <img src="${boxIcon}" style="width:36px;height:36px;image-rendering:pixelated;" alt="${m.name}">
+                        <div>
+                            <div style="font-weight:800;font-size:12px;color:#f8fafc;">${m.is_shiny ? "✨ " : ""}${m.name} <small style="color:#fde047;">Lv.${m.level}</small></div>
+                            <div style="font-size:10px;color:#94a3b8;">${m.quality || "Comum"} • IV: ${m.iv_total || 0}/186</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-slate btn-xs" onclick="event.stopPropagation(); removeMyP2PMonOffer()">✕ Trocar</button>
+                </div>
+            `;
+        } else {
+            monSlot.innerHTML = `<span class="p2p-slot-placeholder">➕ Clique para escolher um Pokémon do Time ou Box...</span>`;
+        }
+    }
+
+    if (itemsList) {
+        const items = MY_LOCAL_P2P_OFFER.items || [];
+        if (!items.length) {
+            itemsList.innerHTML = `<span style="font-size:11px;color:#64748b;">Nenhum item oferecido.</span>`;
+        } else {
+            itemsList.innerHTML = items.map((it, idx) => {
+                const itemObj = STATE.itemsMap?.[it.item_id] || { name: it.item_id };
+                const sprite = typeof getItemSpriteUrl === "function" ? getItemSpriteUrl(it.item_id, itemObj) : "/img/items/potion.png";
+                return `
+                    <div class="p2p-item-chip">
+                        <img src="${sprite}" alt="${itemObj.name}">
+                        <span>${itemObj.name} x${it.qty}</span>
+                        <span class="p2p-item-chip-remove" onclick="removeMyP2PItemOffer(${idx})">✕</span>
+                    </div>
+                `;
+            }).join("");
+        }
+    }
+}
+
+async function syncMyP2POfferToServer() {
+    if (!CURRENT_P2P_TRADE_ID) return;
+    try {
+        await fetch("/api/p2p/trade/update", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                trade_id: CURRENT_P2P_TRADE_ID,
+                gold: MY_LOCAL_P2P_OFFER.gold,
+                items: MY_LOCAL_P2P_OFFER.items,
+                mon_uid: MY_LOCAL_P2P_OFFER.mon_uid,
+                mon_info: MY_LOCAL_P2P_OFFER.mon
+            })
+        });
+        pollP2PTradeState();
+    } catch (e) {}
+}
+
+function onMyOfferFieldChanged() {
+    const goldInput = document.getElementById("p2p-my-gold-input");
+    const val = Math.max(0, parseInt(goldInput?.value || 0, 10));
+    const maxGold = STATE.player?.gold || 0;
+    if (val > maxGold) {
+        showToast(`⚠️ Você só possui $${maxGold.toLocaleString()} de Ouro!`);
+        if (goldInput) goldInput.value = String(maxGold);
+        MY_LOCAL_P2P_OFFER.gold = maxGold;
+    } else {
+        MY_LOCAL_P2P_OFFER.gold = val;
+    }
+    syncMyP2POfferToServer();
+}
+window.onMyOfferFieldChanged = onMyOfferFieldChanged;
+
+function setQuickTradeGold(amount) {
+    const goldInput = document.getElementById("p2p-my-gold-input");
+    const current = parseInt(goldInput?.value || 0, 10);
+    const maxGold = STATE.player?.gold || 0;
+    const newVal = Math.min(maxGold, current + amount);
+    if (goldInput) goldInput.value = String(newVal);
+    MY_LOCAL_P2P_OFFER.gold = newVal;
+    syncMyP2POfferToServer();
+}
+window.setQuickTradeGold = setQuickTradeGold;
+
+function openP2PMonPicker() {
+    const allMons = [...(STATE.player?.party || []), ...(STATE.player?.pc_box || [])];
+    if (!allMons.length) {
+        showToast("⚠️ Você não possui Pokémon disponíveis para troca!");
+        return;
+    }
+
+    const modal = document.createElement("div");
+    modal.id = "p2p-mon-picker-overlay";
+    modal.className = "player-ctx-overlay";
+    modal.innerHTML = `
+        <div class="player-ctx-window" style="max-width:480px;max-height:80vh;display:flex;flex-direction:column;">
+            <div class="player-ctx-header">
+                <span style="font-size:14px;font-weight:900;color:#f8fafc;">⚡ Escolha o Pokémon para Oferecer na Troca:</span>
+                <button class="modal-close-btn" onclick="document.getElementById('p2p-mon-picker-overlay').remove()">✕</button>
+            </div>
+            <div style="padding:10px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;max-height:60vh;">
+                ${allMons.map(m => {
+                    const boxIcon = typeof getPokemonBoxIconUrl === "function" ? getPokemonBoxIconUrl(m.dex_id || m.species_id) : `/img/pokemon/icons/${m.dex_id || 1}.png`;
+                    return `
+                        <div class="inspect-mon-card" style="cursor:pointer;" onclick="selectMyP2PMon('${m.uid}')">
+                            <div class="inspect-mon-icon-box">
+                                <img src="${boxIcon}" alt="${m.name}">
+                            </div>
+                            <div class="inspect-mon-card-info">
+                                <div class="inspect-mon-top-line">
+                                    <span class="inspect-mon-name">${m.is_shiny ? "✨ " : ""}${m.name}</span>
+                                    <span class="inspect-mon-lv">Lv.${m.level}</span>
+                                </div>
+                                <div style="font-size:10px;color:#94a3b8;">${m.quality || "Comum"} • IV: ${m.iv_total || 0}/186</div>
+                            </div>
+                        </div>
+                    `;
+                }).join("")}
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+window.openP2PMonPicker = openP2PMonPicker;
+
+function selectMyP2PMon(uid) {
+    const allMons = [...(STATE.player?.party || []), ...(STATE.player?.pc_box || [])];
+    const mon = allMons.find(m => m.uid === uid);
+    if (!mon) return;
+
+    MY_LOCAL_P2P_OFFER.mon_uid = mon.uid;
+    MY_LOCAL_P2P_OFFER.mon = {
+        name: mon.name,
+        species_id: mon.species_id,
+        dex_id: mon.dex_id,
+        level: mon.level,
+        is_shiny: mon.is_shiny,
+        quality: mon.quality,
+        iv_total: mon.iv_total
+    };
+
+    const overlay = document.getElementById("p2p-mon-picker-overlay");
+    if (overlay) overlay.remove();
+
+    renderMyOfferSlots();
+    syncMyP2POfferToServer();
+}
+window.selectMyP2PMon = selectMyP2PMon;
+
+function removeMyP2PMonOffer() {
+    MY_LOCAL_P2P_OFFER.mon_uid = null;
+    MY_LOCAL_P2P_OFFER.mon = null;
+    renderMyOfferSlots();
+    syncMyP2POfferToServer();
+}
+window.removeMyP2PMonOffer = removeMyP2PMonOffer;
+
+function openP2PItemPicker() {
+    const inv = STATE.player?.inventory || {};
+    const validKeys = Object.keys(inv).filter(k => inv[k] > 0);
+    if (!validKeys.length) {
+        showToast("⚠️ Sua mochila está vazia!");
+        return;
+    }
+
+    const modal = document.createElement("div");
+    modal.id = "p2p-item-picker-overlay";
+    modal.className = "player-ctx-overlay";
+    modal.innerHTML = `
+        <div class="player-ctx-window" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;">
+            <div class="player-ctx-header">
+                <span style="font-size:14px;font-weight:900;color:#f8fafc;">🎒 Escolha um Item para Oferecer:</span>
+                <button class="modal-close-btn" onclick="document.getElementById('p2p-item-picker-overlay').remove()">✕</button>
+            </div>
+            <div style="padding:10px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;max-height:60vh;">
+                ${validKeys.map(k => {
+                    const itemObj = STATE.itemsMap?.[k] || { name: k };
+                    const sprite = typeof getItemSpriteUrl === "function" ? getItemSpriteUrl(k, itemObj) : "/img/items/potion.png";
+                    return `
+                        <div class="friend-row-card" style="cursor:pointer;" onclick="selectMyP2PItem('${k}')">
+                            <div class="friend-row-left">
+                                <img src="${sprite}" style="width:26px;height:26px;image-rendering:pixelated;" alt="${itemObj.name}">
+                                <div>
+                                    <div style="font-weight:800;font-size:12px;color:#f8fafc;">${itemObj.name}</div>
+                                    <div style="font-size:10px;color:#cbd5e1;">Você possui: x${inv[k]}</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-slate btn-xs">Adicionar</button>
+                        </div>
+                    `;
+                }).join("")}
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+window.openP2PItemPicker = openP2PItemPicker;
+
+function selectMyP2PItem(itemId) {
+    const overlay = document.getElementById("p2p-item-picker-overlay");
+    if (overlay) overlay.remove();
+
+    MY_LOCAL_P2P_OFFER.items = MY_LOCAL_P2P_OFFER.items || [];
+    const existing = MY_LOCAL_P2P_OFFER.items.find(it => it.item_id === itemId);
+    const maxQty = STATE.player?.inventory?.[itemId] || 1;
+
+    if (existing) {
+        existing.qty = Math.min(maxQty, existing.qty + 1);
+    } else {
+        if (MY_LOCAL_P2P_OFFER.items.length >= 4) {
+            showToast("⚠️ Máximo de 4 itens diferentes por troca!");
+            return;
+        }
+        MY_LOCAL_P2P_OFFER.items.push({ item_id: itemId, qty: 1 });
+    }
+
+    renderMyOfferSlots();
+    syncMyP2POfferToServer();
+}
+window.selectMyP2PItem = selectMyP2PItem;
+
+function removeMyP2PItemOffer(idx) {
+    if (MY_LOCAL_P2P_OFFER.items && MY_LOCAL_P2P_OFFER.items[idx]) {
+        MY_LOCAL_P2P_OFFER.items.splice(idx, 1);
+        renderMyOfferSlots();
+        syncMyP2POfferToServer();
+    }
+}
+window.removeMyP2PItemOffer = removeMyP2PItemOffer;
+
+async function toggleMyTradeLock() {
+    if (!CURRENT_P2P_TRADE_ID) return;
+    const myLockBadge = document.getElementById("p2p-my-lock-badge");
+    const isLocked = myLockBadge && myLockBadge.classList.contains("locked");
+
+    try {
+        await fetch("/api/p2p/trade/lock", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ trade_id: CURRENT_P2P_TRADE_ID, locked: !isLocked })
+        });
+        pollP2PTradeState();
+    } catch (e) {}
+}
+window.toggleMyTradeLock = toggleMyTradeLock;
+
+async function confirmMyP2PTrade() {
+    if (!CURRENT_P2P_TRADE_ID) return;
+    try {
+        const res = await fetch("/api/p2p/trade/confirm", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ trade_id: CURRENT_P2P_TRADE_ID })
+        });
+        const data = await res.json();
+        pollP2PTradeState();
+    } catch (e) {}
+}
+window.confirmMyP2PTrade = confirmMyP2PTrade;
+
+async function cancelActiveP2PTrade() {
+    if (CURRENT_P2P_TRADE_ID) {
+        try {
+            await fetch("/api/p2p/trade/cancel", {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ trade_id: CURRENT_P2P_TRADE_ID })
+            });
+        } catch (e) {}
+    }
+    closeP2PTradeWindow();
+}
+window.cancelActiveP2PTrade = cancelActiveP2PTrade;
+
+function maybeCloseP2PTrade() {
+    // Prevent accidental backdrop closing during negotiation
+}
+window.maybeCloseP2PTrade = maybeCloseP2PTrade;
+
+function closeP2PTradeWindow() {
+    CURRENT_P2P_TRADE_ID = null;
+    if (P2P_TRADE_POLL_TIMER) {
+        clearInterval(P2P_TRADE_POLL_TIMER);
+        P2P_TRADE_POLL_TIMER = null;
+    }
+    const modal = document.getElementById("modal-p2p-trade");
+    if (modal) modal.classList.add("is-hidden");
+}
+window.closeP2PTradeWindow = closeP2PTradeWindow;
+
+
+// 5. FRIENDS LIST MODAL
+async function openFriendsListModal() {
+    const modal = document.getElementById("modal-friends-list");
+    if (!modal) return;
+
+    modal.classList.remove("is-hidden");
+    await refreshFriendsListUI();
+}
+window.openFriendsListModal = openFriendsListModal;
+
+function closeFriendsListModal() {
+    const modal = document.getElementById("modal-friends-list");
+    if (modal) modal.classList.add("is-hidden");
+}
+window.closeFriendsListModal = closeFriendsListModal;
+
+async function refreshFriendsListUI() {
+    const container = document.getElementById("friends-list-items-wrap");
+    if (!container) return;
+
+    try {
+        const res = await fetch("/api/friends/list", { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (!data || !data.ok) return;
+
+        const friends = data.friends || [];
+        if (!friends.length) {
+            container.innerHTML = `
+                <div style="padding:24px;text-align:center;color:#94a3b8;font-size:12.5px;background:rgba(15,23,42,0.6);border-radius:8px;border:1px dashed #334155;">
+                    Você ainda não adicionou nenhum amigo à sua lista.<br>
+                    <span style="font-size:11px;color:#64748b;">Digite o nome do Treinador acima ou clique em qualquer jogador no mapa para adicionar!</span>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = friends.map(f => {
+            const avSrc = typeof getTrainerModelDataUrl === "function" ? getTrainerModelDataUrl(f.avatar_model || "ethan_gold") : "/img/trainers/ethan_gold.png";
+            return `
+                <div class="friend-row-card">
+                    <div class="friend-row-left">
+                        <div class="friend-avatar-wrap">
+                            <img src="${avSrc}" alt="${f.username}">
+                            <span class="friend-status-dot ${f.is_online ? "online" : "offline"}" title="${f.is_online ? "Online Agora" : "Offline"}"></span>
+                        </div>
+                        <div>
+                            <div class="friend-name-line">
+                                <span>${f.username}</span>
+                                <span style="font-size:10px;color:#fde047;font-family:var(--font-mono);">Lv.${f.level}</span>
+                            </div>
+                            <div class="friend-status-sub">${f.is_online ? '<strong style="color:#4ade80;">🟢 Online na Praça Central</strong>' : '⚪ Offline'}</div>
+                        </div>
+                    </div>
+                    <div class="friend-actions-group">
+                        <button class="btn btn-slate btn-xs" onclick="quickWhisperTo('${f.username}'); closeFriendsListModal();" title="Sussurrar">💬</button>
+                        <button class="btn btn-slate btn-xs" onclick="inspectPlayerProfile('${f.username}')" title="Inspecionar">🔍</button>
+                        <button class="btn btn-green btn-xs" onclick="sendP2PTradeInvite('${f.username}')" title="Troca Direta">🤝</button>
+                        <button class="btn btn-primary btn-xs" onclick="sendP2PDuelInvite('${f.username}')" title="Duelo">⚔️</button>
+                        <button class="btn btn-slate btn-xs" onclick="removeFriendAction('${f.username}')" title="Remover Amigo">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    } catch (e) {
+        container.innerHTML = `<div style="padding:15px;color:#ef4444;text-align:center;">Erro ao carregar lista de amigos.</div>`;
+    }
+}
+window.refreshFriendsListUI = refreshFriendsListUI;
+
+async function executeAddFriendBtn() {
+    const input = document.getElementById("add-friend-input");
+    const name = (input?.value || "").trim();
+    if (!name) return;
+    await addFriendAction(name);
+    if (input) input.value = "";
+    refreshFriendsListUI();
+}
+window.executeAddFriendBtn = executeAddFriendBtn;
+
+async function addFriendAction(username) {
+    if (!username) return;
+    try {
+        const res = await fetch("/api/friends/add", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ username })
+        });
+        const data = await res.json();
+        showToast(data.message || (data.ok ? "Amigo adicionado!" : data.error));
+        refreshFriendsListUI();
+    } catch (e) {
+        showToast("⚠️ Erro ao adicionar amigo.");
+    }
+}
+window.addFriendAction = addFriendAction;
+
+async function removeFriendAction(username) {
+    if (!username) return;
+    try {
+        const res = await fetch("/api/friends/remove", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ username })
+        });
+        const data = await res.json();
+        showToast(data.message || "Amigo removido.");
+        refreshFriendsListUI();
+    } catch (e) {}
+}
+window.removeFriendAction = removeFriendAction;
+
+// Start social polling loop
+if (!P2P_INVITE_POLL_INTERVAL) {
+    P2P_INVITE_POLL_INTERVAL = setInterval(checkP2PIncomingInvites, 2500);
+}

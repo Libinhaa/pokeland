@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokéLand</title>
-    <link rel="stylesheet" href="/styles.css?v=pokeland_v26_item_overhaul">
+    <link rel="stylesheet" href="/styles.css?v=pokeland_v27_player_interactions">
 </head>
 <body class="fullscreen-mode">
     <!-- =========================================================
@@ -2527,10 +2527,10 @@
 
     <div id="toast" class="toast"></div>
 
-    <script src="/market_and_shops.js?v=pokeland_v26_item_overhaul"></script>
-    <script src="/trainer_status.js?v=pokeland_v26_item_overhaul"></script>
-    <script src="/endgame_mechanics.js?v=pokeland_v26_item_overhaul"></script>
-    <script src="/app.js?v=pokeland_v26_item_overhaul"></script>
+    <script src="/market_and_shops.js?v=pokeland_v27_player_interactions"></script>
+    <script src="/trainer_status.js?v=pokeland_v27_player_interactions"></script>
+    <script src="/endgame_mechanics.js?v=pokeland_v27_player_interactions"></script>
+    <script src="/app.js?v=pokeland_v27_player_interactions"></script>
 
     <!-- Modal: Configurações do Chat & Comunicação -->
     <div id="modal-chat-settings" class="floating-modal-backdrop" style="display:none;" onclick="if(event.target===this) closeChatSettingsModal()">
@@ -3130,6 +3130,1047 @@
         }
         .btn-pulse-gold {
             animation: pulseEvoBtn 1.6s infinite !important;
+        }
+    </style>
+
+
+    <!-- ========================================================= -->
+    <!-- INCOMING P2P INVITATION BANNER (TRADE & DUEL ALERTS)      -->
+    <!-- ========================================================= -->
+    <div id="p2p-incoming-invite-banner" class="p2p-invite-banner is-hidden">
+        <div class="p2p-invite-content">
+            <span id="p2p-invite-icon" class="p2p-invite-emoji">🤝</span>
+            <div class="p2p-invite-text-group">
+                <div id="p2p-invite-title" class="p2p-invite-title">Solicitação de Troca Direta</div>
+                <div id="p2p-invite-subtitle" class="p2p-invite-sub">Treinador quer negociar com você!</div>
+            </div>
+            <div class="p2p-invite-actions">
+                <button id="btn-p2p-accept" class="btn btn-green" onclick="acceptCurrentP2PInvite()">✅ Aceitar</button>
+                <button id="btn-p2p-decline" class="btn btn-slate" onclick="declineCurrentP2PInvite()">✕ Recusar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- PLAYER CONTEXT MENU (CLICK PLAYER ON MAP / CHAT)          -->
+    <!-- ========================================================= -->
+    <div id="modal-player-context-menu" class="player-ctx-overlay is-hidden" onclick="if(event.target===this) closePlayerContextMenu()">
+        <div class="player-ctx-window">
+            <div class="player-ctx-header">
+                <div class="player-ctx-avatar-wrap">
+                    <img id="ctx-player-avatar" src="/img/trainers/ethan_gold.png" alt="Avatar">
+                </div>
+                <div class="player-ctx-info">
+                    <div id="ctx-player-name" class="player-ctx-name">Treinador</div>
+                    <div id="ctx-player-sub" class="player-ctx-role">Treinador Lv.1 • Praça Central</div>
+                    <div id="ctx-player-mon-pill" class="player-ctx-mon-pill">
+                        <img id="ctx-mon-icon" src="/img/pokemon/icons/25.png" alt="Mon">
+                        <span id="ctx-mon-name">Pikachu</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closePlayerContextMenu()" title="Fechar">✕</button>
+            </div>
+
+            <div class="player-ctx-actions">
+                <button class="player-ctx-btn" onclick="triggerCtxInspect()">
+                    <span class="ctx-btn-icon">🔍</span>
+                    <div class="ctx-btn-texts">
+                        <strong>Inspecionar Treinador</strong>
+                        <small>Ver Perfil, Conquistas e os 6 Pokémon do Time</small>
+                    </div>
+                </button>
+                <button class="player-ctx-btn btn-highlight" onclick="triggerCtxTrade()">
+                    <span class="ctx-btn-icon">🤝</span>
+                    <div class="ctx-btn-texts">
+                        <strong>Propor Troca Direta (P2P)</strong>
+                        <small>Negociar Ouro, Itens e Pokémon em tempo real</small>
+                    </div>
+                </button>
+                <button class="player-ctx-btn" onclick="triggerCtxDuel()">
+                    <span class="ctx-btn-icon">⚔️</span>
+                    <div class="ctx-btn-texts">
+                        <strong>Desafiar para Duelo 1v1</strong>
+                        <small>Combate PvP amistoso entre seus líderes</small>
+                    </div>
+                </button>
+                <button class="player-ctx-btn" onclick="triggerCtxWhisper()">
+                    <span class="ctx-btn-icon">💬</span>
+                    <div class="ctx-btn-texts">
+                        <strong>Enviar Mensagem Privada</strong>
+                        <small>Conversar no chat privado (/w)</small>
+                    </div>
+                </button>
+                <button class="player-ctx-btn" onclick="triggerCtxAddFriend()">
+                    <span class="ctx-btn-icon">⭐</span>
+                    <div class="ctx-btn-texts">
+                        <strong>Adicionar aos Amigos</strong>
+                        <small>Acompanhar status online e convidar rápido</small>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- INSPECT PLAYER PROFILE & ACTIVE TEAM MODAL                -->
+    <!-- ========================================================= -->
+    <div id="modal-inspect-player" class="inspect-player-overlay is-hidden" onclick="if(event.target===this) closeInspectPlayerModal()">
+        <div class="inspect-player-window">
+            <div class="inspect-header">
+                <div class="inspect-header-left">
+                    <span class="inspect-card-badge">📋 CARTÃO DE TREINADOR</span>
+                    <h3 id="inspect-title-name" class="inspect-main-title">Red</h3>
+                </div>
+                <button class="modal-close-btn" onclick="closeInspectPlayerModal()" title="Fechar">✕</button>
+            </div>
+
+            <div class="inspect-body">
+                <!-- Top Trainer Info Card -->
+                <div class="inspect-hero-card">
+                    <div class="inspect-avatar-box">
+                        <img id="inspect-hero-avatar" src="/img/trainers/red_champion.png" alt="Avatar">
+                    </div>
+                    <div class="inspect-hero-details">
+                        <div class="inspect-name-row">
+                            <span id="inspect-name-text" class="inspect-hero-name">Red</span>
+                            <span id="inspect-level-badge" class="inspect-lv-pill">Treinador Lv.45</span>
+                            <span id="inspect-role-pill" class="inspect-role-badge">Treinador</span>
+                        </div>
+                        <div class="inspect-metrics-grid">
+                            <div class="inspect-metric-chip">
+                                <span class="metric-icon">🏆</span>
+                                <span>Pokédex: <strong id="inspect-dex-count">150</strong> Espécies</span>
+                            </div>
+                            <div class="inspect-metric-chip">
+                                <span class="metric-icon">💰</span>
+                                <span>Fortuna: <strong id="inspect-gold-val">$750.000</strong></span>
+                            </div>
+                            <div class="inspect-metric-chip">
+                                <span class="metric-icon">📅</span>
+                                <span>Cadastrado em: <strong id="inspect-created-at">01/11/2026</strong></span>
+                            </div>
+                            <div class="inspect-metric-chip">
+                                <span class="metric-icon">🟢</span>
+                                <span>Status: <strong style="color:#4ade80;">Online</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6 Party Pokémon Showcase Grid -->
+                <div class="inspect-section-title">
+                    <span>⚔️ EQUIPE PRINCIPAL DO TREINADOR (TIME ATIVO)</span>
+                    <span style="font-size:11px;color:#94a3b8;">Pokémon treinados e equipados para combate</span>
+                </div>
+
+                <div class="inspect-party-grid" id="inspect-party-container">
+                    <!-- Dynamic 6 party cards rendered via JS -->
+                </div>
+            </div>
+
+            <!-- Inspect Action Footer -->
+            <div class="inspect-footer">
+                <div class="inspect-footer-btns">
+                    <button class="btn btn-green" onclick="inspectToTrade()">🤝 Propor Troca Direta</button>
+                    <button class="btn btn-primary" onclick="inspectToDuel()">⚔️ Desafiar Duelo</button>
+                    <button class="btn btn-blue" onclick="inspectToWhisper()">💬 Conversar (/w)</button>
+                    <button class="btn btn-gold" onclick="inspectToAddFriend()">⭐ Adicionar Amigo</button>
+                </div>
+                <button type="button" class="btn btn-slate" onclick="closeInspectPlayerModal()">✕ Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- REAL-TIME P2P TRADING DESK MODAL                          -->
+    <!-- ========================================================= -->
+    <div id="modal-p2p-trade" class="p2p-trade-overlay is-hidden" onclick="if(event.target===this) maybeCloseP2PTrade()">
+        <div class="p2p-trade-window">
+            <div class="p2p-trade-header">
+                <div class="p2p-trade-title-left">
+                    <span class="p2p-trade-icon">🤝</span>
+                    <div>
+                        <h3 class="p2p-trade-title">SALA DE TROCA DIRETA EM TEMPO REAL</h3>
+                        <div class="p2p-trade-sub">
+                            <span id="p2p-trade-names">Você ⇄ Outro Jogador</span> • Conexão Segura
+                        </div>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="cancelActiveP2PTrade()" title="Cancelar Negociação">✕</button>
+            </div>
+
+            <div class="p2p-trade-body">
+                <!-- LEFT COLUMN: MY OFFER -->
+                <div class="p2p-side-col my-side">
+                    <div class="p2p-side-header">
+                        <span class="p2p-side-title">SUA OFERTA</span>
+                        <span id="p2p-my-lock-badge" class="p2p-lock-badge unlocked">🔓 Oferta Aberta</span>
+                    </div>
+
+                    <!-- Gold Input -->
+                    <div class="p2p-offer-box">
+                        <label class="p2p-label">💰 Ouro a Oferecer:</label>
+                        <div class="p2p-gold-input-row">
+                            <input type="number" id="p2p-my-gold-input" class="p2p-num-input" min="0" value="0" step="1000" onchange="onMyOfferFieldChanged()">
+                            <button class="btn btn-slate btn-xs" onclick="setQuickTradeGold(10000)">+10k</button>
+                            <button class="btn btn-slate btn-xs" onclick="setQuickTradeGold(50000)">+50k</button>
+                        </div>
+                    </div>
+
+                    <!-- Pokémon to Offer Slot -->
+                    <div class="p2p-offer-box">
+                        <label class="p2p-label">⚡ Pokémon Oferecido (1x):</label>
+                        <div id="p2p-my-mon-slot" class="p2p-mon-display-slot" onclick="openP2PMonPicker()">
+                            <span class="p2p-slot-placeholder">➕ Clique para escolher um Pokémon do Time ou Box...</span>
+                        </div>
+                    </div>
+
+                    <!-- Items Offer Slots -->
+                    <div class="p2p-offer-box">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <label class="p2p-label">🎒 Itens / Cápsulas (até 4):</label>
+                            <button class="btn btn-slate btn-xs" onclick="openP2PItemPicker()">➕ Adicionar Item</button>
+                        </div>
+                        <div id="p2p-my-items-list" class="p2p-items-chips-row">
+                            <span style="font-size:11px;color:#64748b;">Nenhum item oferecido.</span>
+                        </div>
+                    </div>
+
+                    <!-- My Lock Action -->
+                    <div style="margin-top:auto;padding-top:10px;">
+                        <button id="btn-p2p-my-lock" class="btn btn-gold" style="width:100%;padding:10px;font-weight:800;" onclick="toggleMyTradeLock()">
+                            🔒 Travar Minha Oferta
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CENTER DIVIDER & STATUS -->
+                <div class="p2p-center-col">
+                    <div class="p2p-exchange-icon">⇄</div>
+                    <div id="p2p-trade-status-msg" class="p2p-status-badge">Negociando...</div>
+                    <div id="p2p-countdown-box" class="p2p-countdown-box" style="display:none;">
+                        <span id="p2p-countdown-sec">3</span>s
+                    </div>
+                    <button id="btn-p2p-confirm" class="btn btn-green btn-pulse-green" style="width:100%;margin-top:14px;padding:12px;font-weight:900;" disabled onclick="confirmMyP2PTrade()">
+                        ✅ CONFIRMAR TROCA
+                    </button>
+                </div>
+
+                <!-- RIGHT COLUMN: THEIR OFFER -->
+                <div class="p2p-side-col their-side">
+                    <div class="p2p-side-header">
+                        <span id="p2p-their-side-title" class="p2p-side-title">OFERTA DO TREINADOR</span>
+                        <span id="p2p-their-lock-badge" class="p2p-lock-badge unlocked">🔓 Modificando...</span>
+                    </div>
+
+                    <!-- Their Gold -->
+                    <div class="p2p-offer-box">
+                        <label class="p2p-label">💰 Ouro Oferecido:</label>
+                        <div id="p2p-their-gold-display" class="p2p-readonly-display">$0</div>
+                    </div>
+
+                    <!-- Their Pokémon -->
+                    <div class="p2p-offer-box">
+                        <label class="p2p-label">⚡ Pokémon Oferecido:</label>
+                        <div id="p2p-their-mon-slot" class="p2p-mon-display-slot is-readonly">
+                            <span class="p2p-slot-placeholder">Nenhum Pokémon oferecido</span>
+                        </div>
+                    </div>
+
+                    <!-- Their Items -->
+                    <div class="p2p-offer-box">
+                        <label class="p2p-label">🎒 Itens / Cápsulas:</label>
+                        <div id="p2p-their-items-list" class="p2p-items-chips-row">
+                            <span style="font-size:11px;color:#64748b;">Nenhum item oferecido.</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:auto;padding-top:10px;">
+                        <div id="p2p-their-confirm-status" style="font-size:11.5px;color:#94a3b8;text-align:center;">
+                            Aguardando o outro jogador travar a oferta...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p2p-trade-footer">
+                <div class="p2p-security-warning">
+                    ⚠️ <strong>Segurança:</strong> Verifique os itens e o Pokémon antes de travar. Se qualquer oferta for alterada, a confirmação é resetada automaticamente.
+                </div>
+                <button class="btn btn-slate" onclick="cancelActiveP2PTrade()">✕ Cancelar Troca</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- FRIENDS & ONLINE PLAYERS LIST MODAL                       -->
+    <!-- ========================================================= -->
+    <div id="modal-friends-list" class="friends-modal-overlay is-hidden" onclick="if(event.target===this) closeFriendsListModal()">
+        <div class="friends-modal-window">
+            <div class="friends-modal-header">
+                <div class="friends-header-left">
+                    <span class="friends-header-icon">👥</span>
+                    <div>
+                        <h3 class="friends-modal-title">LISTA DE AMIGOS & COMUNIDADE</h3>
+                        <div class="friends-modal-sub">Acompanhe amigos online, convide para duelos e trocas</div>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeFriendsListModal()" title="Fechar">✕</button>
+            </div>
+
+            <div class="friends-modal-search-row">
+                <input type="text" id="add-friend-input" class="zone-search" style="margin:0;flex:1;" placeholder="Digite o nome exato do Treinador para adicionar..." onkeydown="if(event.key==='Enter') executeAddFriendBtn()">
+                <button class="btn btn-green" onclick="executeAddFriendBtn()">➕ Adicionar Amigo</button>
+            </div>
+
+            <div class="friends-list-container" id="friends-list-items-wrap">
+                <!-- Rendered dynamically via JS -->
+            </div>
+
+            <div class="friends-modal-footer">
+                <span style="font-size:11px;color:#64748b;">💡 Dica: Você também pode clicar no nome de qualquer jogador no Chat ou no mapa para interagir!</span>
+                <button type="button" class="btn btn-slate" onclick="closeFriendsListModal()">✕ Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 1. P2P INCOMING INVITE BANNER */
+        .p2p-invite-banner {
+            position: fixed;
+            top: 54px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 2px solid #eab308;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(234,179,8,0.4);
+            z-index: 100060;
+            padding: 10px 18px;
+            animation: slideDownBanner 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .p2p-invite-banner.is-hidden { display: none !important; }
+        @keyframes slideDownBanner {
+            from { top: -60px; opacity: 0; }
+            to { top: 54px; opacity: 1; }
+        }
+        .p2p-invite-content {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .p2p-invite-emoji { font-size: 26px; }
+        .p2p-invite-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #fde047;
+        }
+        .p2p-invite-sub {
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+        .p2p-invite-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 10px;
+        }
+
+        /* 2. PLAYER CONTEXT MENU */
+        .player-ctx-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 15, 29, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 100055;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .player-ctx-overlay.is-hidden { display: none !important; }
+        .player-ctx-window {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #38bdf8;
+            border-radius: 12px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.8), 0 0 20px rgba(56,189,248,0.3);
+            width: 90%;
+            max-width: 380px;
+            overflow: hidden;
+            animation: popInItemModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .player-ctx-header {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 12px 14px;
+            border-bottom: 1.5px solid rgba(56, 189, 248, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .player-ctx-avatar-wrap {
+            width: 44px;
+            height: 44px;
+            background: radial-gradient(circle, rgba(56,189,248,0.2) 0%, rgba(15,23,42,0.9) 70%);
+            border: 1.5px solid #38bdf8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .player-ctx-avatar-wrap img {
+            width: 36px;
+            height: 36px;
+            image-rendering: pixelated;
+        }
+        .player-ctx-info { min-width: 0; flex: 1; }
+        .player-ctx-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+        .player-ctx-role {
+            font-size: 10.5px;
+            color: #94a3b8;
+        }
+        .player-ctx-mon-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(15,23,42,0.8);
+            border: 1px solid rgba(253,224,71,0.4);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            color: #fde047;
+            margin-top: 3px;
+        }
+        .player-ctx-mon-pill img {
+            width: 16px;
+            height: 16px;
+            image-rendering: pixelated;
+        }
+        .player-ctx-actions {
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .player-ctx-btn {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            color: #f8fafc;
+        }
+        .player-ctx-btn:hover {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: #38bdf8;
+            transform: translateX(3px);
+        }
+        .player-ctx-btn.btn-highlight {
+            border-color: #eab308;
+            background: rgba(234, 179, 8, 0.1);
+        }
+        .player-ctx-btn.btn-highlight:hover {
+            background: rgba(234, 179, 8, 0.25);
+            border-color: #fde047;
+        }
+        .ctx-btn-icon { font-size: 18px; }
+        .ctx-btn-texts strong { display: block; font-size: 12px; }
+        .ctx-btn-texts small { display: block; font-size: 10px; color: #94a3b8; }
+
+        /* 3. INSPECT PLAYER PROFILE MODAL */
+        .inspect-player-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 15, 29, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 100055;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .inspect-player-overlay.is-hidden { display: none !important; }
+        .inspect-player-window {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #38bdf8;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.85), 0 0 25px rgba(56,189,248,0.3);
+            width: 95%;
+            max-width: 780px;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: popInItemModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .inspect-header {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 12px 18px;
+            border-bottom: 1.5px solid rgba(56, 189, 248, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .inspect-card-badge {
+            font-size: 10.5px;
+            font-weight: 800;
+            color: #38bdf8;
+            letter-spacing: 0.5px;
+        }
+        .inspect-main-title {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 900;
+            color: #f8fafc;
+        }
+        .inspect-body {
+            padding: 14px 18px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .inspect-hero-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1.5px solid #334155;
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .inspect-avatar-box {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(15, 23, 42, 0.95) 75%);
+            border: 2px solid #38bdf8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .inspect-avatar-box img {
+            width: 52px;
+            height: 52px;
+            image-rendering: pixelated;
+        }
+        .inspect-hero-details { min-width: 0; flex: 1; }
+        .inspect-name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .inspect-hero-name {
+            font-size: 16px;
+            font-weight: 900;
+            color: #f8fafc;
+        }
+        .inspect-lv-pill {
+            background: rgba(234, 179, 8, 0.2);
+            border: 1px solid #eab308;
+            color: #fde047;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .inspect-role-badge {
+            background: #0284c7;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+        .inspect-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+        .inspect-metric-chip {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .inspect-section-title {
+            font-size: 12px;
+            font-weight: 900;
+            color: #ffe066;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .inspect-party-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 8px;
+        }
+        .inspect-mon-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1.5px solid #334155;
+            border-radius: 8px;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.15s ease;
+        }
+        .inspect-mon-card:hover {
+            border-color: #38bdf8;
+            background: rgba(30, 41, 59, 1);
+        }
+        .inspect-mon-icon-box {
+            width: 40px;
+            height: 40px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #475569;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .inspect-mon-icon-box img {
+            width: 36px;
+            height: 36px;
+            image-rendering: pixelated;
+        }
+        .inspect-mon-card-info { min-width: 0; flex: 1; }
+        .inspect-mon-top-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .inspect-mon-name {
+            font-size: 12px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+        .inspect-mon-lv {
+            font-size: 10.5px;
+            color: #fde047;
+            font-family: var(--font-mono, monospace);
+            font-weight: 700;
+        }
+        .inspect-mon-badges-line {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin: 2px 0;
+        }
+        .inspect-mon-moves-text {
+            font-size: 9.5px;
+            color: #94a3b8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .inspect-footer {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 10px 18px;
+            border-top: 1.5px solid rgba(56, 189, 248, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .inspect-footer-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* 4. REAL-TIME P2P TRADING MODAL */
+        .p2p-trade-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 15, 29, 0.9);
+            backdrop-filter: blur(6px);
+            z-index: 100060;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .p2p-trade-overlay.is-hidden { display: none !important; }
+        .p2p-trade-window {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #eab308;
+            border-radius: 14px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.9), 0 0 30px rgba(234,179,8,0.3);
+            width: 95%;
+            max-width: 920px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: popInItemModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .p2p-trade-header {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 12px 18px;
+            border-bottom: 2px solid rgba(234, 179, 8, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .p2p-trade-title-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .p2p-trade-icon { font-size: 26px; }
+        .p2p-trade-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 900;
+            color: #fde047;
+            letter-spacing: 0.5px;
+        }
+        .p2p-trade-sub { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+        .p2p-trade-body {
+            padding: 14px 18px;
+            display: grid;
+            grid-template-columns: 1fr 140px 1fr;
+            gap: 14px;
+            overflow-y: auto;
+            align-items: stretch;
+        }
+        .p2p-side-col {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1.5px solid #334155;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .p2p-side-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 8px;
+        }
+        .p2p-side-title {
+            font-size: 12px;
+            font-weight: 900;
+            color: #f8fafc;
+        }
+        .p2p-lock-badge {
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+        .p2p-lock-badge.unlocked {
+            background: rgba(100, 116, 139, 0.3);
+            border: 1px solid #64748b;
+            color: #cbd5e1;
+        }
+        .p2p-lock-badge.locked {
+            background: rgba(234, 179, 8, 0.25);
+            border: 1px solid #eab308;
+            color: #fde047;
+            animation: pulseEvoBtn 1.5s infinite;
+        }
+        .p2p-offer-box {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 8px 10px;
+        }
+        .p2p-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #cbd5e1;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .p2p-gold-input-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .p2p-num-input {
+            flex: 1;
+            background: #0f172a;
+            border: 1.5px solid #38bdf8;
+            border-radius: 6px;
+            color: #fde047;
+            font-family: var(--font-mono, monospace);
+            font-weight: 800;
+            font-size: 13px;
+            padding: 4px 8px;
+        }
+        .p2p-readonly-display {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #fde047;
+            font-family: var(--font-mono, monospace);
+            font-weight: 800;
+            font-size: 13px;
+            padding: 5px 8px;
+        }
+        .p2p-mon-display-slot {
+            background: #0f172a;
+            border: 1.5px dashed #475569;
+            border-radius: 8px;
+            padding: 8px;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .p2p-mon-display-slot:hover {
+            border-color: #38bdf8;
+            background: rgba(56,189,248,0.05);
+        }
+        .p2p-mon-display-slot.is-readonly {
+            cursor: default;
+            border-style: solid;
+        }
+        .p2p-mon-display-slot.is-readonly:hover {
+            border-color: #475569;
+            background: #0f172a;
+        }
+        .p2p-slot-placeholder {
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            width: 100%;
+        }
+        .p2p-items-chips-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 5px;
+            min-height: 30px;
+            align-items: center;
+        }
+        .p2p-item-chip {
+            background: #0f172a;
+            border: 1px solid #38bdf8;
+            border-radius: 6px;
+            padding: 2px 7px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: #f8fafc;
+        }
+        .p2p-item-chip img {
+            width: 18px;
+            height: 18px;
+            image-rendering: pixelated;
+        }
+        .p2p-item-chip-remove {
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: 800;
+            margin-left: 3px;
+        }
+        .p2p-center-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .p2p-exchange-icon {
+            font-size: 32px;
+            color: #eab308;
+            animation: pulseEvoBtn 2s infinite;
+        }
+        .p2p-status-badge {
+            font-size: 11px;
+            font-weight: 800;
+            color: #38bdf8;
+            background: rgba(56,189,248,0.15);
+            border: 1px solid #38bdf8;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+        .p2p-countdown-box {
+            font-size: 20px;
+            font-weight: 900;
+            color: #ef4444;
+            font-family: var(--font-mono, monospace);
+            margin-top: 6px;
+        }
+        .p2p-trade-footer {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 10px 18px;
+            border-top: 1.5px solid rgba(234, 179, 8, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .p2p-security-warning {
+            font-size: 10.5px;
+            color: #94a3b8;
+            line-height: 1.3;
+        }
+
+        /* 5. FRIENDS LIST MODAL */
+        .friends-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 15, 29, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 100055;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .friends-modal-overlay.is-hidden { display: none !important; }
+        .friends-modal-window {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #38bdf8;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.85), 0 0 25px rgba(56,189,248,0.3);
+            width: 95%;
+            max-width: 580px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: popInItemModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .friends-modal-header {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 12px 18px;
+            border-bottom: 1.5px solid rgba(56, 189, 248, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .friends-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .friends-header-icon { font-size: 24px; }
+        .friends-modal-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 900;
+            color: #f8fafc;
+        }
+        .friends-modal-sub { font-size: 11px; color: #94a3b8; }
+        .friends-modal-search-row {
+            padding: 12px 18px;
+            background: rgba(15, 23, 42, 0.6);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            gap: 8px;
+        }
+        .friends-list-container {
+            padding: 12px 18px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 52vh;
+        }
+        .friend-row-card {
+            background: rgba(30, 41, 59, 0.75);
+            border: 1.5px solid #334155;
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            transition: all 0.15s ease;
+        }
+        .friend-row-card:hover {
+            border-color: #38bdf8;
+            background: rgba(30, 41, 59, 1);
+        }
+        .friend-row-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .friend-avatar-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #0f172a;
+            border: 1.5px solid #475569;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .friend-avatar-wrap img {
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+        }
+        .friend-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1.5px solid #0f172a;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+        .friend-status-dot.online { background: #10b981; }
+        .friend-status-dot.offline { background: #64748b; }
+        .friend-name-line {
+            font-size: 13px;
+            font-weight: 800;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .friend-status-sub {
+            font-size: 10.5px;
+            color: #94a3b8;
+        }
+        .friend-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .friends-modal-footer {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 10px 18px;
+            border-top: 1.5px solid rgba(56, 189, 248, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
         }
     </style>
 

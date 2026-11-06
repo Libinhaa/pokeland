@@ -20,6 +20,11 @@ mimetypes.add_type("font/otf", ".otf")
 PLAZA_LOCK = threading.Lock()
 PLAZA_PLAYERS = {}  # user_id -> dict
 
+P2P_LOCK = threading.Lock()
+P2P_INVITATIONS = {}  # invite_id -> dict
+P2P_TRADES = {}       # trade_id -> dict
+P2P_DUELS = {}        # duel_id -> dict
+
 PROJECT_VERSION = "v1.8.0"
 PROJECT_VERSION_LABEL = "v1.8.0-pokeland"
 
@@ -1257,6 +1262,58 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
                 return self.send_json({"authenticated": True, "user": user})
             return self.send_json({"authenticated": False, "user": None})
 
+        if parsed.path == "/api/player/inspect":
+            qs = parse_qs(parsed.query)
+            username = qs.get("username", [None])[0]
+            user_id = qs.get("user_id", [None])[0]
+            profile = db.get_player_public_profile(username or user_id)
+            return self.send_json(profile)
+
+        if parsed.path == "/api/friends/list":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user:
+                return self.send_json({"ok": False, "error": "Não autenticado."}, status=401)
+            friends = db.get_friends_list(user["id"])
+            with PLAZA_LOCK:
+                online_ids = set(p.get("user_id") for p in PLAZA_PLAYERS.values())
+                online_names = set((p.get("name") or "").lower() for p in PLAZA_PLAYERS.values())
+            for f in friends:
+                f["is_online"] = (f["id"] in online_ids) or (f["username"].lower() in online_names)
+            return self.send_json({"ok": True, "friends": friends})
+
+        if parsed.path == "/api/p2p/invites":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user:
+                return self.send_json({"ok": True, "incoming": [], "outgoing": []})
+            now = time.time()
+            with P2P_LOCK:
+                dead_invs = [k for k, v in P2P_INVITATIONS.items() if now - v.get("created_at", 0) > 45.0]
+                for k in dead_invs:
+                    del P2P_INVITATIONS[k]
+                incoming = [
+                    v for v in P2P_INVITATIONS.values()
+                    if (v["to_user_id"] == user["id"] or v["to_name"].lower() == user["username"].lower())
+                    and v["status"] == "pending"
+                ]
+                outgoing = [
+                    v for v in P2P_INVITATIONS.values()
+                    if v["from_user_id"] == user["id"] and now - v.get("created_at", 0) < 30.0
+                ]
+            return self.send_json({"ok": True, "incoming": incoming, "outgoing": outgoing})
+
+        if parsed.path == "/api/p2p/trade/state":
+            qs = parse_qs(parsed.query)
+            trade_id = qs.get("trade_id", [None])[0]
+            if not trade_id:
+                return self.send_json({"ok": False, "error": "ID da troca ausente."}, status=400)
+            with P2P_LOCK:
+                trade = P2P_TRADES.get(trade_id)
+                if not trade:
+                    return self.send_json({"ok": False, "error": "Sessão de troca não encontrada."}, status=404)
+                return self.send_json({"ok": True, "trade": trade})
+
         if parsed.path == "/api/chat/messages":
             qs = parse_qs(parsed.query)
             since_id = int(qs.get("since_id", [0])[0])
@@ -1456,6 +1513,223 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             with PLAZA_LOCK:
                 if user_id in PLAZA_PLAYERS:
                     del PLAZA_PLAYERS[user_id]
+            return self.send_json({"ok": True})
+
+        if parsed.path == "/api/friends/add":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user:
+                return self.send_json({"ok": False, "error": "Não autenticado."}, status=401)
+            friend_username = body.get("username", "")
+            res = db.add_friend(user["id"], friend_username)
+            return self.send_json(res)
+
+        if parsed.path == "/api/friends/remove":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user:
+                return self.send_json({"ok": False, "error": "Não autenticado."}, status=401)
+            friend_username = body.get("username", "")
+            res = db.remove_friend(user["id"], friend_username)
+            return self.send_json(res)
+
+        if parsed.path == "/api/p2p/invite":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user:
+                return self.send_json({"ok": False, "error": "Não autenticado."}, status=401)
+            inv_type = body.get("type", "trade")
+            target_username = body.get("target_username", "").strip()
+
+            target_prof = db.get_player_public_profile(target_username)
+            if not target_prof.get("ok"):
+                return self.send_json({"ok": False, "error": f"Treinador '{target_username}' não foi encontrado!"}, status=404)
+            if target_prof["user_id"] == user["id"]:
+                return self.send_json({"ok": False, "error": "Você não pode interagir consigo mesmo!"}, status=400)
+
+            now = time.time()
+            import random
+            invite_id = f"inv_{int(now*1000)}_{random.randint(100, 999)}"
+            invite_obj = {
+                "id": invite_id,
+                "type": inv_type,
+                "from_user_id": user["id"],
+                "from_name": user["username"],
+                "from_avatar": user.get("avatar_model", "ethan_gold"),
+                "to_user_id": target_prof["user_id"],
+                "to_name": target_prof["username"],
+                "created_at": now,
+                "status": "pending"
+            }
+            with P2P_LOCK:
+                P2P_INVITATIONS[invite_id] = invite_obj
+            return self.send_json({"ok": True, "invite": invite_obj})
+
+        if parsed.path == "/api/p2p/respond":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user:
+                return self.send_json({"ok": False, "error": "Não autenticado."}, status=401)
+            invite_id = body.get("invite_id")
+            accept = bool(body.get("accept", False))
+
+            import random
+            with P2P_LOCK:
+                inv = P2P_INVITATIONS.get(invite_id)
+                if not inv or inv["status"] != "pending":
+                    return self.send_json({"ok": False, "error": "Convite expirado ou já respondido."})
+
+                if accept:
+                    inv["status"] = "accepted"
+                    if inv["type"] == "trade":
+                        trade_id = f"trade_{int(time.time()*1000)}_{random.randint(100, 999)}"
+                        trade_obj = {
+                            "id": trade_id,
+                            "invite_id": invite_id,
+                            "player_a": {
+                                "user_id": inv["from_user_id"],
+                                "name": inv["from_name"],
+                                "gold": 0,
+                                "items": [],
+                                "mon": None,
+                                "locked": False,
+                                "confirmed": False
+                            },
+                            "player_b": {
+                                "user_id": inv["to_user_id"],
+                                "name": inv["to_name"],
+                                "gold": 0,
+                                "items": [],
+                                "mon": None,
+                                "locked": False,
+                                "confirmed": False
+                            },
+                            "status": "active",
+                            "created_at": time.time(),
+                            "updated_at": time.time()
+                        }
+                        P2P_TRADES[trade_id] = trade_obj
+                        inv["trade_id"] = trade_id
+                        return self.send_json({"ok": True, "status": "accepted", "trade_id": trade_id, "type": "trade"})
+                    else:
+                        duel_id = f"duel_{int(time.time()*1000)}_{random.randint(100, 999)}"
+                        inv["duel_id"] = duel_id
+                        P2P_DUELS[duel_id] = {
+                            "id": duel_id,
+                            "player_a": inv["from_name"],
+                            "player_b": inv["to_name"],
+                            "created_at": time.time()
+                        }
+                        return self.send_json({"ok": True, "status": "accepted", "duel_id": duel_id, "type": "duel", "challenger": inv["from_name"]})
+                else:
+                    inv["status"] = "declined"
+                    return self.send_json({"ok": True, "status": "declined"})
+
+        if parsed.path == "/api/p2p/trade/update":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user:
+                return self.send_json({"ok": False, "error": "Não autenticado."}, status=401)
+            trade_id = body.get("trade_id")
+            gold = max(0, int(body.get("gold", 0)))
+            items = body.get("items", [])
+            mon_uid = body.get("mon_uid")
+            mon_info = body.get("mon_info")
+
+            with P2P_LOCK:
+                trade = P2P_TRADES.get(trade_id)
+                if not trade or trade["status"] != "active":
+                    return self.send_json({"ok": False, "error": "Sessão de troca inválida ou expirada."})
+
+                is_p_a = (trade["player_a"]["user_id"] == user["id"] or trade["player_a"]["name"].lower() == user["username"].lower())
+                p_side = trade["player_a"] if is_p_a else trade["player_b"]
+
+                p_side["gold"] = gold
+                p_side["items"] = items
+                p_side["mon_uid"] = mon_uid
+                p_side["mon"] = mon_info
+
+                # Reset locks & confirms for both sides on offer change (safety)
+                trade["player_a"]["locked"] = False
+                trade["player_a"]["confirmed"] = False
+                trade["player_b"]["locked"] = False
+                trade["player_b"]["confirmed"] = False
+                trade["updated_at"] = time.time()
+
+            return self.send_json({"ok": True, "trade": trade})
+
+        if parsed.path == "/api/p2p/trade/lock":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user:
+                return self.send_json({"ok": False, "error": "Não autenticado."}, status=401)
+            trade_id = body.get("trade_id")
+            locked = bool(body.get("locked", True))
+
+            with P2P_LOCK:
+                trade = P2P_TRADES.get(trade_id)
+                if not trade or trade["status"] != "active":
+                    return self.send_json({"ok": False, "error": "Sessão de troca inválida."})
+
+                is_p_a = (trade["player_a"]["user_id"] == user["id"] or trade["player_a"]["name"].lower() == user["username"].lower())
+                p_side = trade["player_a"] if is_p_a else trade["player_b"]
+                p_side["locked"] = locked
+                if not locked:
+                    p_side["confirmed"] = False
+                trade["updated_at"] = time.time()
+
+            return self.send_json({"ok": True, "trade": trade})
+
+        if parsed.path == "/api/p2p/trade/confirm":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user:
+                return self.send_json({"ok": False, "error": "Não autenticado."}, status=401)
+            trade_id = body.get("trade_id")
+
+            with P2P_LOCK:
+                trade = P2P_TRADES.get(trade_id)
+                if not trade or trade["status"] != "active":
+                    return self.send_json({"ok": False, "error": "Sessão de troca inválida."})
+
+                is_p_a = (trade["player_a"]["user_id"] == user["id"] or trade["player_a"]["name"].lower() == user["username"].lower())
+                p_side = trade["player_a"] if is_p_a else trade["player_b"]
+                p_side["confirmed"] = True
+                trade["updated_at"] = time.time()
+
+                # If BOTH have locked and confirmed, execute atomic trade!
+                if trade["player_a"]["locked"] and trade["player_a"]["confirmed"] and trade["player_b"]["locked"] and trade["player_b"]["confirmed"]:
+                    offer_a = {
+                        "gold": trade["player_a"]["gold"],
+                        "items": trade["player_a"]["items"],
+                        "mon_uid": trade["player_a"].get("mon_uid")
+                    }
+                    offer_b = {
+                        "gold": trade["player_b"]["gold"],
+                        "items": trade["player_b"]["items"],
+                        "mon_uid": trade["player_b"].get("mon_uid")
+                    }
+                    exec_res = db.execute_p2p_trade_db(
+                        trade["player_a"]["user_id"],
+                        trade["player_b"]["user_id"],
+                        offer_a,
+                        offer_b
+                    )
+                    if exec_res.get("ok"):
+                        trade["status"] = "completed"
+                        trade["result"] = exec_res
+                    else:
+                        trade["status"] = "failed"
+                        trade["error"] = exec_res.get("error", "Erro ao executar troca.")
+
+            return self.send_json({"ok": True, "trade": trade})
+
+        if parsed.path == "/api/p2p/trade/cancel":
+            trade_id = body.get("trade_id")
+            with P2P_LOCK:
+                trade = P2P_TRADES.get(trade_id)
+                if trade:
+                    trade["status"] = "cancelled"
             return self.send_json({"ok": True})
 
         if parsed.path == "/api/auth/login":

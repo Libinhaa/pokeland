@@ -189,6 +189,22 @@ def init_db(existing_save=None, existing_config=None, default_player_func=None, 
         )
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_chat_id ON chat_messages(id)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_chat_channel ON chat_messages(channel)")
+
+        # 10. Player Friends & Social Relationships Table
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS player_friends (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                friend_user_id INTEGER NOT NULL,
+                friend_username TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, friend_user_id)
+            )
+            """
+        )
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_friends_user ON player_friends(user_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_friends_fuser ON player_friends(friend_user_id)")
         conn.commit()
 
         # Check if users table is empty; if so, seed demo users first
@@ -1050,3 +1066,275 @@ def get_chat_messages(since_id: int = 0, limit: int = 50, user_name: str = None)
             }
             for r in rows
         ]
+
+
+# =====================================================================
+# 11. SOCIAL SYSTEM: FRIENDS, PROFILE INSPECTION & P2P ATOMIC TRADING
+# =====================================================================
+
+def add_friend(user_id: int, friend_username: str) -> dict:
+    friend_username = (friend_username or "").strip()
+    if not friend_username:
+        return {"ok": False, "error": "Nome de treinador inválido."}
+
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        # Find friend user
+        cursor.execute("SELECT id, username FROM users WHERE username = ? COLLATE NOCASE", (friend_username,))
+        friend = cursor.fetchone()
+        if not friend:
+            return {"ok": False, "error": f"Treinador '{friend_username}' não foi encontrado!"}
+
+        friend_id = friend["id"]
+        if friend_id == user_id:
+            return {"ok": False, "error": "Você não pode adicionar a si mesmo como amigo!"}
+
+        # Check existing
+        cursor.execute("SELECT id FROM player_friends WHERE user_id = ? AND friend_user_id = ?", (user_id, friend_id))
+        if cursor.fetchone():
+            return {"ok": True, "message": f"{friend['username']} já está na sua lista de amigos!"}
+
+        cursor.execute(
+            "INSERT INTO player_friends (user_id, friend_user_id, friend_username) VALUES (?, ?, ?)",
+            (user_id, friend_id, friend["username"])
+        )
+        # Also make mutual friendship
+        cursor.execute("SELECT username FROM users WHERE id = ?", (user_id,))
+        me_user = cursor.fetchone()
+        my_name = me_user["username"] if me_user else "Treinador"
+
+        cursor.execute(
+            "INSERT OR IGNORE INTO player_friends (user_id, friend_user_id, friend_username) VALUES (?, ?, ?)",
+            (friend_id, user_id, my_name)
+        )
+        conn.commit()
+        return {"ok": True, "message": f"🎉 {friend['username']} agora é seu amigo!"}
+
+
+def remove_friend(user_id: int, friend_username: str) -> dict:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM player_friends WHERE user_id = ? AND friend_username = ? COLLATE NOCASE",
+            (user_id, friend_username)
+        )
+        conn.commit()
+        return {"ok": True, "message": f"{friend_username} foi removido da sua lista de amigos."}
+
+
+def get_friends_list(user_id: int) -> list:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT pf.friend_user_id AS id, pf.friend_username AS username,
+                   u.avatar_model, u.created_at, ps.player_data
+            FROM player_friends pf
+            JOIN users u ON u.id = pf.friend_user_id
+            LEFT JOIN player_saves ps ON ps.user_id = pf.friend_user_id
+            WHERE pf.user_id = ?
+            ORDER BY pf.friend_username ASC
+            """,
+            (user_id,)
+        )
+        rows = cursor.fetchall()
+        friends = []
+        for r in rows:
+            level = 1
+            party_lead = None
+            if r["player_data"]:
+                try:
+                    p = json.loads(r["player_data"])
+                    level = p.get("level", 1)
+                    if p.get("party") and len(p["party"]) > 0:
+                        m = p["party"][0]
+                        party_lead = {
+                            "name": m.get("name"),
+                            "species_id": m.get("species_id"),
+                            "dex_id": m.get("dex_id"),
+                            "level": m.get("level", 1),
+                            "is_shiny": bool(m.get("is_shiny", False)),
+                            "quality": m.get("quality", "Comum")
+                        }
+                except Exception:
+                    pass
+            friends.append({
+                "id": r["id"],
+                "username": r["username"],
+                "avatar_model": r["avatar_model"] or "ethan_gold",
+                "level": level,
+                "created_at": r["created_at"],
+                "party_lead": party_lead
+            })
+        return friends
+
+
+def get_player_public_profile(username_or_id) -> dict:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        if isinstance(username_or_id, int) or (isinstance(username_or_id, str) and username_or_id.isdigit()):
+            cursor.execute("SELECT id, username, avatar_model, role, created_at FROM users WHERE id = ?", (int(username_or_id),))
+        else:
+            cursor.execute("SELECT id, username, avatar_model, role, created_at FROM users WHERE username = ? COLLATE NOCASE", (str(username_or_id).strip(),))
+        user = cursor.fetchone()
+        if not user:
+            return {"ok": False, "error": "Treinador não encontrado."}
+
+        cursor.execute("SELECT player_data, updated_at FROM player_saves WHERE user_id = ?", (user["id"],))
+        psave = cursor.fetchone()
+
+        player = {}
+        if psave and psave["player_data"]:
+            try:
+                player = json.loads(psave["player_data"])
+            except Exception:
+                player = {}
+
+        raw_party = player.get("party", [])
+        sanitized_party = []
+        for m in raw_party[:6]:
+            sanitized_party.append({
+                "uid": m.get("uid"),
+                "species_id": m.get("species_id"),
+                "dex_id": m.get("dex_id", 1),
+                "name": m.get("name", "Pokémon"),
+                "level": m.get("level", 1),
+                "hp": m.get("hp", 100),
+                "max_hp": m.get("max_hp", 100),
+                "elements": m.get("elements", ["normal"]),
+                "quality": m.get("quality", "Comum"),
+                "quality_multiplier": m.get("quality_multiplier", 1.0),
+                "is_shiny": bool(m.get("is_shiny", False)),
+                "moves": m.get("moves", ["tackle"]),
+                "iv_total": m.get("iv_total", 0),
+                "nature": m.get("nature", "Hardy"),
+                "gender": m.get("gender", "neutral"),
+                "stats": m.get("stats", {})
+            })
+
+        return {
+            "ok": True,
+            "user_id": user["id"],
+            "username": user["username"],
+            "avatar_model": user["avatar_model"] or "ethan_gold",
+            "role": user["role"] or "player",
+            "created_at": user["created_at"],
+            "level": player.get("level", 1),
+            "pokedex_count": len(player.get("pokedex_caught", [])),
+            "gold": player.get("gold", 0),
+            "diamonds": player.get("diamonds", 0),
+            "party": sanitized_party,
+            "last_active": psave["updated_at"] if psave else user["created_at"]
+        }
+
+
+def execute_p2p_trade_db(user_a_id: int, user_b_id: int, offer_a: dict, offer_b: dict) -> dict:
+    with get_connection() as conn:
+        save_a = get_player_save(user_a_id)
+        save_b = get_player_save(user_b_id)
+        if not save_a or not save_b:
+            return {"ok": False, "error": "Erro ao carregar dados salvos dos jogadores."}
+
+        p_a = save_a["player"]
+        p_b = save_b["player"]
+
+        gold_a = max(0, int(offer_a.get("gold", 0)))
+        gold_b = max(0, int(offer_b.get("gold", 0)))
+        items_a = offer_a.get("items", [])  # list of {"item_id": id, "qty": qty}
+        items_b = offer_b.get("items", [])
+        mon_a_uid = offer_a.get("mon_uid")
+        mon_b_uid = offer_b.get("mon_uid")
+
+        # 1. Validate Gold
+        if (p_a.get("gold") or 0) < gold_a:
+            return {"ok": False, "error": "Treinador 1 não possui ouro suficiente."}
+        if (p_b.get("gold") or 0) < gold_b:
+            return {"ok": False, "error": "Treinador 2 não possui ouro suficiente."}
+
+        # 2. Validate Items
+        inv_a = p_a.setdefault("inventory", {})
+        for it in items_a:
+            iid = it.get("item_id")
+            iqty = int(it.get("qty", 1))
+            if inv_a.get(iid, 0) < iqty:
+                return {"ok": False, "error": f"Item '{iid}' insuficiente no inventário do Treinador 1."}
+
+        inv_b = p_b.setdefault("inventory", {})
+        for it in items_b:
+            iid = it.get("item_id")
+            iqty = int(it.get("qty", 1))
+            if inv_b.get(iid, 0) < iqty:
+                return {"ok": False, "error": f"Item '{iid}' insuficiente no inventário do Treinador 2."}
+
+        # 3. Validate & Retrieve Pokémon
+        mon_a_obj = None
+        if mon_a_uid:
+            all_a = p_a.get("party", []) + p_a.get("pc_box", [])
+            mon_a_obj = next((m for m in all_a if m.get("uid") == mon_a_uid), None)
+            if not mon_a_obj:
+                return {"ok": False, "error": "Pokémon oferecido pelo Treinador 1 não encontrado."}
+            if len(p_a.get("party", [])) <= 1 and mon_a_obj in p_a.get("party", []) and len(p_a.get("pc_box", [])) == 0:
+                return {"ok": False, "error": "Não é permitido trocar o único Pokémon do Treinador 1!"}
+
+        mon_b_obj = None
+        if mon_b_uid:
+            all_b = p_b.get("party", []) + p_b.get("pc_box", [])
+            mon_b_obj = next((m for m in all_b if m.get("uid") == mon_b_uid), None)
+            if not mon_b_obj:
+                return {"ok": False, "error": "Pokémon oferecido pelo Treinador 2 não encontrado."}
+            if len(p_b.get("party", [])) <= 1 and mon_b_obj in p_b.get("party", []) and len(p_b.get("pc_box", [])) == 0:
+                return {"ok": False, "error": "Não é permitido trocar o único Pokémon do Treinador 2!"}
+
+        # EXECUTE ATOMIC EXCHANGE
+        # A. Swap Gold
+        p_a["gold"] = p_a.get("gold", 0) - gold_a + gold_b
+        p_b["gold"] = p_b.get("gold", 0) - gold_b + gold_a
+
+        # B. Swap Items
+        for it in items_a:
+            iid = it.get("item_id")
+            iqty = int(it.get("qty", 1))
+            inv_a[iid] -= iqty
+            if inv_a[iid] <= 0:
+                del inv_a[iid]
+            inv_b[iid] = inv_b.get(iid, 0) + iqty
+
+        for it in items_b:
+            iid = it.get("item_id")
+            iqty = int(it.get("qty", 1))
+            inv_b[iid] -= iqty
+            if inv_b[iid] <= 0:
+                del inv_b[iid]
+            inv_a[iid] = inv_a.get(iid, 0) + iqty
+
+        # C. Swap Pokémon
+        if mon_a_obj:
+            if mon_a_obj in p_a.get("party", []):
+                p_a["party"].remove(mon_a_obj)
+            elif mon_a_obj in p_a.get("pc_box", []):
+                p_a["pc_box"].remove(mon_a_obj)
+            p_b.setdefault("pc_box", []).append(mon_a_obj)
+            sid = mon_a_obj.get("species_id")
+            if sid and sid not in p_b.setdefault("pokedex_caught", []):
+                p_b["pokedex_caught"].append(sid)
+
+        if mon_b_obj:
+            if mon_b_obj in p_b.get("party", []):
+                p_b["party"].remove(mon_b_obj)
+            elif mon_b_obj in p_b.get("pc_box", []):
+                p_b["pc_box"].remove(mon_b_obj)
+            p_a.setdefault("pc_box", []).append(mon_b_obj)
+            sid = mon_b_obj.get("species_id")
+            if sid and sid not in p_a.setdefault("pokedex_caught", []):
+                p_a["pokedex_caught"].append(sid)
+
+        save_player_save(user_a_id, p_a, save_a.get("config"))
+        save_player_save(user_b_id, p_b, save_b.get("config"))
+
+        return {
+            "ok": True,
+            "message": "Troca realizada com sucesso!",
+            "received_gold": gold_b,
+            "received_items": items_b,
+            "received_mon": mon_b_obj.get("name") if mon_b_obj else None
+        }
