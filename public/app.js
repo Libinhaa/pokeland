@@ -7748,153 +7748,7 @@ function initCentralHubPlayersAndStations() {
         },
     ];
 
-    if (!STATE.tibia.hubPlayers || STATE.tibia.hubPlayers.length === 0) {
-        const rawPlayers = [
-            {
-                id: "ash_kanto",
-                name: "Campeao_Red",
-                level: 99,
-                avatarModelId: "red_champion",
-                roleLabel: "🏆 Campeão Mt. Silver • Trocando Gengar Mítico",
-                monSpecies: "charizard",
-                monDex: 6,
-                monName: "Charizard",
-                monShiny: true,
-                monQuality: "Mítico",
-                gx: 6,
-                gy: 3,
-                homeGx: 6,
-                homeGy: 3,
-                phrases: [
-                    "...! (Troco Gengar Mítico no Centro GTS da Praça!)",
-                    "Meu Charizard Shiny veio direto do Mt. Silver em HeartGold!",
-                    "Quem aceita um duelo de Campeões no Ginásio PvP?",
-                ],
-            },
-            {
-                id: "misty_water",
-                name: "Lyra_SoulSilver",
-                level: 92,
-                avatarModelId: "lyra_ss",
-                roleLabel: "🌟 Heroína Johto • Trocando Lapras Shiny",
-                monSpecies: "gyarados",
-                monDex: 130,
-                monName: "Gyarados",
-                monShiny: false,
-                monQuality: "Mítico",
-                gx: 9,
-                gy: 3,
-                homeGx: 9,
-                homeGy: 3,
-                phrases: [
-                    "Oi! Trocando Lapras Shiny no Centro GTS da Central!",
-                    "A Enfermeira Joy cura todo o time de graça no Centro Pokémon!",
-                    "Alguém tem Pedra da Água para evoluir no Lab do Prof. Carvalho?",
-                ],
-            },
-            {
-                id: "lance_dragon",
-                name: "Lance_Dragon",
-                level: 112,
-                avatarModelId: "lance_dragon",
-                roleLabel: "🐉 Mestre de Dragões • Dragonite Lv.95",
-                monSpecies: "dragonite",
-                monDex: 149,
-                monName: "Dragonite",
-                monShiny: true,
-                monQuality: "Mítico",
-                gx: 10,
-                gy: 5,
-                homeGx: 10,
-                homeGy: 5,
-                phrases: [
-                    "Sou Lance, Campeão da Liga Johto em HeartGold! 🐉",
-                    "Tenho um Dragonite Lv.95 disponível para troca no GTS!",
-                    "Desafie o Mestre Palmer no Ginásio PvP da Central!",
-                ],
-            },
-            {
-                id: "cynthia_pvp",
-                name: "Cynthia_Sinjoh",
-                level: 125,
-                avatarModelId: "cynthia_champ",
-                roleLabel: "👑 Campeã Sinjoh • Gardevoir Shiny Mítico",
-                monSpecies: "metagross",
-                monDex: 376,
-                monName: "Metagross",
-                monShiny: true,
-                monQuality: "Mítico",
-                gx: 6,
-                gy: 6,
-                homeGx: 6,
-                homeGy: 6,
-                phrases: [
-                    "Vim das Ruínas Sinjoh de HeartGold para a Praça Central! ✨",
-                    "Gardevoir Shiny Mítico disponível na Mesa de Trocas!",
-                    "Os sprites oficiais de HeartGold deixaram a Central clássica!",
-                ],
-            },
-            {
-                id: "brock_miner",
-                name: "Steven_Stone",
-                level: 105,
-                avatarModelId: "steven_stone",
-                roleLabel: "💎 Campeão Hoenn/HGSS • Cabo Link",
-                monSpecies: "steelix",
-                monDex: 208,
-                monName: "Steelix",
-                monShiny: false,
-                monQuality: "Épico",
-                gx: 5,
-                gy: 5,
-                homeGx: 5,
-                homeGy: 5,
-                phrases: [
-                    "Ajudo a evoluir Steelix, Scizor e Gengar no Cabo Link!",
-                    "Fale com o Prof. Carvalho no Laboratório de Evolução!",
-                    "Clique no seu card no topo para escolher seu Treinador de HeartGold!",
-                ],
-            },
-            {
-                id: "serena_star",
-                name: "Leaf_Kanto",
-                level: 94,
-                avatarModelId: "leaf_green",
-                roleLabel: "🍃 Mestra Kanto • Wonder Trade",
-                monSpecies: "gardevoir",
-                monDex: 282,
-                monName: "Gardevoir",
-                monShiny: false,
-                monQuality: "Mítico",
-                gx: 9,
-                gy: 6,
-                homeGx: 9,
-                homeGy: 6,
-                phrases: [
-                    "A Praça Central de Saffron está linda com os prédios oficiais! 🏛️",
-                    "Testem os 10 Treinadores Oficiais de HeartGold na aba Avatares!",
-                    "Troca Surpresa (Wonder Trade) liberada no GTS!",
-                ],
-            },
-        ];
-
-        STATE.tibia.hubPlayers = rawPlayers.map((p, idx) => {
-            getPmdManifest(getPmdSlug(p.monSpecies));
-            return {
-                ...p,
-                px: p.gx * SQM_SIZE,
-                py: p.gy * SQM_SIZE,
-                monGx: Math.max(2, p.gx - 1),
-                monGy: p.gy,
-                monPx: Math.max(2, p.gx - 1) * SQM_SIZE,
-                monPy: p.gy * SQM_SIZE,
-                dir: idx % 2 === 0 ? 2 : 1,
-                stepTimer: 25 + idx * 14,
-                speechText: idx === 0 ? p.phrases[0] : "",
-                speechTimer: idx === 0 ? 90 : 0,
-            };
-        });
-    }
+    STATE.tibia.hubPlayers = [];
 }
 
 function enterOrToggleCentralHub() {
@@ -9302,7 +9156,7 @@ function renderCentralSocialTab(container) {
         <div class="hub-section-banner" style="margin-top:4px;">
             <span>👥 TREINADORES ONLINE NA CIDADE CENTRAL (${players.length} JOGADORES)</span>
         </div>
-        ${playersHtml}
+        ${playersHtml || '<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;background:rgba(15,23,42,0.6);border-radius:8px;border:1px dashed #334155;margin-top:8px;">Nenhum outro jogador online na Praça Central no momento.</div>'}
     `;
 }
 
@@ -9452,19 +9306,7 @@ function sendPlayerHubEmote(msg) {
     spawnFloatingText(STATE.tibia.trainer.gx, STATE.tibia.trainer.gy, msg.slice(0, 18), "#fde047");
     addCombatLog(`<span style="color:#fde047;font-weight:800;">💬 [${STATE.player?.name || "Red"} na Central]: ${msg}</span>`);
 
-    // Make a random online trainer in the plaza reply warmly!
-    const players = STATE.tibia.hubPlayers || [];
-    if (players.length > 0) {
-        const responder = players[Math.floor(Math.random() * players.length)];
-        const replies = [
-            `Boa, ${STATE.player?.name || "Red"}! Vamos trocar na Mesa de Trade!`,
-            "Top demais! Seu time está muito forte! ✨",
-            "Bora um duelo amistoso na Arena PvP! ⚔️",
-            "Salve! A Cidade Central está cheia hoje! 👋",
-        ];
-        responder.speechText = replies[Math.floor(Math.random() * replies.length)];
-        responder.speechTimer = 110;
-    }
+    
 }
 
 function sendCustomHubChat() {
@@ -11009,35 +10851,16 @@ function initChatSystem() {
         STATE.chat.settings = loadChatSettings();
     }
 
-    // Seed Initial Welcome & Lore Community Messages
+    // Clean Initial Welcome Message
     if (STATE.chat.messages.length === 0) {
         addChatMessage("system", "Servidor", "Bem-vindo ao PokéLand! Sistema de Canais de Chat e Mensagens Diretas inicializado.");
-        addChatMessage("local", "Red", "Olá treinadores! Pronto para desbravar as ilhas e capturar novos Pokémon na Praça.");
-        addChatMessage("global", "Ash_Kanto", "Alguém aí explorando as Seafoam Caverns? Cuidado com o Articuno!");
-        addChatMessage("trade", "Gary_Oak", "Vendo Dratini Lv.25 100% IV com Dragon Dance! Interessados mandem whisper /w Gary_Oak.");
-        addChatMessage("guild", "Misty_Cerulean", "Lembrando que nossa guilda tem treino de Pokémon Aquáticos hoje às 20h!");
-        addChatMessage("whisper", "Professor_Oak", "Parabéns por sua jornada, Treinador! Continue explorando os mistérios de PokéLand.", STATE.player?.name || "Red");
     }
 
     applyChatSettingsToUi();
-
-    // Ambient community chat periodic timer
-    setInterval(() => {
-        triggerAmbientCommunityChat();
-    }, 28000);
 }
 
 function triggerAmbientCommunityChat() {
-    if (!STATE.chat) return;
-    if (STATE.chat.settings && STATE.chat.settings.ambientCommunityChat === false) return;
-    const pool = [
-        { channel: "global", sender: "Brock_Pewter", text: "Minha Onix subiu para o nível 50 na hunt de Geodude!" },
-        { channel: "trade", sender: "Lance_Dragon", text: "Compro Master Balls e Pedras de Evolução por ouro na Central." },
-        { channel: "local", sender: "Treinador_Lucas", text: "A velocidade dos golpes e os efeitos visuais ficaram incríveis!" },
-        { channel: "global", sender: "Cynthia_Sinnoh", text: "Quem tiver interesse em duelar no Coliseu de Batalha, me procure na Central." },
-    ];
-    const pick = pool[Math.floor(Math.random() * pool.length)];
-    addChatMessage(pick.channel, pick.sender, pick.text);
+    return;
 }
 
 function switchChatChannel(chName) {
@@ -11138,18 +10961,7 @@ function sendChatMessage() {
         setTrainerSpeech(messageText);
     }
 
-    // Interactive whisper echo response for immersion
-    if (targetChannel === "whisper" && whisperTarget) {
-        setTimeout(() => {
-            const replies = [
-                `Olá ${myName}! Recebi seu whisper. Estou agora caçando na Rota Kanto!`,
-                `Opa ${myName}! Vamos trocar Pokémon na Praça Central mais tarde?`,
-                `Entendido! Boa sorte em suas caçadas em PokéLand!`,
-            ];
-            const replyTxt = replies[Math.floor(Math.random() * replies.length)];
-            addChatMessage("whisper", whisperTarget, replyTxt, myName);
-        }, 1200);
-    }
+
 
     input.value = "";
 }
