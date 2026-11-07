@@ -391,11 +391,15 @@ def authenticate_user(username: str, password: str) -> dict:
         cursor.execute("UPDATE users SET last_login = ? WHERE id = ?", (now_str, user["id"]))
         conn.commit()
 
+        is_admin = (user["role"] == "admin") if "role" in user.keys() else (user["username"].lower() in ("admin", "red", "battleox"))
+        u_role = "admin" if is_admin else (user["role"] if "role" in user.keys() else "player")
         return {
             "ok": True,
             "user": {
                 "id": user["id"],
                 "username": user["username"],
+                "role": u_role,
+                "is_admin": is_admin,
                 "avatar_model": user["avatar_model"],
                 "created_at": user["created_at"],
                 "last_login": now_str,
