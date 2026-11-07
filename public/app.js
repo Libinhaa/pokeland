@@ -1461,20 +1461,26 @@ async function initGame() {
     startChatSyncLoop();
 }
 
+function sanitizeClientPlayer(p) {
+    if (!p || typeof p !== "object") p = {};
+    p.level = Number(p.level) || 1;
+    p.gold = Number(p.gold) || 0;
+    p.diamonds = Number(p.diamonds) || 0;
+    if (!Array.isArray(p.pokedex_caught)) p.pokedex_caught = [];
+    if (!Array.isArray(p.party)) p.party = [];
+    if (!Array.isArray(p.pc_box)) p.pc_box = [];
+    if (!p.inventory || typeof p.inventory !== "object") p.inventory = {};
+    if (!p.stats || typeof p.stats !== "object") p.stats = {};
+    if (!Array.isArray(p.badges)) p.badges = [];
+    if (!p.activeBuffs || typeof p.activeBuffs !== "object") p.activeBuffs = {};
+    return p;
+}
+window.sanitizeClientPlayer = sanitizeClientPlayer;
+
 function applyBootstrapData(data) {
     STATE.currentUser = data.user || null;
     STATE.isGuest = Boolean(data.is_guest);
-    STATE.player = data.player || {};
-    STATE.player.level = Number(STATE.player.level) || 1;
-    STATE.player.gold = Number(STATE.player.gold) || 0;
-    STATE.player.diamonds = Number(STATE.player.diamonds) || 0;
-    if (!Array.isArray(STATE.player.pokedex_caught)) STATE.player.pokedex_caught = [];
-    if (!Array.isArray(STATE.player.party)) STATE.player.party = [];
-    if (!Array.isArray(STATE.player.pc_box)) STATE.player.pc_box = [];
-    if (!STATE.player.inventory || typeof STATE.player.inventory !== "object") STATE.player.inventory = {};
-    if (!STATE.player.stats || typeof STATE.player.stats !== "object") STATE.player.stats = {};
-    if (!Array.isArray(STATE.player.badges)) STATE.player.badges = [];
-    if (!STATE.player.activeBuffs || typeof STATE.player.activeBuffs !== "object") STATE.player.activeBuffs = {};
+    STATE.player = sanitizeClientPlayer(data.player || {});
     STATE.config = data.config;
     STATE.worlds = data.worlds;
     STATE.zones = data.zones;
