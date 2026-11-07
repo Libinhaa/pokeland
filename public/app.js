@@ -3634,7 +3634,7 @@ function updateTibiaSimulation(timeScale = 1.0) {
                 } else {
                     m.dir = sum.gy >= m.gy ? 0 : 3;
                 }
-                const eDmg = Math.max(1, Math.floor((((2 * m.level) / 5 + 2) * 40 * (m.atk / Math.max(10, lead.stats.def))) / 48));
+                const eDmg = (window.STATE?.adminCheats?.godMode) ? 0 : Math.max(1, Math.floor((((2 * m.level) / 5 + 2) * 40 * (m.atk / Math.max(10, lead.stats.def))) / 48));
                 lead.hp = Math.max(0, lead.hp - eDmg);
                 spawnFloatingText(sum.gx, sum.gy, `-${eDmg}`, "#f87171");
 
@@ -3927,6 +3927,9 @@ function drawDetailedPixelArtTileGrid(ctx, tb, biome) {
 }
 
 function drawBiomeAtmosphereFX(ctx, tb, biome) {
+    if (window.STATE?.adminWeather) {
+        biome = window.STATE.adminWeather;
+    }
     const f = tb.frame;
     const W = GRID_COLS * SQM_SIZE;
     const H = GRID_ROWS * SQM_SIZE;
@@ -5438,7 +5441,7 @@ function executeCombatTurn(moveId, isSilentAutoSwing = false, pickIdx = -1) {
         const leadAtk = Math.max(lead.stats?.atk || 50, lead.stats?.spa || 50);
         const monDef = Math.max(10, mon.def || mon.stats?.def || 30);
         const rawDmg = (((2 * (lead.level || 50)) / 5 + 2) * (pwr || 40) * (leadAtk / monDef)) / 32 + 6;
-        const dmg = Math.max(1, Math.floor((rawDmg || 25) * stab * (eff || 1.0) * (0.9 + Math.random() * 0.2)));
+        const dmg = (window.STATE?.adminCheats?.oneHitKo) ? 999999 : Math.max(1, Math.floor((rawDmg || 25) * stab * (eff || 1.0) * (0.9 + Math.random() * 0.2)));
 
         mon.hp = Math.max(0, mon.hp - dmg);
         spawnFloatingText(mon.gx, mon.gy, `${dmg}`, eff > 1 ? "#fde047" : "#ff3333");
@@ -5673,7 +5676,7 @@ function throwBallAtCorpse(corpseUid, capsuleId, fromAuto = false) {
     corpse.catchStartTime = Date.now();
     STATE.player.inventory[cap.id] = qty - 1;
     const roll = Math.random() * 100;
-    const isSuccess = roll <= chancePct;
+    const isSuccess = (window.STATE?.adminCheats?.masterCatch) ? true : (roll <= chancePct);
 
     setTrainerSpeech(`Go, ${cap.name}!`);
 
@@ -5726,7 +5729,7 @@ function throwBallAtTargetMonster(mon, capsuleId, fromAuto = false) {
 
     STATE.player.inventory[cap.id] = qty - 1;
     const roll = Math.random() * 100;
-    const isSuccess = roll <= chancePct;
+    const isSuccess = (window.STATE?.adminCheats?.masterCatch) ? true : (roll <= chancePct);
 
     STATE.tibia.projectiles.push({
         startX: tr.px + 24,
@@ -16015,3 +16018,936 @@ window.removeFriendAction = removeFriendAction;
 if (!P2P_INVITE_POLL_INTERVAL) {
     P2P_INVITE_POLL_INTERVAL = setInterval(checkP2PIncomingInvites, 2500);
 }
+
+// ==============================================================================
+// POKÉLAND: COMPREHENSIVE ADMIN BOARD & GOD-MODE MOTOR CONTROLLER
+// ==============================================================================
+
+window.STATE = window.STATE || {};
+STATE.adminCheats = STATE.adminCheats || {
+    godMode: false,
+    masterCatch: false,
+    oneHitKo: false,
+    zeroCooldown: false,
+    infiniteBattery: false,
+    superSpeed: false
+};
+STATE.adminWeather = STATE.adminWeather || null;
+
+let _activeAdminEditUserId = null;
+// Reusing global admin caches
+let _lastAdminBroadcastId = null;
+
+function switchAdminSubmenu(subTab) {
+    document.querySelectorAll(".admin-submenu-pill").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.adminSub === subTab);
+    });
+
+    const subpanels = [
+        "users", "cheats", "items", "spawner", "rates", "world", "broadcast", "feedbacks", "diagnostics"
+    ];
+
+    subpanels.forEach((pId) => {
+        const el = document.getElementById(`admin-panel-${pId}`);
+        if (el) el.style.display = (pId === subTab) ? "block" : "none";
+    });
+
+    if (subTab === "users") {
+        loadAdminUsers();
+    } else if (subTab === "cheats") {
+        syncAdminCheatsUI();
+    } else if (subTab === "items") {
+        renderAdminItemsCatalog();
+    } else if (subTab === "spawner") {
+        initAdminSpeciesPicker();
+        loadAdminSpeciesEditor();
+    } else if (subTab === "rates") {
+        syncAdminRatesInputs();
+    } else if (subTab === "feedbacks") {
+        loadAdminFeedbacks();
+    } else if (subTab === "diagnostics") {
+        loadAdminDiagnostics();
+    }
+}
+window.switchAdminSubmenu = switchAdminSubmenu;
+
+function toggleAdminCheat(cheatKey, isEnabled) {
+    STATE.adminCheats[cheatKey] = Boolean(isEnabled);
+    const names = {
+        godMode: "🛡️ Invencibilidade Total (God Mode)",
+        masterCatch: "🎯 Captura 100% Instantânea (Master Catch)",
+        oneHitKo: "💥 1-Hit KO Monstro Selvagem (999k Dano)",
+        zeroCooldown: "⚡ Sem Cooldown de Golpes (Zero Cooldown)",
+        infiniteBattery: "🔋 Auto-Farm Infinito (Bateria Ilimitada)",
+        superSpeed: "🚀 Super Velocidade do Treinador"
+    };
+    const title = names[cheatKey] || cheatKey;
+    showToast(`${title}: ${isEnabled ? "ATIVADO! 🟢" : "DESATIVADO ⚪"}`);
+}
+window.toggleAdminCheat = toggleAdminCheat;
+
+function syncAdminCheatsUI() {
+    const cheats = STATE.adminCheats || {};
+    const map = {
+        godMode: "chk-gm-invincible",
+        masterCatch: "chk-gm-master-catch",
+        oneHitKo: "chk-gm-one-hit",
+        zeroCooldown: "chk-gm-zero-cd",
+        infiniteBattery: "chk-gm-infinite-battery",
+        superSpeed: "chk-gm-super-speed"
+    };
+    for (const [k, id] of Object.entries(map)) {
+        const el = document.getElementById(id);
+        if (el) el.checked = Boolean(cheats[k]);
+    }
+}
+window.syncAdminCheatsUI = syncAdminCheatsUI;
+
+async function grantAdminQuickKit(kitType) {
+    try {
+        const res = await fetch("/api/admin/grant-kit", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ kit: kitType })
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+            showToast(`🎁 ${data.message}`);
+            if (data.player && STATE.player) {
+                STATE.player.gold = data.player.gold;
+                STATE.player.diamonds = data.player.diamonds;
+                STATE.player.inventory = data.player.inventory;
+                if (data.player.pokedex_caught) STATE.player.pokedex_caught = data.player.pokedex_caught;
+            }
+            renderAll();
+        } else {
+            showToast(`⚠️ ${data?.error || "Erro ao conceder kit."}`);
+        }
+    } catch (e) {
+        showToast("⚠️ Falha de conexão ao aplicar kit GM.");
+    }
+}
+window.grantAdminQuickKit = grantAdminQuickKit;
+
+// ==============================================================================
+// 1. JOGADORES & CONTAS (TABLE + DRAWER)
+// ==============================================================================
+
+async function loadAdminUsers(forceToast = false) {
+    const tbody = document.getElementById("admin-users-tbody");
+    if (!tbody) return;
+    try {
+        const res = await fetch("/api/admin/users", { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data && data.ok && data.users) {
+            _cachedAdminUsers = data.users;
+            const badge = document.getElementById("admin-users-stat-total");
+            if (badge) badge.textContent = `${data.users.length} contas`;
+            renderAdminUsersTable(_cachedAdminUsers);
+            populateAdminUsersDropdown();
+            if (forceToast) showToast("👥 Lista de usuários atualizada!");
+        }
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#ef4444;padding:24px;">Erro ao carregar lista de usuários.</td></tr>`;
+    }
+}
+window.loadAdminUsers = loadAdminUsers;
+
+function filterAdminUsersTable() {
+    const term = (document.getElementById("admin-users-search")?.value || "").toLowerCase().trim();
+    if (!term) {
+        renderAdminUsersTable(_cachedAdminUsers);
+        return;
+    }
+    const filtered = _cachedAdminUsers.filter(u => 
+        (u.username || "").toLowerCase().includes(term) ||
+        String(u.id) === term ||
+        (u.role || "").toLowerCase().includes(term)
+    );
+    renderAdminUsersTable(filtered);
+}
+window.filterAdminUsersTable = filterAdminUsersTable;
+
+function renderAdminUsersTable(list) {
+    const tbody = document.getElementById("admin-users-tbody");
+    if (!tbody) return;
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:24px;">Nenhum treinador encontrado.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = list.map(u => {
+        const skin = u.avatar_model || "ethan_gold";
+        const rolePill = u.role === "admin"
+            ? `<span style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid #ef4444;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:800;">ADMIN</span>`
+            : u.role === "moderator"
+            ? `<span style="background:rgba(234,179,8,0.2);color:#fef08a;border:1px solid #eab308;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:800;">MOD</span>`
+            : u.role === "banned"
+            ? `<span style="background:rgba(185,28,28,0.3);color:#fca5a5;border:1px solid #b91c1c;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:800;">BANIDO</span>`
+            : `<span style="background:rgba(100,116,139,0.2);color:#94a3b8;border:1px solid #475569;padding:2px 7px;border-radius:4px;font-size:10px;">PLAYER</span>`;
+
+        const portrait = (typeof getTrainerModelDataUrl === "function") ? getTrainerModelDataUrl(skin) : "/img/trainers/ethan_gold.png";
+        return `
+            <tr style="border-bottom:1px solid #1e293b;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                <td style="padding:10px 12px;color:#64748b;font-weight:600;">#${u.id}</td>
+                <td style="padding:10px 12px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <img src="${portrait}" alt="${skin}" style="width:32px;height:32px;image-rendering:pixelated;object-fit:contain;background:rgba(255,255,255,0.05);border-radius:4px;border:1px solid #334155;">
+                        <div>
+                            <div style="font-weight:800;color:#f8fafc;">${escapeHtml(u.username)}</div>
+                            <div style="font-size:10.5px;color:#64748b;">${skin}</div>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding:10px 12px;">${rolePill}</td>
+                <td style="padding:10px 12px;color:#fde047;font-weight:800;">Lv. ${u.level || 1}</td>
+                <td style="padding:10px 12px;color:#fbbf24;font-family:var(--font-mono);">$${(u.gold || 0).toLocaleString()}</td>
+                <td style="padding:10px 12px;color:#38bdf8;font-family:var(--font-mono);">💎 ${(u.diamonds || 0).toLocaleString()}</td>
+                <td style="padding:10px 12px;color:#cbd5e1;">🎒 ${u.party_count || 0}/6</td>
+                <td style="padding:10px 12px;color:#64748b;font-size:11px;">${(u.last_login || "").substring(0, 16) || "—"}</td>
+                <td style="padding:10px 12px;text-align:right;">
+                    <button class="btn btn-sm btn-primary" onclick="openPlayerEditorModal(${u.id})" style="font-weight:700;padding:4px 10px;">⚙️ Editar</button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function populateAdminUsersDropdown() {
+    const sel = document.getElementById("admin-inject-target-user");
+    if (!sel) return;
+    const curVal = sel.value;
+    sel.innerHTML = `<option value="self">👑 Minha Mochila (Admin Atual)</option>` + 
+        _cachedAdminUsers.map(u => `<option value="${u.id}">Treinador: ${escapeHtml(u.username)} (ID #${u.id})</option>`).join("");
+    sel.value = curVal || "self";
+}
+
+function openPlayerEditorModal(userId) {
+    const user = _cachedAdminUsers.find(u => u.id === userId);
+    if (!user) return;
+    _activeAdminEditUserId = userId;
+
+    document.getElementById("adm-edit-user-id").value = user.id;
+    const titleEl = document.getElementById("adm-edit-title");
+    if (titleEl) titleEl.textContent = `Editar Treinador: ${user.username} (#${user.id})`;
+
+    const roleSel = document.getElementById("adm-edit-role");
+    if (roleSel) roleSel.value = user.role || "player";
+
+    const lvlInp = document.getElementById("adm-edit-level");
+    if (lvlInp) lvlInp.value = user.level || 1;
+
+    const goldInp = document.getElementById("adm-edit-gold");
+    if (goldInp) goldInp.value = user.gold || 0;
+
+    const diaInp = document.getElementById("adm-edit-diamonds");
+    if (diaInp) diaInp.value = user.diamonds || 0;
+
+    const banBtn = document.getElementById("btn-adm-ban-toggle");
+    if (banBtn) {
+        if (user.role === "banned") {
+            banBtn.textContent = "✅ Desbanir Conta";
+            banBtn.className = "btn btn-green btn-sm";
+        } else {
+            banBtn.textContent = "⛔ Banir Conta";
+            banBtn.className = "btn btn-red btn-sm";
+        }
+    }
+
+    // Populate item selector
+    const itemSel = document.getElementById("adm-edit-inject-item");
+    if (itemSel && STATE.itemsMap) {
+        itemSel.innerHTML = Object.values(STATE.itemsMap).slice(0, 200).map(it => 
+            `<option value="${it.id}">${escapeHtml(it.name || it.id)} (${it.type || "item"})</option>`
+        ).join("");
+    }
+
+    // Populate mon species selector
+    const monSel = document.getElementById("adm-edit-inject-mon-sp");
+    if (monSel && STATE.species) {
+        monSel.innerHTML = STATE.species.map(s => 
+            `<option value="${s.id}">${s.dex_id}. ${escapeHtml(s.name)}</option>`
+        ).join("");
+    }
+
+    const modal = document.getElementById("admin-player-editor-modal");
+    if (modal) {
+        modal.classList.remove("is-hidden");
+        modal.style.display = "flex";
+    }
+}
+window.openPlayerEditorModal = openPlayerEditorModal;
+
+function closePlayerEditorModal() {
+    const modal = document.getElementById("admin-player-editor-modal");
+    if (modal) {
+        modal.classList.add("is-hidden");
+        modal.style.display = "none";
+    }
+}
+window.closePlayerEditorModal = closePlayerEditorModal;
+
+async function savePlayerAccountEdits() {
+    const uId = _activeAdminEditUserId;
+    if (!uId) return;
+
+    const payload = {
+        user_id: uId,
+        role: document.getElementById("adm-edit-role")?.value,
+        level: parseInt(document.getElementById("adm-edit-level")?.value, 10),
+        gold: parseInt(document.getElementById("adm-edit-gold")?.value, 10),
+        diamonds: parseInt(document.getElementById("adm-edit-diamonds")?.value, 10)
+    };
+
+    try {
+        const res = await fetch("/api/admin/user/update", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+            showToast("💾 Alterações na conta salvas com sucesso!");
+            loadAdminUsers();
+            closePlayerEditorModal();
+        } else {
+            showToast(`⚠️ ${data?.error || "Erro ao salvar alterações."}`);
+        }
+    } catch (e) {
+        showToast("⚠️ Falha de conexão ao salvar alterações.");
+    }
+}
+window.savePlayerAccountEdits = savePlayerAccountEdits;
+
+async function adminHealPlayerPartyAction() {
+    if (!_activeAdminEditUserId) return;
+    try {
+        const res = await fetch("/api/admin/user/heal", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ user_id: _activeAdminEditUserId })
+        });
+        const data = await res.json();
+        showToast(data.message || "Equipe do jogador curada!");
+    } catch (e) {
+        showToast("⚠️ Falha ao curar jogador.");
+    }
+}
+window.adminHealPlayerPartyAction = adminHealPlayerPartyAction;
+
+async function adminResetPlayerPosAction() {
+    if (!_activeAdminEditUserId) return;
+    try {
+        const res = await fetch("/api/admin/user/reset-pos", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ user_id: _activeAdminEditUserId })
+        });
+        const data = await res.json();
+        showToast(data.message || "Posição resetada para a Praça Central!");
+    } catch (e) {
+        showToast("⚠️ Falha ao resetar posição.");
+    }
+}
+window.adminResetPlayerPosAction = adminResetPlayerPosAction;
+
+async function adminTogglePlayerBanAction() {
+    if (!_activeAdminEditUserId) return;
+    const user = _cachedAdminUsers.find(u => u.id === _activeAdminEditUserId);
+    const willBan = user ? (user.role !== "banned") : true;
+    try {
+        const res = await fetch("/api/admin/user/ban", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ user_id: _activeAdminEditUserId, banned: willBan })
+        });
+        const data = await res.json();
+        showToast(data.message || "Status de banimento atualizado!");
+        loadAdminUsers();
+        closePlayerEditorModal();
+    } catch (e) {
+        showToast("⚠️ Falha ao alterar banimento.");
+    }
+}
+window.adminTogglePlayerBanAction = adminTogglePlayerBanAction;
+
+async function adminInjectItemToTargetPlayerAction() {
+    if (!_activeAdminEditUserId) return;
+    const itemId = document.getElementById("adm-edit-inject-item")?.value;
+    const qty = parseInt(document.getElementById("adm-edit-inject-item-qty")?.value, 10) || 1;
+    if (!itemId) return;
+
+    try {
+        const res = await fetch("/api/admin/user/give-item", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ user_id: _activeAdminEditUserId, item_id: itemId, qty })
+        });
+        const data = await res.json();
+        showToast(data.message || `Item ${itemId} injetado com sucesso!`);
+    } catch (e) {
+        showToast("⚠️ Falha ao injetar item.");
+    }
+}
+window.adminInjectItemToTargetPlayerAction = adminInjectItemToTargetPlayerAction;
+
+async function adminInjectPokemonToTargetPlayerAction(targetStorage = "party") {
+    if (!_activeAdminEditUserId) return;
+    const sid = document.getElementById("adm-edit-inject-mon-sp")?.value;
+    const lvl = parseInt(document.getElementById("adm-edit-inject-mon-lvl")?.value, 10) || 100;
+    const qual = document.getElementById("adm-edit-inject-mon-qual")?.value || "Mítico";
+    const shiny = document.getElementById("adm-edit-inject-mon-shiny")?.checked || false;
+    if (!sid) return;
+
+    try {
+        const res = await fetch("/api/admin/user/give-pokemon", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                user_id: _activeAdminEditUserId,
+                species_id: sid,
+                level: lvl,
+                quality: qual,
+                is_shiny: shiny,
+                target_storage: targetStorage
+            })
+        });
+        const data = await res.json();
+        showToast(data.message || "Pokémon injetado com sucesso!");
+    } catch (e) {
+        showToast("⚠️ Falha ao injetar Pokémon.");
+    }
+}
+window.adminInjectPokemonToTargetPlayerAction = adminInjectPokemonToTargetPlayerAction;
+
+// ==============================================================================
+// 2. INJETOR DE ITENS (ITEM MASTER DESK)
+// ==============================================================================
+
+let _currentAdminItemCat = "all";
+
+function filterAdminItemsByCategory(cat) {
+    _currentAdminItemCat = cat;
+    document.querySelectorAll(".item-cat-pills .btn-category").forEach(b => {
+        b.classList.toggle("active", b.dataset.cat === cat);
+    });
+    renderAdminItemsCatalog();
+}
+window.filterAdminItemsByCategory = filterAdminItemsByCategory;
+
+function filterAdminItemsGrid() {
+    renderAdminItemsCatalog();
+}
+window.filterAdminItemsGrid = filterAdminItemsGrid;
+
+function renderAdminItemsCatalog() {
+    const container = document.getElementById("admin-items-catalog-grid");
+    if (!container) return;
+
+    const searchTerm = (document.getElementById("admin-items-filter-text")?.value || "").toLowerCase().trim();
+    let allItems = [];
+
+    // Collect capsules
+    if (STATE.capsules) {
+        allItems = allItems.concat(STATE.capsules.map(c => ({
+            id: c.id,
+            name: c.name,
+            category: "capsule",
+            catLabel: "Pokébola",
+            sprite: c.sprite_url || "/img/items/poke-ball.png"
+        })));
+    }
+    // Collect stones
+    if (STATE.stones) {
+        allItems = allItems.concat(STATE.stones.map(s => ({
+            id: s.id,
+            name: s.name,
+            category: "evolution",
+            catLabel: "Pedra",
+            sprite: s.sprite_url || "/img/items/fire-stone.png"
+        })));
+    }
+    // Collect from itemsMap
+    if (STATE.itemsMap) {
+        const mapped = Object.values(STATE.itemsMap).map(it => {
+            const rawCat = (it.type || "").toLowerCase();
+            let cat = "material";
+            let catLabel = "Material";
+            if (rawCat.includes("potion") || rawCat.includes("revive")) { cat = "potion"; catLabel = "Cura"; }
+            else if (rawCat.includes("candy") || rawCat.includes("boost")) { cat = "candy"; catLabel = "Doce/Vit"; }
+            else if (rawCat.includes("evolution") || rawCat.includes("stone")) { cat = "evolution"; catLabel = "Pedra"; }
+            else if (rawCat.includes("capsule")) { cat = "capsule"; catLabel = "Pokébola"; }
+
+            return {
+                id: it.id,
+                name: it.name || it.id,
+                category: cat,
+                catLabel: catLabel,
+                sprite: it.sprite_url || it.icon_url || "/img/items/poke-ball.png"
+            };
+        });
+        allItems = allItems.concat(mapped);
+    }
+
+    // Deduplicate by ID
+    const seen = new Set();
+    const unique = [];
+    for (const it of allItems) {
+        if (!seen.has(it.id)) {
+            seen.add(it.id);
+            unique.push(it);
+        }
+    }
+
+    const filtered = unique.filter(it => {
+        if (_currentAdminItemCat !== "all" && it.category !== _currentAdminItemCat) return false;
+        if (searchTerm && !it.name.toLowerCase().includes(searchTerm) && !it.id.toLowerCase().includes(searchTerm)) return false;
+        return true;
+    }).slice(0, 150);
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:30px;">Nenhum item encontrado nesta categoria.</div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(it => `
+        <div style="background:#090d16;border:1px solid #1e293b;border-radius:8px;padding:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;overflow:hidden;">
+                <img src="${it.sprite}" style="width:32px;height:32px;image-rendering:pixelated;object-fit:contain;background:#1e293b;border-radius:6px;padding:3px;" onerror="this.src='/img/items/poke-ball.png'">
+                <div style="overflow:hidden;">
+                    <div style="font-size:12px;font-weight:700;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(it.name)}</div>
+                    <div style="font-size:10px;color:#94a3b8;">${it.catLabel} • <code>${it.id}</code></div>
+                </div>
+            </div>
+            <button class="btn btn-sm btn-primary" onclick="adminExecuteInjectItem('${it.id}')" style="font-weight:700;padding:3px 8px;flex-shrink:0;">+ Dar</button>
+        </div>
+    `).join("");
+}
+
+async function adminExecuteInjectItem(itemId) {
+    const target = document.getElementById("admin-inject-target-user")?.value || "self";
+    const qty = parseInt(document.getElementById("admin-inject-qty")?.value, 10) || 10;
+
+    if (target === "self") {
+        STATE.player.inventory[itemId] = (STATE.player.inventory[itemId] || 0) + qty;
+        await syncStateToServer();
+        showToast(`🎒 +${qty}x ${itemId} adicionados à sua mochila!`);
+        renderAll();
+    } else {
+        const uId = parseInt(target, 10);
+        try {
+            const res = await fetch("/api/admin/user/give-item", {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ user_id: uId, item_id: itemId, qty })
+            });
+            const data = await res.json();
+            showToast(data.message || `Item ${itemId} injetado com sucesso!`);
+        } catch (e) {
+            showToast("⚠️ Falha ao injetar item no treinador.");
+        }
+    }
+}
+window.adminExecuteInjectItem = adminExecuteInjectItem;
+
+// ==============================================================================
+// 3. GERADOR DE POKÉMON (/CB & SPECIES)
+// ==============================================================================
+
+function initAdminSpeciesPicker() {
+    const picker = document.getElementById("admin-sp-picker");
+    if (!picker || picker.children.length > 0) return;
+    if (STATE.species) {
+        picker.innerHTML = STATE.species.map(s => 
+            `<option value="${s.id}">${s.dex_id}. ${escapeHtml(s.name)}</option>`
+        ).join("");
+    }
+}
+window.initAdminSpeciesPicker = initAdminSpeciesPicker;
+
+function loadAdminSpeciesEditor() {
+    const picker = document.getElementById("admin-sp-picker");
+    const sid = picker?.value || "charizard";
+    const sp = STATE.speciesById ? STATE.speciesById[sid] : null;
+    if (!sp) return;
+
+    document.getElementById("admin-sp-name").textContent = sp.name;
+    document.getElementById("admin-sp-types").textContent = `${(sp.elements || []).join(" / ")} • Dex #${sp.dex_id}`;
+    document.getElementById("admin-sp-bst").textContent = `BST: ${sp.bst || 300} • Rank: ${sp.pvp_tier || "B"}`;
+    document.getElementById("admin-sp-portrait").src = `/img/pmd/${sid}/Portrait.png`;
+
+    document.getElementById("admin-sp-base-chance").value = sp.base_capture_chance ?? 15.0;
+    document.getElementById("admin-sp-catch-rate").value = sp.catch_rate ?? 45;
+}
+window.loadAdminSpeciesEditor = loadAdminSpeciesEditor;
+
+async function saveAdminSpeciesOverride() {
+    const sid = document.getElementById("admin-sp-picker")?.value;
+    if (!sid) return;
+    const baseChance = parseFloat(document.getElementById("admin-sp-base-chance")?.value) || 15.0;
+    const catchRate = parseInt(document.getElementById("admin-sp-catch-rate")?.value, 10) || 45;
+
+    try {
+        const res = await fetch("/api/admin/species-override", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                species_id: sid,
+                updates: {
+                    base_capture_chance: baseChance,
+                    catch_rate: catchRate
+                }
+            })
+        });
+        const data = await res.json();
+        if (data) {
+            applyBootstrapData(data);
+            showToast(`💾 Taxas de ${sid} atualizadas no servidor com sucesso!`);
+        }
+    } catch (e) {
+        showToast("⚠️ Falha ao salvar override de espécie.");
+    }
+}
+window.saveAdminSpeciesOverride = saveAdminSpeciesOverride;
+
+function spawnCustomPokemonToPC() {
+    const sid = document.getElementById("admin-sp-picker")?.value || "charizard";
+    const sp = STATE.speciesById[sid];
+    if (!sp) return;
+    const lvl = parseInt(document.getElementById("spawn-mon-lvl")?.value, 10) || 100;
+    const qual = document.getElementById("spawn-mon-quality")?.value || "Mítico_Forte";
+    const shiny = document.getElementById("spawn-mon-shiny")?.checked || false;
+
+    const newMon = createClientPokemonInstance(sp, lvl, shiny, qual);
+    STATE.player.pc_box.push(newMon);
+    if (!STATE.player.pokedex_caught.includes(sp.id)) STATE.player.pokedex_caught.push(sp.id);
+    syncStateToServer();
+    showToast(`📦 ${newMon.name} (Lv.${lvl}) adicionado ao seu PC Box!`);
+    renderAll();
+}
+window.spawnCustomPokemonToPC = spawnCustomPokemonToPC;
+
+function spawnAdminFieldBoss() {
+    const sid = document.getElementById("admin-sp-picker")?.value || "mewtwo";
+    const sp = STATE.speciesById[sid];
+    if (!sp) return;
+    const lvl = parseInt(document.getElementById("spawn-mon-lvl")?.value, 10) || 100;
+    const qual = document.getElementById("spawn-mon-quality")?.value || "Mítico_Forte";
+    const shiny = document.getElementById("spawn-mon-shiny")?.checked || false;
+
+    const tr = STATE.tibia.trainer;
+    const bossUid = `boss_${Date.now()}`;
+    const bossMon = {
+        uid: bossUid,
+        species_id: sid,
+        dex_id: sp.dex_id,
+        name: `👑 ${sp.name} [WORLD BOSS]`,
+        level: lvl,
+        hp: lvl * 180,
+        max_hp: lvl * 180,
+        elements: sp.elements || ["normal"],
+        is_shiny: shiny,
+        is_boss: true,
+        quality: qual,
+        gx: Math.min(GRID_COLS - 2, tr.gx + 2),
+        gy: tr.gy,
+        px: (Math.min(GRID_COLS - 2, tr.gx + 2)) * SQM_SIZE,
+        py: tr.gy * SQM_SIZE,
+        targetGx: Math.min(GRID_COLS - 2, tr.gx + 2),
+        targetGy: tr.gy,
+        dir: 0,
+        atk: lvl * 8,
+        def: lvl * 6,
+        spa: lvl * 8,
+        spd: lvl * 6,
+        spe: lvl * 4,
+        speechTimer: 180,
+        speechText: `ROOOAAAR! O World Boss ${sp.name} apareceu!`,
+        animTick: 0,
+        idleTimer: 0,
+        stepCooldown: 30
+    };
+
+    STATE.tibia.monsters.push(bossMon);
+    setRedTarget(bossUid);
+    showToast(`🦖 WORLD BOSS ${sp.name} (Lv.${lvl}) invocado no mapa!`);
+    if (typeof playSfx === "function") playSfx("boss_spawn");
+    switchTab("hunt");
+}
+window.spawnAdminFieldBoss = spawnAdminFieldBoss;
+
+// ==============================================================================
+// 4. TELEPORTE & CLIMA
+// ==============================================================================
+
+function adminTeleportToZone(zoneKey) {
+    const tr = STATE.tibia.trainer;
+    if (!tr) return;
+
+    if (zoneKey === "saffron_plaza") {
+        enterOrToggleCentralHub();
+        showToast("📍 Teleportado para a Praça Central (Saffron Hub)!");
+        switchTab("hunt");
+        return;
+    }
+
+    // Leave hub if inside
+    if (STATE.tibia.isCentralHub) {
+        STATE.tibia.isCentralHub = false;
+    }
+
+    const zoneMap = {
+        kanto_r1: 0,
+        kanto_cerulean: 1,
+        johto_goldenrod: 2,
+        johto_silver: 3,
+        legendary_islands: 4,
+        safari_special: 5,
+        pvp_arena: 6
+    };
+
+    if (zoneKey in zoneMap && STATE.zones && STATE.zones[zoneMap[zoneKey]]) {
+        STATE.activeZone = STATE.zones[zoneMap[zoneKey]];
+    }
+
+    tr.gx = 8;
+    tr.gy = 8;
+    tr.px = 8 * SQM_SIZE;
+    tr.py = 8 * SQM_SIZE;
+    tr.targetGx = 8;
+    tr.targetGy = 8;
+
+    adminRespawnMapMonsters();
+    showToast(`📍 Teleportado com sucesso para ${zoneKey.toUpperCase()}!`);
+    switchTab("hunt");
+}
+window.adminTeleportToZone = adminTeleportToZone;
+
+function adminSetWeather(weather) {
+    STATE.adminWeather = (weather === "clear") ? null : weather;
+    showToast(`☀️ Clima alterado para: ${weather.toUpperCase()}!`);
+}
+window.adminSetWeather = adminSetWeather;
+
+function adminRespawnMapMonsters() {
+    STATE.tibia.monsters = [];
+    for (let i = 0; i < 6; i++) {
+        spawnSingleMonsterOnMap(true);
+    }
+    syncWildEnemyPointer();
+    renderTibiaBattleAndCorpseLists();
+    showToast("🔄 6 monstros respawnados no mapa!");
+}
+window.adminRespawnMapMonsters = adminRespawnMapMonsters;
+
+function adminClearMapMonsters() {
+    STATE.tibia.monsters = [];
+    STATE.wildEnemy = null;
+    STATE.tibia.targetId = null;
+    renderTibiaBattleAndCorpseLists();
+    showToast("🧹 Todos os monstros foram removidos do mapa!");
+}
+window.adminClearMapMonsters = adminClearMapMonsters;
+
+function adminSpawnMapHorde() {
+    const sidPool = ["dragonite", "tyranitar", "salamence", "metagross", "garchomp", "lucario", "charizard", "gengar"];
+    const tr = STATE.tibia.trainer;
+    for (let i = 0; i < 5; i++) {
+        const sid = sidPool[i % sidPool.length];
+        const sp = STATE.speciesById[sid] || STATE.species[0];
+        const mon = {
+            uid: `horde_${Date.now()}_${i}`,
+            species_id: sid,
+            dex_id: sp.dex_id,
+            name: `✨ ${sp.name} [HORDA]`,
+            level: 75 + i * 5,
+            hp: 350 + i * 50,
+            max_hp: 350 + i * 50,
+            elements: sp.elements || ["dragon"],
+            is_shiny: true,
+            quality: "Épico",
+            gx: Math.min(GRID_COLS - 2, Math.max(1, tr.gx + (i - 2))),
+            gy: Math.min(GRID_ROWS - 2, Math.max(1, tr.gy + (i % 2 === 0 ? 2 : -2))),
+            dir: 0,
+            animTick: 0,
+            idleTimer: 0,
+            stepCooldown: 30
+        };
+        mon.px = mon.gx * SQM_SIZE;
+        mon.py = mon.gy * SQM_SIZE;
+        STATE.tibia.monsters.push(mon);
+    }
+    renderTibiaBattleAndCorpseLists();
+    showToast("⚠️ Horda Mítica de 5 Pokémon raros invocada ao redor do seu treinador!");
+    switchTab("hunt");
+}
+window.adminSpawnMapHorde = adminSpawnMapHorde;
+
+// ==============================================================================
+// 5. ANÚNCIOS GLOBAIS (BROADCAST)
+// ==============================================================================
+
+async function sendAdminBroadcast() {
+    const txt = (document.getElementById("admin-broadcast-msg")?.value || "").trim();
+    if (!txt) {
+        showToast("⚠️ Digite a mensagem do anúncio antes de enviar.");
+        return;
+    }
+    const style = document.querySelector('input[name="admin-bc-style"]:checked')?.value || "gold";
+
+    try {
+        const res = await fetch("/api/admin/broadcast", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ text: txt, style })
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+            showToast("📢 Anúncio global transmitido com sucesso!");
+            document.getElementById("admin-broadcast-msg").value = "";
+            displayAdminBroadcastBanner(data.broadcast);
+        } else {
+            showToast(`⚠️ ${data?.error || "Erro ao transmitir anúncio."}`);
+        }
+    } catch (e) {
+        showToast("⚠️ Falha ao enviar broadcast global.");
+    }
+}
+window.sendAdminBroadcast = sendAdminBroadcast;
+
+function displayAdminBroadcastBanner(bc) {
+    if (!bc) return;
+    const banner = document.getElementById("admin-global-broadcast-banner");
+    if (!banner) return;
+
+    const iconEl = document.getElementById("admin-bc-icon");
+    const senderEl = document.getElementById("admin-bc-sender");
+    const textEl = document.getElementById("admin-bc-text");
+
+    if (iconEl) iconEl.textContent = bc.style === "alert" ? "🚨" : bc.style === "event" ? "🍀" : "👑";
+    if (senderEl) senderEl.textContent = `👑 ${bc.sender || "Admin"}`;
+    if (textEl) textEl.textContent = bc.text;
+
+    banner.className = `admin-broadcast-banner admin-bc-theme-${bc.style || "gold"}`;
+    banner.classList.remove("is-hidden");
+
+    if (typeof playSfx === "function") playSfx("broadcast");
+}
+window.displayAdminBroadcastBanner = displayAdminBroadcastBanner;
+
+function dismissAdminBroadcastBanner() {
+    const banner = document.getElementById("admin-global-broadcast-banner");
+    if (banner) banner.classList.add("is-hidden");
+}
+window.dismissAdminBroadcastBanner = dismissAdminBroadcastBanner;
+
+async function checkAdminBroadcastPolling() {
+    try {
+        const res = await fetch("/api/admin/broadcast/current", { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data && data.ok && data.broadcast) {
+            if (data.broadcast.id !== _lastAdminBroadcastId) {
+                _lastAdminBroadcastId = data.broadcast.id;
+                displayAdminBroadcastBanner(data.broadcast);
+            }
+        }
+    } catch (e) {}
+}
+
+// ==============================================================================
+// 6. TELEMETRIA, DIAGNÓSTICO & BACKUP
+// ==============================================================================
+
+async function loadAdminDiagnostics(forceToast = false) {
+    try {
+        const res = await fetch("/api/admin/diagnostics", { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data && data.ok) {
+            const uptimeMins = Math.floor((data.uptime_seconds || 0) / 60);
+            const uptimeSecs = (data.uptime_seconds || 0) % 60;
+            const uptimeStr = `${uptimeMins}m ${uptimeSecs}s`;
+
+            const elStatus = document.getElementById("diag-status");
+            const elUptime = document.getElementById("diag-uptime");
+            const elOnline = document.getElementById("diag-online");
+            const elDbsize = document.getElementById("diag-dbsize");
+            const elUsers = document.getElementById("diag-users");
+            const elMarket = document.getElementById("diag-market");
+
+            if (elStatus) elStatus.textContent = `🟢 Online (${data.server_version || "v1.8.0"})`;
+            if (elUptime) elUptime.textContent = uptimeStr;
+            if (elOnline) elOnline.textContent = `${data.online_plaza_players || 0} jogadores`;
+            if (elDbsize) elDbsize.textContent = `${data.db_size_mb || 0} MB (SQLite ${data.sqlite_version || "3"})`;
+            if (elUsers) elUsers.textContent = `${data.users_count || 0} contas (${data.saves_count || 0} saves)`;
+            if (elMarket) elMarket.textContent = `${data.active_market_listings || 0} ativos (${data.active_p2p_trades || 0} trocas P2P)`;
+
+            if (forceToast) showToast("🖥️ Diagnóstico do servidor atualizado!");
+        }
+    } catch (e) {}
+}
+window.loadAdminDiagnostics = loadAdminDiagnostics;
+
+async function adminReloadServerConfigs() {
+    try {
+        const res = await fetch("/api/admin/server/reload", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({})
+        });
+        const data = await res.json();
+        showToast(data.message || "Configurações recarregadas no servidor!");
+    } catch (e) {
+        showToast("⚠️ Falha ao recarregar configurações.");
+    }
+}
+window.adminReloadServerConfigs = adminReloadServerConfigs;
+
+async function downloadAdminDatabaseBackup() {
+    try {
+        const res = await fetch("/api/admin/backup", { headers: getAuthHeaders() });
+        const data = await res.json();
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `pokeland_backup_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("📦 Backup completo do banco de dados baixado com sucesso!");
+    } catch (e) {
+        showToast("⚠️ Falha ao exportar backup do banco de dados.");
+    }
+}
+window.downloadAdminDatabaseBackup = downloadAdminDatabaseBackup;
+
+function adminTriggerSoftReboot() {
+    showToast("⚡ Soft Reboot executado! Recarregando motor do jogo...");
+    setTimeout(() => {
+        window.location.reload();
+    }, 600);
+}
+window.adminTriggerSoftReboot = adminTriggerSoftReboot;
+
+function syncAdminRatesInputs() {
+    if (!STATE.config) return;
+    const c = STATE.config;
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = Boolean(val); };
+
+    setVal("cfg-catch-mult", c.catch_rate_mult ?? 1.0);
+    setVal("cfg-max-cap", c.max_capture_cap ?? 98.0);
+    setVal("cfg-exp-mult", c.exp_mult ?? 1.0);
+    setVal("cfg-gold-mult", c.gold_mult ?? 1.0);
+    setVal("cfg-drop-mult", c.drop_mult ?? 1.0);
+    setVal("cfg-shiny-chance", c.shiny_chance ?? 0.002);
+    setChk("cfg-unlock-balls", c.unlock_all_capsules);
+    setChk("cfg-unlock-legendary", c.unlock_legendary_islands);
+    setChk("cfg-unlock-safari", c.unlock_safari_zone);
+    setChk("cfg-hp-bonus", c.hp_capture_bonus);
+}
+window.syncAdminRatesInputs = syncAdminRatesInputs;
+
+// Polling interval for server broadcasts
+setInterval(checkAdminBroadcastPolling, 4000);

@@ -25,6 +25,10 @@ P2P_INVITATIONS = {}  # invite_id -> dict
 P2P_TRADES = {}       # trade_id -> dict
 P2P_DUELS = {}        # duel_id -> dict
 
+SERVER_START_TIME = time.time()
+ADMIN_BROADCAST_LOCK = threading.Lock()
+ADMIN_CURRENT_BROADCAST = None
+
 PROJECT_VERSION = "v1.8.0"
 PROJECT_VERSION_LABEL = "v1.8.0-pokeland"
 
@@ -1379,6 +1383,35 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             feedbacks = db.get_tester_feedback_list(limit=100)
             return self.send_json({"ok": True, "feedbacks": feedbacks})
 
+        if parsed.path == "/api/admin/diagnostics":
+            diag = db.admin_get_server_diagnostics()
+            import sys
+            with PLAZA_LOCK:
+                online_count = len(PLAZA_PLAYERS)
+            with P2P_LOCK:
+                trades_count = len(P2P_TRADES)
+                duels_count = len(P2P_DUELS)
+            diag.update({
+                "uptime_seconds": int(time.time() - SERVER_START_TIME),
+                "online_plaza_players": online_count,
+                "active_p2p_trades": trades_count,
+                "active_p2p_duels": duels_count,
+                "python_version": sys.version.split()[0],
+                "server_version": PROJECT_VERSION
+            })
+            return self.send_json(diag)
+
+        if parsed.path == "/api/admin/broadcast/current":
+            with ADMIN_BROADCAST_LOCK:
+                return self.send_json({"ok": True, "broadcast": ADMIN_CURRENT_BROADCAST})
+
+        if parsed.path == "/api/admin/backup":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            return self.send_json(db.admin_export_backup_json())
+
         if parsed.path == "/api/admin/users":
             users = db.get_registered_users_list(limit=200)
             return self.send_json({"ok": True, "users": users, "total": len(users)})
@@ -1411,6 +1444,7 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
+        global RAW_SPECIES, RAW_ITEMS, RAW_WORLDS, ADMIN_CURRENT_BROADCAST
         parsed = urlparse(self.path)
         length = int(self.headers.get("Content-Length", "0"))
         raw_body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
@@ -2027,6 +2061,144 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             token = get_auth_token(self)
             user = db.get_user_by_session(token) if token else None
             return self.send_json(build_bootstrap(user=user))
+
+        if parsed.path == "/api/admin/broadcast":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            text = body.get("text", "").strip()
+            style = body.get("style", "gold")
+            if not text:
+                return self.send_json({"ok": False, "error": "Texto do anúncio não pode estar vazio."})
+            b_data = {
+                "id": f"bc_{int(time.time()*1000)}",
+                "text": text,
+                "style": style,
+                "sender": user.get("username", "Admin"),
+                "timestamp": time.time()
+            }
+            with ADMIN_BROADCAST_LOCK:
+                ADMIN_CURRENT_BROADCAST = b_data
+            db.save_chat_message("global", f"👑 [ADM {user.get('username')}]", None, text)
+            return self.send_json({"ok": True, "message": "Anúncio global transmitido com sucesso!", "broadcast": b_data})
+
+        if parsed.path == "/api/admin/user/update":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            target_user_id = int(body.get("user_id", 0))
+            role = body.get("role")
+            level = body.get("level")
+            gold = body.get("gold")
+            diamonds = body.get("diamonds")
+            res = db.admin_update_player_account(target_user_id, role, level, gold, diamonds)
+            return self.send_json(res)
+
+        if parsed.path == "/api/admin/user/heal":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            target_user_id = int(body.get("user_id", 0))
+            return self.send_json(db.admin_heal_player_party(target_user_id))
+
+        if parsed.path == "/api/admin/user/give-item":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            target_user_id = int(body.get("user_id", 0))
+            item_id = body.get("item_id", "")
+            qty = int(body.get("qty", 1))
+            return self.send_json(db.admin_inject_item_into_player(target_user_id, item_id, qty))
+
+        if parsed.path == "/api/admin/user/give-pokemon":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            target_user_id = int(body.get("user_id", 0))
+            species_id = body.get("species_id", "mewtwo")
+            level = int(body.get("level", 100))
+            quality = body.get("quality", "Mítico")
+            is_shiny = bool(body.get("is_shiny", False))
+            target_storage = body.get("target_storage", "party")
+            sp = next((s for s in RAW_SPECIES if s["id"] == species_id), None)
+            if not sp:
+                return self.send_json({"ok": False, "error": f"Espécie '{species_id}' não encontrada."})
+            mon = make_pokemon_instance(sp, level=level, is_shiny=is_shiny, quality=quality)
+            return self.send_json(db.admin_inject_pokemon_into_player(target_user_id, mon, target_storage))
+
+        if parsed.path == "/api/admin/user/reset-pos":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            target_user_id = int(body.get("user_id", 0))
+            return self.send_json(db.admin_reset_player_position(target_user_id))
+
+        if parsed.path == "/api/admin/user/ban":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            target_user_id = int(body.get("user_id", 0))
+            banned = bool(body.get("banned", True))
+            return self.send_json(db.admin_toggle_ban_user(target_user_id, banned))
+
+        if parsed.path == "/api/admin/grant-kit":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            kit = body.get("kit")
+            save_obj = db.get_player_save(user["id"])
+            if not save_obj or not save_obj.get("player"):
+                return self.send_json({"ok": False, "error": "Save do usuário não encontrado."})
+            p = save_obj["player"]
+            inv = p.setdefault("inventory", {})
+
+            if kit == "gold_million":
+                p["gold"] = p.get("gold", 0) + 1000000
+                msg = "+ $1.000.000 Gold adicionados à sua conta!"
+            elif kit == "diamonds_50k":
+                p["diamonds"] = p.get("diamonds", 0) + 50000
+                msg = "+ 50.000 Diamantes adicionados à sua conta!"
+            elif kit == "all_balls_999":
+                for item in RAW_ITEMS:
+                    if item.get("type") == "capsule":
+                        inv[item["id"]] = 999
+                msg = "999x de TODAS as 22 Pokébolas adicionadas à mochila!"
+            elif kit == "all_stones_999":
+                for item in RAW_ITEMS:
+                    if item.get("id", "").startswith("stone_") or item.get("id") == "shiny_stone":
+                        inv[item["id"]] = 999
+                msg = "999x de TODAS as Pedras de Evolução adicionadas à mochila!"
+            elif kit == "max_cures_999":
+                for cid in ["max_revive", "revive", "max_potion", "hyper_potion", "full_restore"]:
+                    inv[cid] = 999
+                msg = "999x Max Potions e Max Revives adicionados à mochila!"
+            elif kit == "unlock_all_dex":
+                p["pokedex_caught"] = [s["id"] for s in RAW_SPECIES]
+                msg = "Todas as 400 Espécies da Pokédex foram desbloqueadas como capturadas!"
+            else:
+                return self.send_json({"ok": False, "error": "Kit desconhecido."})
+
+            db.save_player_save(user["id"], p, save_obj.get("config"))
+            return self.send_json({"ok": True, "message": msg, "player": p})
+
+        if parsed.path == "/api/admin/server/reload":
+            token = get_auth_token(self)
+            user = db.get_user_by_session(token) if token else None
+            if not user or not user.get("is_admin"):
+                return self.send_json({"ok": False, "error": "Acesso Negado."}, status=403)
+            RAW_SPECIES = load_json(SPECIES_FILE, [])
+            raw_items_dict = load_json(ITEMS_FILE, {})
+            RAW_ITEMS = raw_items_dict.get("data", []) if isinstance(raw_items_dict, dict) else raw_items_dict
+            RAW_WORLDS = load_json(WORLDS_FILE, [])
+            return self.send_json({"ok": True, "message": "Arquivos de configuração e dados recarregados com sucesso!"})
 
         if parsed.path == "/api/admin/preset":
             preset = body.get("preset")

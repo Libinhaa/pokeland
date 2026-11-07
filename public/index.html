@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokéLand</title>
-    <link rel="stylesheet" href="/styles.css?v=pokeland_v27_player_interactions">
+    <link rel="stylesheet" href="/styles.css?v=pokeland_v28_complete_admin_board">
 </head>
 <body class="fullscreen-mode">
     <!-- =========================================================
@@ -1708,161 +1708,461 @@
         </section>
 
         <!-- TAB 5: FLOATING MODAL — PAINEL ADMIN -->
+        <!-- =========================================================
+             TAB: FLOATING MODAL — PAINEL ADMIN & MOTOR GM DEFINITIVO
+             ========================================================= -->
         <section id="tab-admin" class="tab-pane floating-modal-pane">
-            <div class="floating-modal-window">
-                <div class="floating-modal-header">
-                    <div class="modal-title-group">
-                        <span class="header-pokeball-svg is-master"></span>
-                        <h2>⚙️ Painel Admin</h2>
+            <div class="floating-modal-window admin-modal-window" style="width:min(1180px,96vw);max-height:min(860px,92vh);">
+                <div class="floating-modal-header" style="background:linear-gradient(90deg,#1e1b4b 0%,#0f172a 100%);border-bottom:2px solid #facc15;">
+                    <div class="modal-title-group" style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:24px;filter:drop-shadow(0 0 10px #facc15);">👑</span>
+                        <div>
+                            <h2 style="margin:0;font-size:18px;background:linear-gradient(180deg,#fef08a 0%,#eab308 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;letter-spacing:0.5px;">CENTRAL DE COMANDO ADMIN & MOTOR GM</h2>
+                            <p style="margin:2px 0 0 0;font-size:11px;color:#94a3b8;">Controle absoluto em tempo real sobre jogadores, economia, pokémon, itens, clima e servidor</p>
+                        </div>
                     </div>
-                    <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Voltar ao Jogo</button>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button class="btn btn-sm btn-amber" onclick="grantAdminQuickKit('gold_million')" title="Adiciona 1 Milhão de Ouro">+ $1M Gold</button>
+                        <button class="btn btn-sm btn-pink" onclick="grantAdminQuickKit('diamonds_50k')" title="Adiciona 50 Mil Diamantes">+ 50k 💎</button>
+                        <button class="modal-close-btn" onclick="switchTab('hunt')">✕ Fechar</button>
+                    </div>
                 </div>
-                <div class="poke-modal-submenu-bar">
-                    <button class="admin-submenu-pill active" data-admin-sub="presets" onclick="switchAdminSubmenu('presets')">🚀 Presets Rápidos</button>
-                    <button class="admin-submenu-pill" data-admin-sub="rates" onclick="switchAdminSubmenu('rates')">⚙️ Multiplicadores & Taxas</button>
-                    <button class="admin-submenu-pill" data-admin-sub="cb" onclick="switchAdminSubmenu('cb')">🧬 Gerador /cb</button>
-                    <button class="admin-submenu-pill" data-admin-sub="feedbacks" onclick="switchAdminSubmenu('feedbacks')">🐞 Feedbacks & Reports (<span id="admin-feedbacks-badge">0</span>)</button>
-                    <button class="admin-submenu-pill" data-admin-sub="users" onclick="switchAdminSubmenu('users')">👥 Contas Registradas (<span id="admin-users-badge">0</span>)</button>
+
+                <!-- Admin Submenu Navigation Bar -->
+                <div class="poke-modal-submenu-bar admin-nav-bar" style="background:#090d16;padding:8px 14px;gap:6px;overflow-x:auto;display:flex;border-bottom:1px solid #1e293b;">
+                    <button class="admin-submenu-pill active" data-admin-sub="users" onclick="switchAdminSubmenu('users')">👥 Jogadores & Contas</button>
+                    <button class="admin-submenu-pill" data-admin-sub="cheats" onclick="switchAdminSubmenu('cheats')">⚡ God Mode & Cheats</button>
+                    <button class="admin-submenu-pill" data-admin-sub="items" onclick="switchAdminSubmenu('items')">🎒 Injetor de Itens</button>
+                    <button class="admin-submenu-pill" data-admin-sub="spawner" onclick="switchAdminSubmenu('spawner')">🧬 Gerador /cb & Espécies</button>
+                    <button class="admin-submenu-pill" data-admin-sub="rates" onclick="switchAdminSubmenu('rates')">⚙️ Taxas & Multiplicadores</button>
+                    <button class="admin-submenu-pill" data-admin-sub="world" onclick="switchAdminSubmenu('world')">🗺️ Teleporte & Clima</button>
+                    <button class="admin-submenu-pill" data-admin-sub="broadcast" onclick="switchAdminSubmenu('broadcast')">📢 Anúncios Globais</button>
+                    <button class="admin-submenu-pill" data-admin-sub="feedbacks" onclick="switchAdminSubmenu('feedbacks')">🐞 Feedbacks (<span id="admin-feedbacks-badge">0</span>)</button>
+                    <button class="admin-submenu-pill" data-admin-sub="diagnostics" onclick="switchAdminSubmenu('diagnostics')">🖥️ Servidor & Backup</button>
                 </div>
-                <div class="floating-modal-content">
-                    <div class="panel" style="margin-bottom:18px;">
-                        <div class="panel-header">
+
+                <div class="floating-modal-content admin-modal-body" style="padding:16px;overflow-y:auto;background:#0d121f;">
+
+                    <!-- ==========================================
+                         1. SUB-ABA: JOGADORES & CONTAS
+                         ========================================== -->
+                    <div id="admin-panel-users" class="admin-subpanel" style="display:block;">
+                        <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
                             <div>
-                                <div class="panel-title">🚀 Presets Rápidos do Seu Servidor OT / PokéTibia</div>
-                                <p style="font-size:12.5px;color:#9ca3af;margin-top:2px;">Alterne com 1 clique entre as regras oficiais do PokéLand ou sua versão OT Custom com tudo liberado!</p>
+                                <div class="panel-title" style="display:flex;align-items:center;gap:8px;">
+                                    <span style="font-size:16px;">👥</span>
+                                    <span>Gerenciamento de Treinadores & Contas</span>
+                                    <span class="badge" id="admin-users-stat-total" style="background:#10b981;color:#fff;font-weight:800;">0 contas</span>
+                                </div>
+                                <p style="font-size:12px;color:#94a3b8;margin:2px 0 0 0;">Clique em qualquer jogador para abrir o menu completo de edição de conta, inventário, equipe e punições.</p>
                             </div>
-                        </div>
-                        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-                            <button class="btn" onclick="applyAdminPreset('official')">🔒 Modo Oficial (Apenas 6 Bolas Ativas / Cap 98% / Ilhas Bloqueadas)</button>
-                            <button class="btn btn-primary" onclick="applyAdminPreset('custom_plus')">🚀 Modo OT Unleashed (Liberar 22 Bolas + Ilhas Lendárias + Safari + 3x Rates)</button>
-                            <button class="btn btn-amber" onclick="applyAdminPreset('god_mode')">👑 Kit ADM God-Mode (+$500k Gold + 100x Todas as Bolas/Pedras + Lendários Míticos)</button>
-                            <button class="btn" style="border-color:#ef4444;color:#fca5a5;" onclick="applyAdminPreset('reset_save')">🗑️ Resetar Save do Jogador</button>
-                        </div>
-                    </div>
-
-                    <div class="admin-grid">
-                        <div class="panel">
-                            <div class="panel-header">
-                                <div class="panel-title">⚙️ Multiplicadores & Desbloqueios do Servidor</div>
-                                <button class="btn btn-green" onclick="saveAdminConfig()">💾 Salvar Configurações</button>
-                            </div>
-
-                            <div class="form-row">
-                                <label>Multiplicador Global de Captura (`catch_rate_mult`)</label>
-                                <input type="number" step="0.1" min="0.1" max="100" id="cfg-catch-mult">
-                            </div>
-                            <div class="form-row">
-                                <label>Limite Máximo de Captura (`98%` Oficial vs `100%`)</label>
-                                <input type="number" step="1" min="10" max="100" id="cfg-max-cap">
-                            </div>
-                            <div class="form-row">
-                                <label>Bônus de Captura por HP Baixo / Corpo Desmaiado</label>
-                                <input type="checkbox" id="cfg-hp-bonus" style="width:20px;height:20px;">
-                            </div>
-                            <div class="form-row">
-                                <label>Multiplicador de EXP (`exp_mult`)</label>
-                                <input type="number" step="0.5" min="0.5" max="1000" id="cfg-exp-mult">
-                            </div>
-                            <div class="form-row">
-                                <label>Multiplicador de Gold (`gold_mult`)</label>
-                                <input type="number" step="0.5" min="0.5" max="1000" id="cfg-gold-mult">
-                            </div>
-                            <div class="form-row">
-                                <label>Multiplicador de Loot / Drops (`drop_mult`)</label>
-                                <input type="number" step="0.5" min="0.5" max="100" id="cfg-drop-mult">
-                            </div>
-                            <div class="form-row">
-                                <label>Chance de Shiny no Respawn (0.002 = 0.2% | 0.05 = 5% | 1.0 = 100%)</label>
-                                <input type="number" step="0.001" min="0.0001" max="1.0" id="cfg-shiny-chance">
-                            </div>
-                            <div class="form-row">
-                                <label>🔓 Desbloquear TODAS as 22 Pokébolas no Trade NPC</label>
-                                <input type="checkbox" id="cfg-unlock-balls" style="width:20px;height:20px;">
-                            </div>
-                            <div class="form-row">
-                                <label>🔓 Desbloquear Ilhas Lendárias & Captura de Lendários</label>
-                                <input type="checkbox" id="cfg-unlock-legendary" style="width:20px;height:20px;">
-                            </div>
-                            <div class="form-row">
-                                <label>🔓 Criar Mundo "Safari Especial" para Pokémon Sem Zona</label>
-                                <input type="checkbox" id="cfg-unlock-safari" style="width:20px;height:20px;">
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="text" id="admin-users-search" oninput="filterAdminUsersTable()" placeholder="🔍 Buscar por nome ou ID..." style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 12px;font-size:12px;width:220px;">
+                                <button class="btn btn-primary btn-sm" onclick="loadAdminUsers(true)">🔄 Atualizar</button>
                             </div>
                         </div>
 
-                        <div class="panel">
-                            <div class="panel-header">
-                                <div class="panel-title">🧬 Comando `/cb` ADM — Gerador de Pokémon & Editor de Catch</div>
-                            </div>
-
-                            <div class="form-row">
-                                <label>Selecionar Espécie (400 Pokémon):</label>
-                                <select id="admin-species-select" onchange="loadAdminSpeciesEditor()" style="width:220px;"></select>
-                            </div>
-                            <div class="form-row">
-                                <label>Taxa de Captura Base (`base_capture_chance` %):</label>
-                                <input type="number" step="0.01" min="0" max="100" id="admin-sp-base-chance">
-                            </div>
-                            <div class="form-row">
-                                <label>Catch Rate Oficial (`catch_rate` 3–255):</label>
-                                <input type="number" step="1" min="1" max="255" id="admin-sp-catch-rate">
-                            </div>
-                            <div style="margin:12px 0;">
-                                <button class="btn btn-primary" onclick="saveAdminSpeciesOverride()">💾 Salvar Nova Taxa para este Pokémon</button>
-                            </div>
-
-                            <hr style="border:none;border-top:1px solid #282c48;margin:18px 0;">
-
-                            <h3 style="font-size:14.5px;margin-bottom:10px;">⚡ Criar Pokémon Customizado (Com Escolha de Grau Mítico)</h3>
-                            <div class="form-row">
-                                <label>Nível do Pokémon:</label>
-                                <input type="number" min="1" max="350" value="100" id="spawn-mon-lvl">
-                            </div>
-                            <div class="form-row">
-                                <label>Qualidade / Grau Mítico:</label>
-                                <select id="spawn-mon-quality" style="width:220px;">
-                                    <option value="Comum">Comum (×1.00–1.05 | IV 0–42)</option>
-                                    <option value="Incomum">Incomum (×1.10–1.18 | IV 43–78)</option>
-                                    <option value="Raro">Raro (×1.20–1.30 | IV 79–108)</option>
-                                    <option value="Épico">Épico (×1.35–1.45 | IV 109–138)</option>
-                                    <option value="Lendário">Lendário (×1.50–1.60 | IV 139–143)</option>
-                                    <option value="Mítico_Forte" selected>🟢 Mítico FORTE (×1.78–1.80 | IV 172–186)</option>
-                                    <option value="Mítico_Medio">🟡 Mítico MÉDIO (×1.74–1.76 | IV 158–171)</option>
-                                    <option value="Mítico_Fraco">🔴 Mítico FRACO (×1.70–1.73 | IV 144–157)</option>
-                                </select>
-                            </div>
-                            <div class="form-row">
-                                <label>✨ Versão Shiny (Mítico Shiny vai até ×2.60 Stats!):</label>
-                                <input type="checkbox" id="spawn-mon-shiny" style="width:20px;height:20px;">
-                            </div>
-                            <div style="margin-top:12px;">
-                                <button class="btn btn-pink" onclick="spawnCustomPokemonToParty()">✨ Gerar Pokémon na Minha PokéBar!</button>
-                            </div>
+                        <div style="max-height:540px;overflow-x:auto;overflow-y:auto;border-radius:8px;border:1px solid #1e293b;background:#070a12;">
+                            <table style="width:100%;border-collapse:collapse;font-size:12.5px;text-align:left;" id="admin-users-table">
+                                <thead style="background:#111827;color:#9ca3af;position:sticky;top:0;z-index:2;border-bottom:2px solid #1f2937;">
+                                    <tr>
+                                        <th style="padding:10px 12px;">ID</th>
+                                        <th style="padding:10px 12px;">Treinador</th>
+                                        <th style="padding:10px 12px;">Cargo</th>
+                                        <th style="padding:10px 12px;">Nível</th>
+                                        <th style="padding:10px 12px;">Ouro</th>
+                                        <th style="padding:10px 12px;">Diamantes</th>
+                                        <th style="padding:10px 12px;">Equipe</th>
+                                        <th style="padding:10px 12px;">Último Login</th>
+                                        <th style="padding:10px 12px;text-align:right;">Ações GM</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-tbody" style="background:#070a12;">
+                                    <tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:30px;">Carregando treinadores...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <!-- TAB SUBSECTION: FEEDBACKS DOS JOGADORES -->
-                    <div id="admin-feedbacks-panel" class="panel" style="display:none;margin-top:4px;">
-                        <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                    <!-- ==========================================
+                         2. SUB-ABA: GOD MODE & CHEATS GM
+                         ========================================== -->
+                    <div id="admin-panel-cheats" class="admin-subpanel" style="display:none;">
+                        <div class="panel" style="margin-bottom:16px;background:linear-gradient(180deg,#1e1b4b 0%,#0f172a 100%);border:1.5px solid #6366f1;">
+                            <div class="panel-header">
+                                <div class="panel-title" style="color:#c7d2fe;">🛡️ Modo Deus & Habilidades Especiais do GM</div>
+                                <span class="badge" style="background:#4f46e5;color:#fff;">Tempo Real</span>
+                            </div>
+                            <p style="font-size:12.5px;color:#cbd5e1;margin-bottom:14px;">Ative poderes divinos para testar mecânicas, derrotar qualquer monstro ou explorar o mundo sem restrições.</p>
+
+                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
+                                <div class="admin-cheat-card" style="background:rgba(15,23,42,0.7);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <div style="font-weight:800;color:#f8fafc;font-size:13.5px;">🛡️ Invencibilidade Total</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Dano sofrido pelo treinador e equipe = 0</div>
+                                    </div>
+                                    <input type="checkbox" id="chk-gm-invincible" onchange="toggleAdminCheat('godMode', this.checked)" style="width:22px;height:22px;cursor:pointer;">
+                                </div>
+
+                                <div class="admin-cheat-card" style="background:rgba(15,23,42,0.7);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <div style="font-weight:800;color:#f8fafc;font-size:13.5px;">🎯 Captura 100% Instantânea</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Qualquer Pokébola captura sem falhar</div>
+                                    </div>
+                                    <input type="checkbox" id="chk-gm-master-catch" onchange="toggleAdminCheat('masterCatch', this.checked)" style="width:22px;height:22px;cursor:pointer;">
+                                </div>
+
+                                <div class="admin-cheat-card" style="background:rgba(15,23,42,0.7);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <div style="font-weight:800;color:#f8fafc;font-size:13.5px;">💥 1-Hit KO Monstro Selvagem</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Ataques do seu Pokémon causam 999.999 dano</div>
+                                    </div>
+                                    <input type="checkbox" id="chk-gm-one-hit" onchange="toggleAdminCheat('oneHitKo', this.checked)" style="width:22px;height:22px;cursor:pointer;">
+                                </div>
+
+                                <div class="admin-cheat-card" style="background:rgba(15,23,42,0.7);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <div style="font-weight:800;color:#f8fafc;font-size:13.5px;">⚡ Sem Cooldown de Golpes</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Dispare ataques 1-4 continuamente sem espera</div>
+                                    </div>
+                                    <input type="checkbox" id="chk-gm-zero-cd" onchange="toggleAdminCheat('zeroCooldown', this.checked)" style="width:22px;height:22px;cursor:pointer;">
+                                </div>
+
+                                <div class="admin-cheat-card" style="background:rgba(15,23,42,0.7);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <div style="font-weight:800;color:#f8fafc;font-size:13.5px;">🔋 Auto-Farm Infinito</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Bateria de caça automática nunca acaba</div>
+                                    </div>
+                                    <input type="checkbox" id="chk-gm-infinite-battery" onchange="toggleAdminCheat('infiniteBattery', this.checked)" style="width:22px;height:22px;cursor:pointer;">
+                                </div>
+
+                                <div class="admin-cheat-card" style="background:rgba(15,23,42,0.7);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <div style="font-weight:800;color:#f8fafc;font-size:13.5px;">🚀 Velocidade Dobrada do Treinador</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Movimentação no mapa 2x mais veloz</div>
+                                    </div>
+                                    <input type="checkbox" id="chk-gm-super-speed" onchange="toggleAdminCheat('superSpeed', this.checked)" style="width:22px;height:22px;cursor:pointer;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 1-Click GM Resource Kits -->
+                        <div class="panel" style="background:#0f172a;border:1px solid #1e293b;">
+                            <div class="panel-header">
+                                <div class="panel-title">🎁 Kits Rápidos de Recursos GM (1 Clique)</div>
+                            </div>
+                            <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Injete pacotes completos de economia, itens raros e desbloqueios instantaneamente no seu perfil administrativo.</p>
+                            
+                            <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                                <button class="btn btn-amber" onclick="grantAdminQuickKit('gold_million')" style="font-weight:800;">💰 + $1.000.000 Ouro</button>
+                                <button class="btn btn-pink" onclick="grantAdminQuickKit('diamonds_50k')" style="font-weight:800;">💎 + 50.000 Diamantes</button>
+                                <button class="btn btn-red" onclick="grantAdminQuickKit('all_balls_999')" style="font-weight:800;">🔴 + 999x de Todas as 22 Bolas</button>
+                                <button class="btn btn-purple" onclick="grantAdminQuickKit('all_stones_999')" style="font-weight:800;">💎 + 999x Todas as Pedras de Evolução</button>
+                                <button class="btn btn-green" onclick="grantAdminQuickKit('max_cures_999')" style="font-weight:800;">🧪 + 999x Max Potions & Revives</button>
+                                <button class="btn btn-primary" onclick="grantAdminQuickKit('unlock_all_dex')" style="font-weight:800;">📖 Desbloquear 400 Pokémon na Pokédex</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==========================================
+                         3. SUB-ABA: INJETOR DE ITENS (ITEM MASTER DESK)
+                         ========================================== -->
+                    <div id="admin-panel-items" class="admin-subpanel" style="display:none;">
+                        <div class="panel" style="background:#0f172a;border:1px solid #1e293b;">
+                            <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                                <div>
+                                    <div class="panel-title">🎒 Injetor Direto de Itens (Item Master Desk)</div>
+                                    <p style="font-size:12px;color:#94a3b8;margin:2px 0 0 0;">Injete qualquer quantidade de qualquer item na sua mochila ou na de qualquer jogador registrado.</p>
+                                </div>
+                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                    <label style="font-size:12px;color:#94a3b8;">Destinatário:</label>
+                                    <select id="admin-inject-target-user" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;font-size:12px;">
+                                        <option value="self">👑 Minha Mochila (Admin Atual)</option>
+                                    </select>
+                                    <label style="font-size:12px;color:#94a3b8;">Qtd:</label>
+                                    <input type="number" id="admin-inject-qty" value="10" min="1" max="999" style="width:70px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;text-align:center;">
+                                    <div style="display:flex;gap:4px;">
+                                        <button class="btn btn-sm" onclick="document.getElementById('admin-inject-qty').value=1">1x</button>
+                                        <button class="btn btn-sm" onclick="document.getElementById('admin-inject-qty').value=10">10x</button>
+                                        <button class="btn btn-sm" onclick="document.getElementById('admin-inject-qty').value=50">50x</button>
+                                        <button class="btn btn-sm" onclick="document.getElementById('admin-inject-qty').value=100">100x</button>
+                                        <button class="btn btn-sm btn-amber" onclick="document.getElementById('admin-inject-qty').value=999">999x</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Filter categories -->
+                            <div style="display:flex;gap:8px;align-items:center;margin:14px 0;flex-wrap:wrap;">
+                                <input type="text" id="admin-items-filter-text" oninput="filterAdminItemsGrid()" placeholder="🔍 Buscar item por nome..." style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 12px;font-size:12px;flex:1;min-width:200px;">
+                                <div class="item-cat-pills" style="display:flex;gap:6px;flex-wrap:wrap;">
+                                    <button class="btn btn-sm btn-category active" data-cat="all" onclick="filterAdminItemsByCategory('all')">Todos</button>
+                                    <button class="btn btn-sm btn-category" data-cat="capsule" onclick="filterAdminItemsByCategory('capsule')">🔴 Pokébolas (22)</button>
+                                    <button class="btn btn-sm btn-category" data-cat="potion" onclick="filterAdminItemsByCategory('potion')">🧪 Poções & Curas</button>
+                                    <button class="btn btn-sm btn-category" data-cat="evolution" onclick="filterAdminItemsByCategory('evolution')">💎 Pedras de Evolução</button>
+                                    <button class="btn btn-sm btn-category" data-cat="candy" onclick="filterAdminItemsByCategory('candy')">🍬 Doces & Vitaminas</button>
+                                    <button class="btn btn-sm btn-category" data-cat="material" onclick="filterAdminItemsByCategory('material')">📦 Materiais & Outros</button>
+                                </div>
+                            </div>
+
+                            <!-- Items Grid Container -->
+                            <div id="admin-items-catalog-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;max-height:480px;overflow-y:auto;padding:4px;">
+                                <div style="text-align:center;color:#94a3b8;grid-column:1/-1;padding:30px;">Carregando catálogo de itens...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==========================================
+                         4. SUB-ABA: GERADOR /CB & ESPÉCIES
+                         ========================================== -->
+                    <div id="admin-panel-spawner" class="admin-subpanel" style="display:none;">
+                        <div class="admin-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <!-- Left: Species Inspector & Overrides -->
+                            <div class="panel" style="background:#0f172a;border:1px solid #1e293b;">
+                                <div class="panel-header">
+                                    <div class="panel-title">🔬 Inspetor & Editor de Espécies (400 Pokémon)</div>
+                                </div>
+                                <div class="form-row" style="margin-bottom:12px;">
+                                    <label style="font-weight:700;">Selecionar Espécie:</label>
+                                    <select id="admin-sp-picker" onchange="loadAdminSpeciesEditor()" style="width:100%;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:8px 12px;font-size:13px;"></select>
+                                </div>
+
+                                <div id="admin-sp-preview-box" style="background:#090d16;border:1px solid #1e293b;border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:14px;">
+                                    <img id="admin-sp-portrait" src="/img/pmd/pikachu/Portrait.png" style="width:56px;height:56px;image-rendering:pixelated;background:#1e293b;border-radius:8px;padding:4px;">
+                                    <div>
+                                        <div style="font-size:15px;font-weight:900;color:#facc15;" id="admin-sp-name">Pikachu</div>
+                                        <div style="font-size:11px;color:#94a3b8;" id="admin-sp-types">Elétrico • Dex #25</div>
+                                        <div style="font-size:11px;color:#38bdf8;margin-top:2px;" id="admin-sp-bst">BST: 320 • Rank PvP: B</div>
+                                    </div>
+                                </div>
+
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                                    <div class="form-row">
+                                        <label style="font-size:11px;">Chance de Captura Base (%):</label>
+                                        <input type="number" step="0.1" id="admin-sp-base-chance" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;">
+                                    </div>
+                                    <div class="form-row">
+                                        <label style="font-size:11px;">Catch Rate Oficial (3-255):</label>
+                                        <input type="number" id="admin-sp-catch-rate" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;">
+                                    </div>
+                                </div>
+
+                                <div style="margin-top:14px;">
+                                    <button class="btn btn-primary btn-block" onclick="saveAdminSpeciesOverride()" style="width:100%;">💾 Salvar Override de Captura no Servidor</button>
+                                </div>
+                            </div>
+
+                            <!-- Right: Custom Spawner Engine -->
+                            <div class="panel" style="background:#0f172a;border:1px solid #1e293b;">
+                                <div class="panel-header">
+                                    <div class="panel-title">⚡ Gerador Customizado (/cb Engine)</div>
+                                </div>
+                                <p style="font-size:12px;color:#94a3b8;margin-bottom:12px;">Crie qualquer Pokémon com atributos precisos e envie para a sua equipe, PC box ou como Boss no mapa.</p>
+
+                                <div class="form-row" style="margin-bottom:10px;">
+                                    <label style="font-size:12px;font-weight:700;">Nível do Pokémon (1 - 500):</label>
+                                    <input type="number" id="spawn-mon-lvl" value="100" min="1" max="500" style="width:100%;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;font-size:13px;">
+                                </div>
+
+                                <div class="form-row" style="margin-bottom:10px;">
+                                    <label style="font-size:12px;font-weight:700;">Qualidade / Grau Mítico:</label>
+                                    <select id="spawn-mon-quality" style="width:100%;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;font-size:13px;">
+                                        <option value="Comum">Comum (×1.00–1.05 | IV 0–42)</option>
+                                        <option value="Incomum">Incomum (×1.10–1.18 | IV 43–78)</option>
+                                        <option value="Raro">Raro (×1.20–1.30 | IV 79–108)</option>
+                                        <option value="Épico">Épico (×1.35–1.45 | IV 109–138)</option>
+                                        <option value="Lendário">Lendário (×1.50–1.60 | IV 139–143)</option>
+                                        <option value="Mítico_Forte" selected>🟢 Mítico FORTE (×1.78–1.80 | IV 172–186)</option>
+                                        <option value="Mítico_Medio">🟡 Mítico MÉDIO (×1.74–1.76 | IV 158–171)</option>
+                                        <option value="Mítico_Fraco">🔴 Mítico FRACO (×1.70–1.73 | IV 144–157)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-row" style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:#090d16;padding:8px 12px;border-radius:8px;">
+                                    <label style="font-size:12px;font-weight:700;color:#fde047;cursor:pointer;" for="spawn-mon-shiny">✨ Versão Shiny (Mítico Shiny vai até ×2.60 Stats):</label>
+                                    <input type="checkbox" id="spawn-mon-shiny" style="width:20px;height:20px;cursor:pointer;">
+                                </div>
+
+                                <div style="display:flex;flex-direction:column;gap:8px;">
+                                    <button class="btn btn-pink" onclick="spawnCustomPokemonToParty()" style="font-weight:800;">✨ Gerar na Minha Equipe Ativa</button>
+                                    <button class="btn btn-purple" onclick="spawnCustomPokemonToPC()" style="font-weight:800;">📦 Gerar no Meu PC Box</button>
+                                    <button class="btn btn-red" onclick="spawnAdminFieldBoss()" style="font-weight:800;">🦖 Invocar como World Boss no Mapa Atual</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==========================================
+                         5. SUB-ABA: TAXAS & MULTIPLICADORES
+                         ========================================== -->
+                    <div id="admin-panel-rates" class="admin-subpanel" style="display:none;">
+                        <!-- Presets Section -->
+                        <div class="panel" style="margin-bottom:16px;background:#0f172a;border:1px solid #1e293b;">
+                            <div class="panel-header">
+                                <div class="panel-title">🚀 Presets Rápidos do Servidor</div>
+                            </div>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                                <button class="btn" onclick="applyAdminPreset('official')">🔒 Modo Oficial (6 Bolas)</button>
+                                <button class="btn btn-primary" onclick="applyAdminPreset('custom_plus')">🚀 Modo OT Unleashed (22 Bolas + Safari)</button>
+                                <button class="btn btn-amber" onclick="applyAdminPreset('god_mode')">👑 Kit ADM God-Mode (+$500k + Lendários)</button>
+                                <button class="btn" style="border-color:#ef4444;color:#fca5a5;" onclick="applyAdminPreset('reset_save')">⚠️ Resetar Meu Progresso</button>
+                            </div>
+                        </div>
+
+                        <!-- Multipliers Form -->
+                        <div class="panel" style="background:#0f172a;border:1px solid #1e293b;">
+                            <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;">
+                                <div class="panel-title">⚙️ Multiplicadores Globais de Jogo</div>
+                                <button class="btn btn-green" onclick="saveAdminConfig()">💾 Salvar Configurações Globais</button>
+                            </div>
+
+                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:12px;">
+                                <div class="form-row">
+                                    <label>Multiplicador Global de Captura:</label>
+                                    <input type="number" step="0.1" min="0.1" max="100" id="cfg-catch-mult" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;">
+                                </div>
+                                <div class="form-row">
+                                    <label>Limite Máximo de Captura (%):</label>
+                                    <input type="number" step="1" min="10" max="100" id="cfg-max-cap" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;">
+                                </div>
+                                <div class="form-row">
+                                    <label>Multiplicador de EXP:</label>
+                                    <input type="number" step="0.5" min="0.5" max="1000" id="cfg-exp-mult" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;">
+                                </div>
+                                <div class="form-row">
+                                    <label>Multiplicador de Ouro:</label>
+                                    <input type="number" step="0.5" min="0.5" max="1000" id="cfg-gold-mult" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;">
+                                </div>
+                                <div class="form-row">
+                                    <label>Multiplicador de Drops:</label>
+                                    <input type="number" step="0.5" min="0.5" max="100" id="cfg-drop-mult" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;">
+                                </div>
+                                <div class="form-row">
+                                    <label>Chance de Shiny no Respawn (ex: 0.01 = 1%):</label>
+                                    <input type="number" step="0.001" min="0.0001" max="1.0" id="cfg-shiny-chance" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;">
+                                </div>
+                            </div>
+
+                            <hr style="border:none;border-top:1px solid #1e293b;margin:16px 0;">
+
+                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+                                <div class="form-row" style="display:flex;align-items:center;justify-content:space-between;background:#090d16;padding:10px 12px;border-radius:8px;">
+                                    <label style="cursor:pointer;" for="cfg-unlock-balls">🔓 Desbloquear TODAS as 22 Pokébolas</label>
+                                    <input type="checkbox" id="cfg-unlock-balls" style="width:20px;height:20px;cursor:pointer;">
+                                </div>
+                                <div class="form-row" style="display:flex;align-items:center;justify-content:space-between;background:#090d16;padding:10px 12px;border-radius:8px;">
+                                    <label style="cursor:pointer;" for="cfg-unlock-legendary">🔓 Desbloquear Ilhas Lendárias</label>
+                                    <input type="checkbox" id="cfg-unlock-legendary" style="width:20px;height:20px;cursor:pointer;">
+                                </div>
+                                <div class="form-row" style="display:flex;align-items:center;justify-content:space-between;background:#090d16;padding:10px 12px;border-radius:8px;">
+                                    <label style="cursor:pointer;" for="cfg-unlock-safari">🔓 Desbloquear Safari Zone Especial</label>
+                                    <input type="checkbox" id="cfg-unlock-safari" style="width:20px;height:20px;cursor:pointer;">
+                                </div>
+                                <div class="form-row" style="display:flex;align-items:center;justify-content:space-between;background:#090d16;padding:10px 12px;border-radius:8px;">
+                                    <label style="cursor:pointer;" for="cfg-hp-bonus">🩸 Bônus de Captura por HP Baixo</label>
+                                    <input type="checkbox" id="cfg-hp-bonus" style="width:20px;height:20px;cursor:pointer;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==========================================
+                         6. SUB-ABA: TELEPORTE & CLIMA
+                         ========================================== -->
+                    <div id="admin-panel-world" class="admin-subpanel" style="display:none;">
+                        <!-- Teleport Grid -->
+                        <div class="panel" style="margin-bottom:16px;background:#0f172a;border:1px solid #1e293b;">
+                            <div class="panel-header">
+                                <div class="panel-title">📍 Teleporte Instantâneo de Mapa (GM Warp)</div>
+                            </div>
+                            <p style="font-size:12px;color:#94a3b8;margin-bottom:12px;">Transporte seu treinador para qualquer região ou mapa especial com um clique.</p>
+
+                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;">
+                                <button class="btn btn-amber" onclick="adminTeleportToZone('saffron_plaza')">🏛️ Saffron Plaza (Praça Central)</button>
+                                <button class="btn" onclick="adminTeleportToZone('kanto_r1')">🌲 Rota 1 (Pallet & Viridian)</button>
+                                <button class="btn" onclick="adminTeleportToZone('kanto_cerulean')">🌊 Cerulean & Ilhas</button>
+                                <button class="btn" onclick="adminTeleportToZone('johto_goldenrod')">🍁 Goldenrod & Rota Johto</button>
+                                <button class="btn" onclick="adminTeleportToZone('johto_silver')">🏔️ Mt. Silver (Pico Kanto)</button>
+                                <button class="btn btn-primary" onclick="adminTeleportToZone('legendary_islands')">🏝️ Ilhas Lendárias</button>
+                                <button class="btn btn-green" onclick="adminTeleportToZone('safari_special')">🦁 Safari Especial (Custom)</button>
+                                <button class="btn btn-pink" onclick="adminTeleportToZone('pvp_arena')">⚔️ Arena PvP & Coliseu GvG</button>
+                            </div>
+                        </div>
+
+                        <!-- Weather & Atmosphere Controls -->
+                        <div class="admin-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="panel" style="background:#0f172a;border:1px solid #1e293b;">
+                                <div class="panel-header">
+                                    <div class="panel-title">☀️ Manipulador de Clima & Atmosfera</div>
+                                </div>
+                                <p style="font-size:12px;color:#94a3b8;margin-bottom:12px;">Altere em tempo real a atmosfera e os efeitos visuais de partículas no canvas.</p>
+                                
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                                    <button class="btn" onclick="adminSetWeather('clear')">☀️ Sol Radiante (Normal)</button>
+                                    <button class="btn" onclick="adminSetWeather('night')">🌙 Noite Estrelada</button>
+                                    <button class="btn" onclick="adminSetWeather('rain')">🌧️ Chuva Densa</button>
+                                    <button class="btn" onclick="adminSetWeather('thunder')">⚡ Tempestade de Raios</button>
+                                    <button class="btn" onclick="adminSetWeather('fog')">🌫️ Nevoeiro Espectral</button>
+                                    <button class="btn" onclick="adminSetWeather('mystic')">🔮 Névoa Mística</button>
+                                </div>
+                            </div>
+
+                            <div class="panel" style="background:#0f172a;border:1px solid #1e293b;">
+                                <div class="panel-header">
+                                    <div class="panel-title">🦖 Controle de Monstros do Mapa</div>
+                                </div>
+                                <p style="font-size:12px;color:#94a3b8;margin-bottom:12px;">Limpe o campo de batalha ou force novas ondas e hordas de monstros.</p>
+
+                                <div style="display:flex;flex-direction:column;gap:8px;">
+                                    <button class="btn btn-primary" onclick="adminRespawnMapMonsters()">🔄 Forçar Respawn Imediato de Monstros</button>
+                                    <button class="btn btn-red" onclick="adminClearMapMonsters()">🧹 Limpar Todos os Monstros do Mapa</button>
+                                    <button class="btn btn-amber" onclick="adminSpawnMapHorde()">⚠️ Invocar Horda Mítica de 5 Pokémon</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==========================================
+                         7. SUB-ABA: ANÚNCIOS GLOBAIS (BROADCAST)
+                         ========================================== -->
+                    <div id="admin-panel-broadcast" class="admin-subpanel" style="display:none;">
+                        <div class="panel" style="background:#0f172a;border:1px solid #1e293b;">
+                            <div class="panel-header">
+                                <div class="panel-title">📢 Transmissor de Anúncios Globais (Server Broadcast)</div>
+                            </div>
+                            <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Envie uma mensagem oficial destacada que será exibida no banner superior e no chat de todos os jogadores online em tempo real.</p>
+
+                            <div class="form-row" style="margin-bottom:12px;">
+                                <label style="font-weight:700;">Mensagem do Anúncio:</label>
+                                <textarea id="admin-broadcast-msg" rows="3" placeholder="Digite o anúncio oficial do servidor aqui (ex: Evento de Drop Mítico ativado até 23h!)..." style="width:100%;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:8px;padding:10px;font-size:13px;resize:vertical;"></textarea>
+                            </div>
+
+                            <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+                                <label style="font-weight:700;">Estilo Visual:</label>
+                                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="admin-bc-style" value="gold" checked> 👑 Dourado Mítico</label>
+                                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="admin-bc-style" value="alert"> 🚨 Alerta Vermelho</label>
+                                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="admin-bc-style" value="event"> 🍀 Evento Esmeralda</label>
+                                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="admin-bc-style" value="system"> 🔵 Sistema Ciano</label>
+                            </div>
+
+                            <button class="btn btn-amber btn-lg" onclick="sendAdminBroadcast()" style="font-weight:800;font-size:14px;padding:10px 24px;">📢 Transmitir para Todos os Jogadores Online</button>
+                        </div>
+                    </div>
+
+                    <!-- ==========================================
+                         8. SUB-ABA: FEEDBACKS
+                         ========================================== -->
+                    <div id="admin-panel-feedbacks" class="admin-subpanel" style="display:none;">
+                        <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
                             <div>
                                 <div class="panel-title" style="display:flex;align-items:center;gap:8px;">
                                     <span>🐞 Central de Feedbacks & Bug Reports</span>
-                                    <span class="badge" id="admin-fb-stat-total" style="background:#3b82f6;color:#fff;font-size:11px;padding:2px 8px;border-radius:12px;">0 enviados</span>
+                                    <span class="badge" id="admin-fb-stat-total" style="background:#3b82f6;color:#fff;font-weight:800;">0 enviados</span>
                                 </div>
-                                <p style="font-size:12px;color:#9ca3af;margin-top:2px;">Feedbacks, relatórios de bugs e sugestões enviados em tempo real pelos jogadores do teste alpha.</p>
+                                <p style="font-size:12px;color:#94a3b8;margin:2px 0 0 0;">Relatórios enviados diretamente pelos treinadores.</p>
                             </div>
                             <div style="display:flex;gap:8px;align-items:center;">
-                                <button class="btn btn-primary" onclick="loadAdminFeedbacks(true)" style="padding:6px 12px;font-size:12px;">🔄 Atualizar Feedbacks</button>
-                            </div>
-                        </div>
-
-                        <!-- Filter Bar -->
-                        <div style="display:flex;gap:10px;align-items:center;margin:12px 0 16px 0;flex-wrap:wrap;background:rgba(15,23,42,0.6);padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
-                            <div style="flex:1;min-width:200px;">
-                                <input type="text" id="admin-fb-search" placeholder="🔍 Filtrar por treinador, texto ou detalhe..." oninput="filterAdminFeedbacks()" style="width:100%;padding:7px 10px;font-size:12.5px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#f3f4f6;">
-                            </div>
-                            <div style="display:flex;gap:6px;align-items:center;">
-                                <label style="font-size:12px;color:#9ca3af;">Categoria:</label>
-                                <select id="admin-fb-cat-filter" onchange="filterAdminFeedbacks()" style="padding:6px 10px;font-size:12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#f3f4f6;">
+                                <input type="text" id="admin-fb-search" oninput="filterAdminFeedbacks()" placeholder="🔍 Filtrar feedbacks..." style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 12px;font-size:12px;width:200px;">
+                                <select id="admin-fb-cat-filter" onchange="filterAdminFeedbacks()" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px 10px;font-size:12px;">
                                     <option value="all">Todas as Categorias</option>
                                     <option value="bug">🐞 Bug / Erro</option>
                                     <option value="suggestion">💡 Sugestão</option>
@@ -1870,62 +2170,157 @@
                                     <option value="visual">🎨 Visual / Sprite</option>
                                     <option value="praise">⭐ Elogio / Outro</option>
                                 </select>
+                                <button class="btn btn-primary btn-sm" onclick="loadAdminFeedbacks(true)">🔄 Atualizar</button>
                             </div>
                         </div>
 
-                        <!-- Feedbacks Container -->
-                        <div id="admin-fb-list-container" style="max-height:560px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px;">
-                            <div style="text-align:center;color:#9ca3af;padding:30px 0;">Carregando feedbacks...</div>
+                        <div id="admin-fb-list-container" style="max-height:540px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;border-radius:8px;border:1px solid #1e293b;background:#070a12;padding:12px;">
+                            <div style="text-align:center;color:#94a3b8;padding:30px 0;">Carregando feedbacks...</div>
                         </div>
                     </div>
 
-                    <!-- TAB SUBSECTION: CONTAS REGISTRADAS -->
-                    <div id="admin-users-panel" class="panel" style="display:none;margin-top:4px;">
-                        <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-                            <div>
-                                <div class="panel-title" style="display:flex;align-items:center;gap:8px;">
-                                    <span>👥 Treinadores & Contas Registradas</span>
-                                    <span class="badge" id="admin-users-stat-total" style="background:#10b981;color:#fff;font-size:11px;padding:2px 8px;border-radius:12px;">0 contas</span>
+                    <!-- ==========================================
+                         9. SUB-ABA: DIAGNÓSTICO & BACKUP
+                         ========================================== -->
+                    <div id="admin-panel-diagnostics" class="admin-subpanel" style="display:none;">
+                        <div class="panel" style="margin-bottom:16px;background:#0f172a;border:1px solid #1e293b;">
+                            <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;">
+                                <div class="panel-title">🖥️ Telemetria & Diagnóstico ao Vivo do Servidor</div>
+                                <button class="btn btn-primary btn-sm" onclick="loadAdminDiagnostics(true)">🔄 Atualizar Métricas</button>
+                            </div>
+
+                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:14px;">
+                                <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                                    <div style="font-size:11px;color:#94a3b8;">Status Geral</div>
+                                    <div style="font-size:16px;font-weight:900;color:#4ade80;margin-top:4px;" id="diag-status">🟢 Online (Saudável)</div>
                                 </div>
-                                <p style="font-size:12px;color:#9ca3af;margin-top:2px;">Contas gravadas permanentemente no banco SQLite (Volume Railway <code>pokeland-data</code> montado em <code>/app/data</code>).</p>
-                            </div>
-                            <div style="display:flex;gap:8px;align-items:center;">
-                                <button class="btn btn-primary" onclick="loadAdminUsers(true)" style="padding:6px 12px;font-size:12px;">🔄 Atualizar Contas</button>
+                                <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                                    <div style="font-size:11px;color:#94a3b8;">Tempo de Atividade (Uptime)</div>
+                                    <div style="font-size:16px;font-weight:900;color:#38bdf8;margin-top:4px;" id="diag-uptime">0m 0s</div>
+                                </div>
+                                <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                                    <div style="font-size:11px;color:#94a3b8;">Jogadores na Praça Central</div>
+                                    <div style="font-size:16px;font-weight:900;color:#facc15;margin-top:4px;" id="diag-online">0 jogadores</div>
+                                </div>
+                                <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                                    <div style="font-size:11px;color:#94a3b8;">Tamanho do Banco SQLite</div>
+                                    <div style="font-size:16px;font-weight:900;color:#c084fc;margin-top:4px;" id="diag-dbsize">0 MB</div>
+                                </div>
+                                <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                                    <div style="font-size:11px;color:#94a3b8;">Total de Contas Gravadas</div>
+                                    <div style="font-size:16px;font-weight:900;color:#f43f5e;margin-top:4px;" id="diag-users">0 contas</div>
+                                </div>
+                                <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                                    <div style="font-size:11px;color:#94a3b8;">Anúncios no Mercado P2P</div>
+                                    <div style="font-size:16px;font-weight:900;color:#fb923c;margin-top:4px;" id="diag-market">0 ativos</div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Filter Bar -->
-                        <div style="display:flex;gap:10px;align-items:center;margin:12px 0 16px 0;flex-wrap:wrap;background:rgba(15,23,42,0.6);padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
-                            <div style="flex:1;min-width:200px;">
-                                <input type="text" id="admin-users-search" placeholder="🔍 Buscar por nome do treinador ou ID..." oninput="filterAdminUsers()" style="width:100%;padding:7px 10px;font-size:12.5px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#f3f4f6;">
+                        <!-- Maintenance Actions -->
+                        <div class="panel" style="background:#0f172a;border:1px solid #1e293b;">
+                            <div class="panel-header">
+                                <div class="panel-title">🛠️ Ações de Manutenção & Backup</div>
+                            </div>
+                            <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Ferramentas de administração de emergência e preservação de dados.</p>
+
+                            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                                <button class="btn btn-primary" onclick="adminReloadServerConfigs()">🔄 Recarregar Configurações & Dados sem Queda</button>
+                                <button class="btn btn-green" onclick="downloadAdminDatabaseBackup()">📦 Baixar Backup Completo SQLite (JSON)</button>
+                                <button class="btn btn-amber" onclick="adminTriggerSoftReboot()">⚡ Soft Reboot do Servidor</button>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Users Table Container -->
-                        <div style="max-height:560px;overflow-x:auto;overflow-y:auto;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
-                            <table style="width:100%;border-collapse:collapse;font-size:12.5px;text-align:left;" id="admin-users-table">
-                                <thead style="background:#161b22;color:#9ca3af;position:sticky;top:0;z-index:2;">
-                                    <tr>
-                                        <th style="padding:10px 12px;">ID</th>
-                                        <th style="padding:10px 12px;">Treinador / Skin</th>
-                                        <th style="padding:10px 12px;">Cargo</th>
-                                        <th style="padding:10px 12px;">Nível</th>
-                                        <th style="padding:10px 12px;">Ouro</th>
-                                        <th style="padding:10px 12px;">Diamantes</th>
-                                        <th style="padding:10px 12px;">Time</th>
-                                        <th style="padding:10px 12px;">Cadastrado em</th>
-                                        <th style="padding:10px 12px;">Último Login</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-users-tbody" style="background:#0d1117;">
-                                    <tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:24px;">Carregando contas cadastradas...</td></tr>
-                                </tbody>
-                            </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             MODAL DE EDIÇÃO DE CONTA DO JOGADOR (#admin-player-editor-modal)
+             ========================================================= -->
+        <div id="admin-player-editor-modal" class="update-log-modal-overlay is-hidden" onclick="if(event.target===this)closePlayerEditorModal();">
+            <div class="update-log-window" style="width:min(680px,94vw);max-height:min(720px,90vh);">
+                <div class="update-log-header" style="background:linear-gradient(90deg,#1e1b4b 0%,#0f172a 100%);">
+                    <div class="update-log-title-group">
+                        <span style="font-size:20px;">👤</span>
+                        <h3 style="margin:0;font-size:16px;color:#facc15;" id="adm-edit-title">Editar Treinador: Red</h3>
+                    </div>
+                    <button class="modal-close-btn" onclick="closePlayerEditorModal()">✕</button>
+                </div>
+
+                <div class="update-log-body" style="padding:16px;overflow-y:auto;gap:14px;display:flex;flex-direction:column;">
+                    <input type="hidden" id="adm-edit-user-id">
+
+                    <!-- Basic Account Stats -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="form-row">
+                            <label style="font-size:12px;font-weight:700;">Cargo da Conta:</label>
+                            <select id="adm-edit-role" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;width:100%;">
+                                <option value="player">Jogador (Comum)</option>
+                                <option value="moderator">Moderador</option>
+                                <option value="admin">Administrador (GM)</option>
+                                <option value="banned">⛔ Banido (Acesso Bloqueado)</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label style="font-size:12px;font-weight:700;">Nível do Treinador:</label>
+                            <input type="number" id="adm-edit-level" min="1" max="500" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;width:100%;">
+                        </div>
+                        <div class="form-row">
+                            <label style="font-size:12px;font-weight:700;">Saldo de Ouro ($):</label>
+                            <input type="number" id="adm-edit-gold" min="0" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;width:100%;">
+                        </div>
+                        <div class="form-row">
+                            <label style="font-size:12px;font-weight:700;">Saldo de Diamantes (💎):</label>
+                            <input type="number" id="adm-edit-diamonds" min="0" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;width:100%;">
+                        </div>
+                    </div>
+
+                    <!-- Quick Action Buttons for Player -->
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid #1e293b;padding-top:12px;">
+                        <button class="btn btn-green btn-sm" onclick="adminHealPlayerPartyAction()">💖 Curar & Reviver Equipe</button>
+                        <button class="btn btn-amber btn-sm" onclick="adminResetPlayerPosAction()">📍 Teleportar para Praça Central</button>
+                        <button class="btn btn-red btn-sm" id="btn-adm-ban-toggle" onclick="adminTogglePlayerBanAction()">⛔ Banir Conta</button>
+                        <button class="btn btn-primary btn-sm" onclick="savePlayerAccountEdits()" style="margin-left:auto;font-weight:800;">💾 Salvar Alterações</button>
+                    </div>
+
+                    <!-- Inject Item Section -->
+                    <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                        <div style="font-weight:800;color:#38bdf8;font-size:12.5px;margin-bottom:8px;">🎒 Injetar Item Direto neste Jogador</div>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <select id="adm-edit-inject-item" style="flex:1;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;"></select>
+                            <input type="number" id="adm-edit-inject-item-qty" value="10" min="1" max="999" style="width:70px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;text-align:center;">
+                            <button class="btn btn-sm btn-primary" onclick="adminInjectItemToTargetPlayerAction()">Injetar</button>
+                        </div>
+                    </div>
+
+                    <!-- Inject Pokemon Section -->
+                    <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                        <div style="font-weight:800;color:#facc15;font-size:12.5px;margin-bottom:8px;">🧬 Injetar Pokémon neste Jogador</div>
+                        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+                            <select id="adm-edit-inject-mon-sp" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;"></select>
+                            <input type="number" id="adm-edit-inject-mon-lvl" value="100" min="1" max="500" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;text-align:center;" placeholder="Nível">
+                            <select id="adm-edit-inject-mon-qual" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;">
+                                <option value="Comum">Comum</option>
+                                <option value="Raro">Raro</option>
+                                <option value="Épico">Épico</option>
+                                <option value="Lendário">Lendário</option>
+                                <option value="Mítico" selected>Mítico</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <label style="font-size:12px;color:#fde047;cursor:pointer;"><input type="checkbox" id="adm-edit-inject-mon-shiny"> ✨ Shiny</label>
+                            <div style="display:flex;gap:6px;">
+                                <button class="btn btn-sm btn-pink" onclick="adminInjectPokemonToTargetPlayerAction('party')">Na Equipe</button>
+                                <button class="btn btn-sm btn-purple" onclick="adminInjectPokemonToTargetPlayerAction('pc_box')">No PC Box</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+
 
         
         <!-- TAB: FLOATING MODAL — GRANDES DESAFIOS & ENDGAME -->
@@ -2527,10 +2922,10 @@
 
     <div id="toast" class="toast"></div>
 
-    <script src="/market_and_shops.js?v=pokeland_v27_player_interactions"></script>
-    <script src="/trainer_status.js?v=pokeland_v27_player_interactions"></script>
-    <script src="/endgame_mechanics.js?v=pokeland_v27_player_interactions"></script>
-    <script src="/app.js?v=pokeland_v27_player_interactions"></script>
+    <script src="/market_and_shops.js?v=pokeland_v28_complete_admin_board"></script>
+    <script src="/trainer_status.js?v=pokeland_v28_complete_admin_board"></script>
+    <script src="/endgame_mechanics.js?v=pokeland_v28_complete_admin_board"></script>
+    <script src="/app.js?v=pokeland_v28_complete_admin_board"></script>
 
     <!-- Modal: Configurações do Chat & Comunicação -->
     <div id="modal-chat-settings" class="floating-modal-backdrop" style="display:none;" onclick="if(event.target===this) closeChatSettingsModal()">
@@ -3131,12 +3526,162 @@
         .btn-pulse-gold {
             animation: pulseEvoBtn 1.6s infinite !important;
         }
-    </style>
+    
+        /* =========================================================
+           GLOBAL ADMIN BROADCAST BANNER & BOARD STYLES
+           ========================================================= */
+        .admin-broadcast-banner {
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(780px, 94vw);
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.85);
+            z-index: 100070;
+            padding: 10px 18px;
+            animation: slideDownBc 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s ease;
+        }
+        .admin-broadcast-banner.is-hidden { display: none !important; }
+        @keyframes slideDownBc {
+            from { top: -80px; opacity: 0; }
+            to { top: 50px; opacity: 1; }
+        }
+        .admin-bc-inner {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .admin-bc-icon {
+            font-size: 28px;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.6));
+        }
+        .admin-bc-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .admin-bc-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+        .admin-bc-badge {
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .admin-bc-sender {
+            font-size: 11px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+        .admin-bc-time {
+            font-size: 10px;
+            color: rgba(255,255,255,0.6);
+            margin-left: auto;
+        }
+        .admin-bc-text {
+            font-size: 13.5px;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+        .admin-bc-close-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+        .admin-bc-close-btn:hover { background: rgba(255,255,255,0.25); }
+
+        /* THEMES */
+        .admin-bc-theme-gold {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            border: 2px solid #eab308;
+            color: #fef08a;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.85), 0 0 25px rgba(234,179,8,0.4);
+        }
+        .admin-bc-theme-gold .admin-bc-badge { background: #eab308; color: #000; }
+
+        .admin-bc-theme-alert {
+            background: linear-gradient(135deg, #450a0a 0%, #1c1917 100%);
+            border: 2px solid #ef4444;
+            color: #fca5a5;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.85), 0 0 25px rgba(239,68,68,0.4);
+        }
+        .admin-bc-theme-alert .admin-bc-badge { background: #ef4444; color: #fff; }
+
+        .admin-bc-theme-event {
+            background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%);
+            border: 2px solid #10b981;
+            color: #a7f3d0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.85), 0 0 25px rgba(16,185,129,0.4);
+        }
+        .admin-bc-theme-event .admin-bc-badge { background: #10b981; color: #000; }
+
+        .admin-bc-theme-system {
+            background: linear-gradient(135deg, #0c4a6e 0%, #0f172a 100%);
+            border: 2px solid #0ea5e9;
+            color: #bae6fd;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.85), 0 0 25px rgba(14,165,233,0.4);
+        }
+        .admin-bc-theme-system .admin-bc-badge { background: #0ea5e9; color: #000; }
+
+        .btn-category {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-category:hover, .btn-category.active {
+            background: #3b82f6;
+            border-color: #60a5fa;
+            color: #fff;
+        }
+
+</style>
 
 
     <!-- ========================================================= -->
     <!-- INCOMING P2P INVITATION BANNER (TRADE & DUEL ALERTS)      -->
     <!-- ========================================================= -->
+    <!-- =========================================================
+         GLOBAL ADMIN BROADCAST BANNER (Server-Wide Announcements)
+         ========================================================= -->
+    <div id="admin-global-broadcast-banner" class="admin-broadcast-banner is-hidden">
+        <div class="admin-bc-inner">
+            <span class="admin-bc-icon" id="admin-bc-icon">👑</span>
+            <div class="admin-bc-content">
+                <div class="admin-bc-header">
+                    <span class="admin-bc-badge" id="admin-bc-badge">COMUNICADO OFICIAL DO SERVIDOR</span>
+                    <span class="admin-bc-sender" id="admin-bc-sender">👑 Admin</span>
+                    <span class="admin-bc-time" id="admin-bc-time">Agora</span>
+                </div>
+                <div class="admin-bc-text" id="admin-bc-text">
+                    Aviso global do servidor.
+                </div>
+            </div>
+            <button class="admin-bc-close-btn" onclick="dismissAdminBroadcastBanner()" title="Fechar Aviso">✕</button>
+        </div>
+    </div>
+
     <div id="p2p-incoming-invite-banner" class="p2p-invite-banner is-hidden">
         <div class="p2p-invite-content">
             <span id="p2p-invite-icon" class="p2p-invite-emoji">🤝</span>

@@ -1338,3 +1338,145 @@ def execute_p2p_trade_db(user_a_id: int, user_b_id: int, offer_a: dict, offer_b:
             "received_items": items_b,
             "received_mon": mon_b_obj.get("name") if mon_b_obj else None
         }
+
+# ==============================================================================
+# POKELAND ADMIN BOARD & GOD-MODE SYSTEM (DATABASE OPERATIONS)
+# ==============================================================================
+
+def admin_update_player_account(user_id: int, role: str = None, level: int = None, gold: int = None, diamonds: int = None) -> dict:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        if role is not None and role in ("player", "moderator", "admin", "banned"):
+            cursor.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
+
+        save_obj = get_player_save(user_id)
+        if save_obj and save_obj.get("player"):
+            p = save_obj["player"]
+            if level is not None:
+                p["level"] = max(1, min(500, int(level)))
+            if gold is not None:
+                p["gold"] = max(0, int(gold))
+            if diamonds is not None:
+                p["diamonds"] = max(0, int(diamonds))
+            save_player_save(user_id, p, save_obj.get("config"))
+
+        return {"ok": True, "message": "Conta e dados salvos do jogador atualizados com sucesso!"}
+
+def admin_heal_player_party(user_id: int) -> dict:
+    save_obj = get_player_save(user_id)
+    if not save_obj or not save_obj.get("player"):
+        return {"ok": False, "error": "Save do jogador não encontrado."}
+    p = save_obj["player"]
+    party = p.get("party", [])
+    for m in party:
+        max_hp = m.get("max_hp") or (m.get("stats", {}).get("hp", 100))
+        m["hp"] = max_hp
+    save_player_save(user_id, p, save_obj.get("config"))
+    return {"ok": True, "message": f"Equipe de {len(party)} Pokémon totalmente curada e revivida!"}
+
+def admin_inject_item_into_player(user_id: int, item_id: str, qty: int) -> dict:
+    save_obj = get_player_save(user_id)
+    if not save_obj or not save_obj.get("player"):
+        return {"ok": False, "error": "Save do jogador não encontrado."}
+    p = save_obj["player"]
+    inv = p.setdefault("inventory", {})
+    cur_qty = inv.get(item_id, 0)
+    new_qty = max(0, cur_qty + int(qty))
+    if new_qty > 0:
+        inv[item_id] = new_qty
+    else:
+        inv.pop(item_id, None)
+    save_player_save(user_id, p, save_obj.get("config"))
+    return {"ok": True, "message": f"Item {item_id} injetado com sucesso! Nova quantidade: {new_qty}."}
+
+def admin_inject_pokemon_into_player(user_id: int, pokemon_data: dict, target_storage: str = "party") -> dict:
+    save_obj = get_player_save(user_id)
+    if not save_obj or not save_obj.get("player"):
+        return {"ok": False, "error": "Save do jogador não encontrado."}
+    p = save_obj["player"]
+    if target_storage == "party" and len(p.setdefault("party", [])) < 6:
+        p["party"].append(pokemon_data)
+        dest_str = "Equipe Ativa"
+    else:
+        p.setdefault("pc_box", []).append(pokemon_data)
+        dest_str = "PC Box"
+    sid = pokemon_data.get("species_id")
+    if sid and sid not in p.setdefault("pokedex_caught", []):
+        p["pokedex_caught"].append(sid)
+    save_player_save(user_id, p, save_obj.get("config"))
+    return {"ok": True, "message": f"Pokémon {pokemon_data.get('name')} gerado com sucesso em {dest_str}!"}
+
+def admin_reset_player_position(user_id: int, map_id: int = 0, gx: int = 8, gy: int = 8) -> dict:
+    save_obj = get_player_save(user_id)
+    if not save_obj or not save_obj.get("player"):
+        return {"ok": False, "error": "Save do jogador não encontrado."}
+    p = save_obj["player"]
+    p["map_id"] = map_id
+    p["gx"] = gx
+    p["gy"] = gy
+    save_player_save(user_id, p, save_obj.get("config"))
+    return {"ok": True, "message": "Posição do jogador resetada para a Praça Central (x:8, y:8)."}
+
+def admin_toggle_ban_user(user_id: int, banned: bool = True) -> dict:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        new_role = "banned" if banned else "player"
+        cursor.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, user_id))
+        if banned:
+            cursor.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
+        return {"ok": True, "message": f"Status da conta atualizado: role = {new_role}."}
+
+def admin_get_server_diagnostics() -> dict:
+    import os
+    db_size = os.path.getsize(DB_PATH) if os.path.exists(DB_PATH) else 0
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) as c FROM users")
+        users_count = cursor.fetchone()["c"]
+        cursor.execute("SELECT COUNT(*) as c FROM player_saves")
+        saves_count = cursor.fetchone()["c"]
+        cursor.execute("SELECT COUNT(*) as c FROM tester_feedback")
+        fb_count = cursor.fetchone()["c"]
+        cursor.execute("SELECT COUNT(*) as c FROM chat_messages")
+        msg_count = cursor.fetchone()["c"]
+        cursor.execute("SELECT COUNT(*) as c FROM market_listings WHERE status = 'active'")
+        market_count = cursor.fetchone()["c"]
+        cursor.execute("SELECT COUNT(*) as c FROM player_friends")
+        friends_count = cursor.fetchone()["c"]
+
+        return {
+            "ok": True,
+            "db_size_bytes": db_size,
+            "db_size_mb": round(db_size / (1024 * 1024), 2),
+            "users_count": users_count,
+            "saves_count": saves_count,
+            "feedbacks_count": fb_count,
+            "messages_count": msg_count,
+            "active_market_listings": market_count,
+            "friendships_count": friends_count,
+            "sqlite_version": sqlite3.sqlite_version
+        }
+
+def admin_export_backup_json() -> dict:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, username, avatar_model, role, created_at, last_login FROM users")
+        users = [dict(r) for r in cursor.fetchall()]
+
+        cursor.execute("SELECT user_id, player_data, config_data, updated_at FROM player_saves")
+        saves = [dict(r) for r in cursor.fetchall()]
+
+        cursor.execute("SELECT * FROM tester_feedback ORDER BY id DESC")
+        feedbacks = [dict(r) for r in cursor.fetchall()]
+
+        cursor.execute("SELECT * FROM market_listings WHERE status = 'active'")
+        listings = [dict(r) for r in cursor.fetchall()]
+
+        return {
+            "ok": True,
+            "exported_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "users": users,
+            "saves": saves,
+            "feedbacks": feedbacks,
+            "market_listings": listings
+        }
