@@ -28,15 +28,266 @@ const ENDGAME_STATE = {
             { id: "cinnabar", name: "Cinnabar Volcano Fortress", owner: "Dragon Clan", bonus: "+15% Dano Fogo", points: 1050, contested: true },
         ]
     },
+    gymRegionFilter: "all",
     gyms: [
-        { id: "pewter", name: "Ginásio de Pewter", leader: "Brock", type: "Pedra", badge: "Boulder Badge", minLv: 15, leaderSprite: "/img/trainers/leader_brock.png", defeated: true, ace: "Onix Lv.16" },
-        { id: "cerulean", name: "Ginásio de Cerulean", leader: "Misty", type: "Água", badge: "Cascade Badge", minLv: 24, leaderSprite: "/img/trainers/leader_misty.png", defeated: true, ace: "Starmie Lv.25" },
-        { id: "vermilion", name: "Ginásio de Vermilion", leader: "Lt. Surge", type: "Elétrico", badge: "Thunder Badge", minLv: 32, leaderSprite: "/img/trainers/leader_surge.png", defeated: true, ace: "Raichu Lv.34" },
-        { id: "celadon", name: "Ginásio de Celadon", leader: "Erika", type: "Planta", badge: "Rainbow Badge", minLv: 40, leaderSprite: "/img/trainers/leader_erika.png", defeated: true, ace: "Vileplume Lv.42" },
-        { id: "fuchsia", name: "Ginásio de Fuchsia", leader: "Koga", type: "Veneno", badge: "Soul Badge", minLv: 50, leaderSprite: "/img/trainers/leader_koga.png", defeated: true, ace: "Venomoth Lv.52" },
-        { id: "saffron", name: "Ginásio de Saffron", leader: "Sabrina", type: "Psíquico", badge: "Marsh Badge", minLv: 58, leaderSprite: "/img/trainers/leader_sabrina.png", defeated: true, ace: "Alakazam Lv.60" },
-        { id: "cinnabar_gym", name: "Ginásio de Cinnabar", leader: "Blaine", type: "Fogo", badge: "Volcano Badge", minLv: 65, leaderSprite: "/img/trainers/leader_blaine.png", defeated: true, ace: "Magmar Lv.68" },
-        { id: "viridian", name: "Ginásio de Viridian", leader: "Giovanni", type: "Terra", badge: "Earth Badge", minLv: 75, leaderSprite: "/img/trainers/leader_giovanni.png", defeated: true, ace: "Rhydon Lv.78" },
+        // ================= KANTO (8 GINÁSIOS OFICIAIS) =================
+        {
+            id: "pewter", region: "Kanto", name: "Ginásio de Pewter", leader: "Brock", skinId: "brock",
+            type: "Pedra", typeColor: "#a8a29e", badge: "Boulder Badge", badgeImg: "/img/badges/badge_boulder.png",
+            minLv: 15, leaderSprite: "/img/trainers/leader_brock.png", skinIcon: "/img/trainers/icon_pp_Leader_brock.png",
+            mapName: "Cânion de Escavação & Fósseis de Pewter",
+            quote: "Minha defesa rochosa e força de vontade são impenetráveis! Vai, Geodude!",
+            ace: "Onix Lv.18",
+            team: [
+                { species: "geodude", name: "Geodude", lv: 14 },
+                { species: "rhyhorn", name: "Rhyhorn", lv: 15 },
+                { species: "omastar", name: "Omastar Fóssil", lv: 16 },
+                { species: "kabutops", name: "Kabutops Fóssil", lv: 16 },
+                { species: "golem", name: "Golem Blindado", lv: 17 },
+                { species: "onix", name: "Onix Gigante", lv: 18, isAce: true }
+            ]
+        },
+        {
+            id: "cerulean", region: "Kanto", name: "Ginásio de Cerulean", leader: "Misty", skinId: "misty",
+            type: "Água", typeColor: "#38bdf8", badge: "Cascade Badge", badgeImg: "/img/badges/badge_cascade.png",
+            minLv: 24, leaderSprite: "/img/trainers/leader_misty.png", skinIcon: "/img/trainers/icon_pp_Leader_misty.png",
+            mapName: "Complexo Aquático Olímpico de Cerulean",
+            quote: "Minha ofensiva total com Pokémon de Água vai te levar na correnteza!",
+            ace: "Starmie Lv.26",
+            team: [
+                { species: "goldeen", name: "Goldeen", lv: 21 },
+                { species: "psyduck", name: "Psyduck", lv: 22 },
+                { species: "seadra", name: "Seadra", lv: 23 },
+                { species: "corsola", name: "Corsola", lv: 24 },
+                { species: "gyarados", name: "Gyarados Feroz", lv: 25 },
+                { species: "starmie", name: "Starmie Rubi", lv: 26, isAce: true }
+            ]
+        },
+        {
+            id: "vermilion", region: "Kanto", name: "Ginásio de Vermilion", leader: "Lt. Surge", skinId: "surge",
+            type: "Elétrico", typeColor: "#facc15", badge: "Thunder Badge", badgeImg: "/img/badges/badge_thunder.png",
+            minLv: 32, leaderSprite: "/img/trainers/leader_surge.png", skinIcon: "/img/trainers/icon_pp_Leader_surge.png",
+            mapName: "Usina Militar de Alta Tensão de Vermilion",
+            quote: "Ei, garoto! Meus Pokémon Elétricos me salvaram na guerra e vão te eletrocutar!",
+            ace: "Raichu Lv.35",
+            team: [
+                { species: "voltorb", name: "Voltorb", lv: 29 },
+                { species: "pikachu", name: "Pikachu", lv: 30 },
+                { species: "magneton", name: "Magneton", lv: 31 },
+                { species: "electrode", name: "Electrode", lv: 32 },
+                { species: "electabuzz", name: "Electabuzz", lv: 33 },
+                { species: "raichu", name: "Raichu Trovão", lv: 35, isAce: true }
+            ]
+        },
+        {
+            id: "celadon", region: "Kanto", name: "Ginásio de Celadon", leader: "Erika", skinId: "erika",
+            type: "Planta", typeColor: "#4ade80", badge: "Rainbow Badge", badgeImg: "/img/badges/badge_rainbow.png",
+            minLv: 40, leaderSprite: "/img/trainers/leader_erika.png", skinIcon: "/img/trainers/icon_pp_Leader_erika.png",
+            mapName: "Jardim Botânico Imperial & Estufa de Celadon",
+            quote: "Meus Pokémon de Planta florescem com elegância e poder natural!",
+            ace: "Vileplume Lv.44",
+            team: [
+                { species: "tangela", name: "Tangela", lv: 38 },
+                { species: "weepinbell", name: "Weepinbell", lv: 39 },
+                { species: "parasect", name: "Parasect", lv: 40 },
+                { species: "bellossom", name: "Bellossom", lv: 41 },
+                { species: "victreebel", name: "Victreebel", lv: 42 },
+                { species: "vileplume", name: "Vileplume Imperial", lv: 44, isAce: true }
+            ]
+        },
+        {
+            id: "fuchsia", region: "Kanto", name: "Ginásio de Fuchsia", leader: "Koga", skinId: "koga",
+            type: "Veneno", typeColor: "#c084fc", badge: "Soul Badge", badgeImg: "/img/badges/badge_soul.png",
+            minLv: 50, leaderSprite: "/img/trainers/leader_koga.png", skinIcon: "/img/trainers/icon_pp_Leader_koga.png",
+            mapName: "Dojo Shinobi das Paredes Invisíveis",
+            quote: "Fwahahaha! Sinta o desespero das técnicas ninjas e toxinas de Fuchsia!",
+            ace: "Venomoth Lv.53",
+            team: [
+                { species: "koffing", name: "Koffing", lv: 47 },
+                { species: "arbok", name: "Arbok", lv: 48 },
+                { species: "muk", name: "Muk Tóxico", lv: 49 },
+                { species: "weezing", name: "Weezing", lv: 50 },
+                { species: "crobat", name: "Crobat Shinobi", lv: 51 },
+                { species: "venomoth", name: "Venomoth Sombra", lv: 53, isAce: true }
+            ]
+        },
+        {
+            id: "saffron", region: "Kanto", name: "Ginásio de Saffron", leader: "Sabrina", skinId: "sabrina",
+            type: "Psíquico", typeColor: "#f472b6", badge: "Marsh Badge", badgeImg: "/img/badges/badge_marsh.png",
+            minLv: 58, leaderSprite: "/img/trainers/leader_sabrina.png", skinIcon: "/img/trainers/icon_pp_Leader_sabrina.png",
+            mapName: "Santuário Psíquico de Teletransporte",
+            quote: "Eu já previ sua chegada e o destino desta batalha com meus poderes psíquicos!",
+            ace: "Alakazam Lv.61",
+            team: [
+                { species: "abra", name: "Abra", lv: 55 },
+                { species: "kadabra", name: "Kadabra", lv: 56 },
+                { species: "mr-mime", name: "Mr. Mime", lv: 57 },
+                { species: "jynx", name: "Jynx", lv: 58 },
+                { species: "espeon", name: "Espeon Solar", lv: 59 },
+                { species: "alakazam", name: "Alakazam Psíquico", lv: 61, isAce: true }
+            ]
+        },
+        {
+            id: "cinnabar_gym", region: "Kanto", name: "Ginásio de Cinnabar", leader: "Blaine", skinId: "blaine",
+            type: "Fogo", typeColor: "#fb923c", badge: "Volcano Badge", badgeImg: "/img/badges/badge_volcano.png",
+            minLv: 65, leaderSprite: "/img/trainers/leader_blaine.png", skinIcon: "/img/trainers/icon_pp_Leader_blaine.png",
+            mapName: "Caldeira Vulcânica & Arena de Quiz de Cinnabar",
+            quote: "Hah! Meus Pokémon incandescentes vão incinerar todos os desafiantes!",
+            ace: "Magmar Lv.69",
+            team: [
+                { species: "growlithe", name: "Growlithe", lv: 63 },
+                { species: "ponyta", name: "Ponyta", lv: 64 },
+                { species: "rapidash", name: "Rapidash", lv: 65 },
+                { species: "ninetales", name: "Ninetales", lv: 66 },
+                { species: "arcanine", name: "Arcanine Real", lv: 67 },
+                { species: "magmar", name: "Magmar Vulcânico", lv: 69, isAce: true }
+            ]
+        },
+        {
+            id: "viridian", region: "Kanto", name: "Ginásio de Viridian", leader: "Giovanni", skinId: "giovanni",
+            type: "Terra", typeColor: "#d97706", badge: "Earth Badge", badgeImg: "/img/badges/badge_earth.png",
+            minLv: 75, leaderSprite: "/img/trainers/leader_giovanni.png", skinIcon: "/img/trainers/icon_pp_Leader_giovanni.png",
+            mapName: "Quartel-General Tectônico de Viridian",
+            quote: "Prepare-se para sentir a fúria sísmica do líder supremo de Viridian!",
+            ace: "Rhydon Lv.80",
+            team: [
+                { species: "persian", name: "Persian", lv: 72 },
+                { species: "dugtrio", name: "Dugtrio", lv: 73 },
+                { species: "nidoqueen", name: "Nidoqueen", lv: 75 },
+                { species: "nidoking", name: "Nidoking", lv: 76 },
+                { species: "kangaskhan", name: "Kangaskhan", lv: 77 },
+                { species: "rhydon", name: "Rhydon Supremo", lv: 80, isAce: true }
+            ]
+        },
+        // ================= JOHTO (8 GINÁSIOS OFICIAIS) =================
+        {
+            id: "violet", region: "Johto", name: "Ginásio de Violet", leader: "Falkner", skinId: "falkner",
+            type: "Voador", typeColor: "#60a5fa", badge: "Zephyr Badge", badgeImg: "/img/badges/badge_zephyr.png",
+            minLv: 20, leaderSprite: "/img/trainers/leader_falkner.png", skinIcon: "/img/trainers/icon_pp_Leader_falkner.png",
+            mapName: "Pagode Celeste das Nuvens de Violet",
+            quote: "Vou te mostrar a verdadeira majestade das asas que cortam os céus de Johto!",
+            ace: "Pidgeot Lv.22",
+            team: [
+                { species: "pidgey", name: "Pidgey", lv: 16 },
+                { species: "hoothoot", name: "Hoothoot", lv: 17 },
+                { species: "spearow", name: "Spearow", lv: 18 },
+                { species: "farfetchd", name: "Farfetch'd", lv: 19 },
+                { species: "noctowl", name: "Noctowl", lv: 20 },
+                { species: "pidgeot", name: "Pidgeot Zéfiro", lv: 22, isAce: true }
+            ]
+        },
+        {
+            id: "azalea", region: "Johto", name: "Ginásio de Azalea", leader: "Bugsy", skinId: "bugsy",
+            type: "Inseto", typeColor: "#a3e635", badge: "Hive Badge", badgeImg: "/img/badges/badge_hive.png",
+            minLv: 28, leaderSprite: "/img/trainers/leader_bugsy.png", skinIcon: "/img/trainers/icon_pp_Leader_bugsy.png",
+            mapName: "Colmeia Florestal & Domo de Teias de Azalea",
+            quote: "Minha pesquisa sobre Pokémon Inseto me tornou a maior autoridade de Johto!",
+            ace: "Scyther Lv.29",
+            team: [
+                { species: "metapod", name: "Metapod", lv: 24 },
+                { species: "kakuna", name: "Kakuna", lv: 24 },
+                { species: "butterfree", name: "Butterfree", lv: 26 },
+                { species: "beedrill", name: "Beedrill", lv: 26 },
+                { species: "pinsir", name: "Pinsir", lv: 27 },
+                { species: "scyther", name: "Scyther Lâmina", lv: 29, isAce: true }
+            ]
+        },
+        {
+            id: "goldenrod", region: "Johto", name: "Ginásio de Goldenrod", leader: "Whitney", skinId: "whitney",
+            type: "Normal", typeColor: "#f9a8d4", badge: "Plain Badge", badgeImg: "/img/badges/badge_plain.png",
+            minLv: 35, leaderSprite: "/img/trainers/leader_whitney.png", skinIcon: "/img/trainers/icon_pp_Leader_whitney.png",
+            mapName: "Jardim Clefairy & Passarela Rosa de Goldenrod",
+            quote: "Meus Pokémon não são apenas super fofos — eles são incrivelmente fortes!",
+            ace: "Miltank Lv.37",
+            team: [
+                { species: "clefairy", name: "Clefairy", lv: 31 },
+                { species: "jigglypuff", name: "Jigglypuff", lv: 32 },
+                { species: "wigglytuff", name: "Wigglytuff", lv: 33 },
+                { species: "clefable", name: "Clefable", lv: 34 },
+                { species: "tauros", name: "Tauros", lv: 35 },
+                { species: "miltank", name: "Miltank Rollout", lv: 37, isAce: true }
+            ]
+        },
+        {
+            id: "ecruteak", region: "Johto", name: "Ginásio de Ecruteak", leader: "Morty", skinId: "morty",
+            type: "Fantasma", typeColor: "#818cf8", badge: "Fog Badge", badgeImg: "/img/badges/badge_fog.png",
+            minLv: 44, leaderSprite: "/img/trainers/leader_morty.png", skinIcon: "/img/trainers/icon_pp_Leader_morty.png",
+            mapName: "Ponte Espectral das Chamas Fátuas de Ecruteak",
+            quote: "Treinei toda a minha vida em Ecruteak para ver o além através dos Pokémon Fantasma!",
+            ace: "Gengar Lv.46",
+            team: [
+                { species: "gastly", name: "Gastly", lv: 40 },
+                { species: "haunter", name: "Haunter", lv: 41 },
+                { species: "misdreavus", name: "Misdreavus", lv: 42 },
+                { species: "marowak", name: "Marowak", lv: 43 },
+                { species: "ninetales", name: "Ninetales Místico", lv: 44 },
+                { species: "gengar", name: "Gengar Espectral", lv: 46, isAce: true }
+            ]
+        },
+        {
+            id: "cianwood", region: "Johto", name: "Ginásio de Cianwood", leader: "Chuck", skinId: "chuck",
+            type: "Lutador", typeColor: "#f87171", badge: "Storm Badge", badgeImg: "/img/badges/badge_storm.png",
+            minLv: 52, leaderSprite: "/img/trainers/leader_chuck.png", skinIcon: "/img/trainers/icon_pp_Leader_chuck.png",
+            mapName: "Dojo da Cachoeira Rugidora de Cianwood",
+            quote: "WAHAHAH! Meus punhos e meus Pokémon Lutadores esmagam rochas sob esta cachoeira!",
+            ace: "Poliwrath Lv.55",
+            team: [
+                { species: "mankey", name: "Mankey", lv: 49 },
+                { species: "primeape", name: "Primeape", lv: 50 },
+                { species: "hitmonlee", name: "Hitmonlee", lv: 51 },
+                { species: "hitmonchan", name: "Hitmonchan", lv: 51 },
+                { species: "machamp", name: "Machamp", lv: 53 },
+                { species: "poliwrath", name: "Poliwrath Tempestade", lv: 55, isAce: true }
+            ]
+        },
+        {
+            id: "olivine", region: "Johto", name: "Ginásio de Olivine", leader: "Jasmine", skinId: "jasmine",
+            type: "Aço", typeColor: "#cbd5e1", badge: "Mineral Badge", badgeImg: "/img/badges/badge_mineral.png",
+            minLv: 60, leaderSprite: "/img/trainers/leader_jasmine.png", skinIcon: "/img/trainers/icon_pp_Leader_jasmine.png",
+            mapName: "Santuário de Engrenagens & Farol de Aço de Olivine",
+            quote: "O tipo Aço possui uma vontade inquebrável... Não vou pegar leve!",
+            ace: "Steelix Lv.63",
+            team: [
+                { species: "magnemite", name: "Magnemite", lv: 57 },
+                { species: "magneton", name: "Magneton", lv: 58 },
+                { species: "forretress", name: "Forretress", lv: 59 },
+                { species: "skarmory", name: "Skarmory", lv: 60 },
+                { species: "scizor", name: "Scizor", lv: 61 },
+                { species: "steelix", name: "Steelix Titânio", lv: 63, isAce: true }
+            ]
+        },
+        {
+            id: "mahogany", region: "Johto", name: "Ginásio de Mahogany", leader: "Pryce", skinId: "pryce",
+            type: "Gelo", typeColor: "#67e8f9", badge: "Glacier Badge", badgeImg: "/img/badges/badge_glacier.png",
+            minLv: 68, leaderSprite: "/img/trainers/leader_pryce.png", skinIcon: "/img/trainers/icon_pp_Leader_pryce.png",
+            mapName: "Palácio Glacial & Pista de Gelo de Mahogany",
+            quote: "Eu sou Pryce, o treinador do inverno rigoroso. Congelarei suas investidas!",
+            ace: "Piloswine Lv.71",
+            team: [
+                { species: "seel", name: "Seel", lv: 65 },
+                { species: "dewgong", name: "Dewgong", lv: 66 },
+                { species: "cloyster", name: "Cloyster", lv: 67 },
+                { species: "jynx", name: "Jynx", lv: 68 },
+                { species: "lapras", name: "Lapras", lv: 69 },
+                { species: "piloswine", name: "Piloswine Glacial", lv: 71, isAce: true }
+            ]
+        },
+        {
+            id: "blackthorn", region: "Johto", name: "Ginásio de Blackthorn", leader: "Clair", skinId: "clair",
+            type: "Dragão", typeColor: "#818cf8", badge: "Rising Badge", badgeImg: "/img/badges/badge_rising.png",
+            minLv: 78, leaderSprite: "/img/trainers/leader_clair.png", skinIcon: "/img/trainers/icon_pp_Leader_clair.png",
+            mapName: "Santuário Dracônico de Lava de Blackthorn",
+            quote: "Eu sou Clair, a maior mestra de Dragões do mundo! Enfrente meus 6 Pokémon!",
+            ace: "Kingdra Lv.82",
+            team: [
+                { species: "dratini", name: "Dratini", lv: 74 },
+                { species: "dragonair", name: "Dragonair", lv: 75 },
+                { species: "gyarados", name: "Gyarados", lv: 76 },
+                { species: "aerodactyl", name: "Aerodactyl", lv: 77 },
+                { species: "dragonite", name: "Dragonite", lv: 79 },
+                { species: "kingdra", name: "Kingdra Real", lv: 82, isAce: true }
+            ]
+        }
     ],
     eliteFour: {
         currentStage: 1, // 1 to 5
@@ -301,36 +552,134 @@ function finishPvpMatch(won, oppName) {
 // ---------------------------------------------------------
 // 3. GINÁSIOS OFICIAIS
 // ---------------------------------------------------------
+function setGymRegionFilter(region) {
+    ENDGAME_STATE.gymRegionFilter = region || "all";
+    renderGymsSection();
+}
+
+function startGymChallengeById(gymId) {
+    const gym = ENDGAME_STATE.gyms.find(g => g.id === gymId) || ENDGAME_STATE.gyms[0];
+    if (!gym) return;
+    const aceObj = (gym.team && gym.team[gym.team.length - 1]) || { species: "onix", name: gym.ace, lv: gym.minLv };
+    enterChallengeArena("gyms", {
+        gymId: gym.id,
+        gymRegion: gym.region || "Kanto",
+        gymTitle: `${gym.name.toUpperCase()} — ${gym.mapName.toUpperCase()}`,
+        gymSub: `Líder ${gym.leader} (${gym.type}) • Equipe Oficial de 6 Pokémon • ${gym.badge}`,
+        gymBiome: gym.id,
+        leaderName: gym.leader,
+        leaderSkinId: gym.skinId || gym.id,
+        leaderSprite: gym.leaderSprite,
+        leaderSkinIcon: gym.skinIcon,
+        leaderQuote: gym.quote,
+        badgeName: gym.badge,
+        badgeImg: gym.badgeImg,
+        typeColor: gym.typeColor || "#fde047",
+        gymTeam: (gym.team || []).map(m => ({ ...m })),
+        bossSpecies: aceObj.species,
+        bossName: `${gym.leader}'s ${aceObj.name}`,
+        minLv: gym.minLv
+    });
+}
+
+function equipGymLeaderSkin(skinId, leaderName) {
+    if (typeof selectTrainerAvatarModel === "function") {
+        selectTrainerAvatarModel(skinId);
+    } else if (typeof STATE !== "undefined" && STATE.tibia && STATE.tibia.trainer) {
+        STATE.tibia.trainer.avatarModelId = skinId;
+        if (STATE.player) STATE.player.avatar_model = skinId;
+        if (typeof showToast === "function") showToast(`🎨 Skin de Líder equipada: ${leaderName}!`);
+    }
+}
+
 function renderGymsSection() {
     const container = document.getElementById("mech-gyms-container");
     if (!container) return;
 
-    const gymsHtml = ENDGAME_STATE.gyms.map(gym => `
-        <div class="gym-challenge-card">
-            <div style="display:flex;gap:12px;align-items:center;">
-                <img src="${gym.leaderSprite}" alt="${gym.leader}" style="width:52px;height:52px;object-fit:contain;image-rendering:pixelated;" onerror="this.onerror=null;this.src='/img/trainers/leader_brock.png';">
-                <div style="flex:1;">
-                    <div style="font-weight:800;font-size:14px;color:#f8fafc;">${gym.name}</div>
-                    <div style="font-size:11.5px;color:#94a3b8;">Líder: <strong style="color:#e2e8f0;">${gym.leader}</strong> (${gym.type})</div>
-                    <div style="font-size:11px;color:#fde047;">Principal: ${gym.ace} • Nível Req: ${gym.minLv}</div>
+    const filter = ENDGAME_STATE.gymRegionFilter || "all";
+    const list = ENDGAME_STATE.gyms.filter(g => filter === "all" || g.region.toLowerCase() === filter.toLowerCase());
+    const playerBadges = (typeof STATE !== "undefined" && Array.isArray(STATE.player?.badges)) ? STATE.player.badges : [];
+
+    const gymsHtml = list.map(gym => {
+        const hasBadge = playerBadges.includes(gym.id) || gym.defeated;
+        const teamHtml = (gym.team || []).map((mon, idx) => `
+            <div style="display:flex;flex-direction:column;align-items:center;background:rgba(15,23,42,0.85);border:1px solid ${mon.isAce ? (gym.typeColor || '#facc15') : 'rgba(148,163,184,0.22)'};border-radius:7px;padding:4px 3px;position:relative;" title="#${idx + 1} ${mon.name} (Lv.${mon.lv})">
+                ${mon.isAce ? `<span style="position:absolute;top:-6px;right:2px;background:#facc15;color:#09090b;font-size:8px;font-weight:900;padding:0 4px;border-radius:4px;">★ ACE</span>` : `<span style="position:absolute;top:2px;left:4px;color:#64748b;font-size:8px;font-weight:800;">#${idx + 1}</span>`}
+                <img src="/img/pmd/${mon.species}/portrait.png" alt="${mon.name}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;image-rendering:pixelated;border:1px solid rgba(255,255,255,0.18);" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${idx + 1}.png';">
+                <span style="font-size:9px;font-weight:800;color:${mon.isAce ? '#fde047' : '#e2e8f0'};max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;">${mon.name.replace(' (Ace)', '')}</span>
+                <span style="font-size:8.5px;color:#94a3b8;">Lv.${mon.lv}</span>
+            </div>
+        `).join("");
+
+        return `
+        <div class="gym-challenge-card" style="border:1px solid rgba(148,163,184,0.25);background:linear-gradient(145deg, rgba(15,23,42,0.95), rgba(30,41,59,0.88));border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div style="display:flex;align-items:center;gap:4px;background:rgba(2,6,23,0.75);padding:5px 7px;border-radius:10px;border:1px solid ${gym.typeColor || '#38bdf8'};">
+                    <img src="${gym.leaderSprite}" alt="${gym.leader} Portrait" title="Retrato Oficial HGSS: ${gym.leader}" style="width:48px;height:48px;object-fit:contain;image-rendering:pixelated;">
+                    <img src="${gym.skinIcon || gym.leaderSprite}" alt="${gym.leader} Skin" title="Skin Overworld 4-Direções: ${gym.leader}" style="width:38px;height:44px;object-fit:contain;image-rendering:pixelated;border-left:1px dashed rgba(255,255,255,0.15);padding-left:4px;">
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+                        <span style="font-weight:900;font-size:13.5px;color:#f8fafc;">${gym.name}</span>
+                        <span style="font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,0.08);color:${gym.typeColor || '#fde047'};border:1px solid ${gym.typeColor || '#fde047'};">${gym.region} • ${gym.type}</span>
+                    </div>
+                    <div style="font-size:11.5px;color:#cbd5e1;margin-top:2px;">
+                        Líder: <strong style="color:#fde047;">${gym.leader}</strong> • Req: <strong>Lv.${gym.minLv}+</strong>
+                    </div>
+                    <div style="font-size:10px;color:#38bdf8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        🗺️ Mapa Único: <strong>${gym.mapName}</strong>
+                    </div>
                 </div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-                <span class="badge-status-pill pill-won">🏆 ${gym.badge}</span>
-                <button class="btn btn-blue" onclick="enterChallengeArena('gyms', { gymId: '${gym.id}', gymTitle: '${gym.name}', gymSub: 'Líder: ${gym.leader} (${gym.type}) - ${gym.badge}', gymBiome: '${gym.type === 'Pedra' ? 'rock' : gym.type === 'Água' ? 'water' : gym.type === 'Elétrico' ? 'electric' : gym.type === 'Planta' ? 'grass' : gym.type === 'Fogo' ? 'fire' : 'ghost'}', leaderSprite: '${gym.leaderSprite}', bossSpecies: '${gym.ace.split(' ')[0].toLowerCase()}', bossName: '${gym.leader}\'s ${gym.ace}', minLv: ${gym.minLv} })">🏛️ Desafiar no Ginásio (Entrar)</button>
+
+            <div style="background:rgba(2,6,23,0.55);border-radius:8px;padding:6px 8px;border:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                    <span style="font-size:9.5px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;">🔴 Equipe Icônica Completa (6 Pokémon)</span>
+                    <span style="font-size:9.5px;color:#fde047;font-weight:800;">Ace: ${gym.ace}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:4px;">
+                    ${teamHtml}
+                </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:2px;">
+                <span class="badge-status-pill ${hasBadge ? 'pill-won' : ''}" style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;">
+                    <img src="${gym.badgeImg || '/img/badges/badge_boulder.png'}" style="width:16px;height:16px;image-rendering:pixelated;" onerror="this.style.display='none'">
+                    ${gym.badge}
+                </span>
+                <div style="display:flex;gap:6px;">
+                    <button class="btn" style="padding:5px 8px;font-size:10.5px;background:rgba(148,163,184,0.16);border:1px solid rgba(148,163,184,0.35);color:#e2e8f0;" onclick="equipGymLeaderSkin('${gym.skinId}', '${gym.leader}')" title="Equipar a Skin de ${gym.leader} no seu Treinador">
+                        🎨 Skin
+                    </button>
+                    <button class="btn btn-blue" style="padding:5px 10px;font-size:11px;font-weight:800;" onclick="startGymChallengeById('${gym.id}')">
+                        🏛️ Desafiar (6v6)
+                    </button>
+                </div>
             </div>
         </div>
-    `).join("");
+        `;
+    }).join("");
 
     container.innerHTML = `
-        <div class="panel-header" style="margin-bottom:12px;">
-            <div class="panel-title">🏛️ Circuito de Ginásios Oficiais da Liga Pokémon</div>
+        <div class="panel-header" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+                <div class="panel-title">🏛️ Circuito Oficial de Ginásios (Kanto & Johto — 16 Mapas Únicos & Equipes de 6 Pokémon)</div>
+                <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Cada Líder possui retrato 100% fiel, skin 4-direções equipada no pedestal, mapa exclusivo e 6 Pokémon icônicos em batalha sequencial!</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+                <button class="btn ${filter === 'all' ? 'btn-gold' : ''}" style="padding:4px 10px;font-size:11px;" onclick="setGymRegionFilter('all')">🌍 Todos (16)</button>
+                <button class="btn ${filter === 'Kanto' ? 'btn-gold' : ''}" style="padding:4px 10px;font-size:11px;" onclick="setGymRegionFilter('Kanto')">⛰️ Kanto (8)</button>
+                <button class="btn ${filter === 'Johto' ? 'btn-gold' : ''}" style="padding:4px 10px;font-size:11px;" onclick="setGymRegionFilter('Johto')">🔔 Johto (8)</button>
+            </div>
         </div>
-        <div class="gyms-cards-grid">
+        <div class="gyms-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(360px, 1fr));gap:12px;">
             ${gymsHtml}
         </div>
     `;
 }
+window.setGymRegionFilter = setGymRegionFilter;
+window.startGymChallengeById = startGymChallengeById;
+window.equipGymLeaderSkin = equipGymLeaderSkin;
 
 function challengeGymLeader(gymId) {
     const gym = ENDGAME_STATE.gyms.find(g => g.id === gymId);

@@ -9658,46 +9658,228 @@ const TRAINER_SKINS = [
         topMain: "#1e1b4b",
     },
     {
-        id: "jasmine",
-        aliases: ["jasmine_steel", "hgss_jasmine"],
-        name: "Jasmine Líder de Aço",
-        anime: "Ginásio de Olivine HGSS",
-        title: "Líder de Aço de Olivine",
-        region: "Johto",
-        gender: "female",
-        desc: "Líder bondosa do Farol e Ginásio de Olivine. Defesa impenetrável com Steelix.",
-        portraitUrl: "/img/trainers/hgss_jasmine.png",
-        sheetUrl: "/img/trainers/pp_TrainerFemale05.png",
-        iconUrl: "/img/trainers/icon_pp_TrainerFemale05.png",
-        topMain: "#64748b",
+        id: "brock",
+        aliases: ["leader_brock", "pewter"],
+        name: "Brock (Líder Pewter)",
+        anime: "Líder de Ginásio de Kanto (Pedra)",
+        title: "A Rocha Sólida de Pewter",
+        region: "Kanto",
+        gender: "male",
+        desc: "Líder oficial do Ginásio de Pewter. Especialista em Pokémon de Pedra e Fósseis Ancestrais.",
+        portraitUrl: "/img/trainers/leader_brock.png",
+        sheetUrl: "/img/trainers/pp_Leader_brock.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_brock.png",
+        topMain: "#78716c",
     },
     {
-        id: "clair",
-        aliases: ["clair_gym", "hgss_clair"],
-        name: "Clair Líder Dragão",
-        anime: "Ginásio Blackthorn HGSS",
-        title: "Mestra dos Dragões de Johto",
+        id: "misty",
+        aliases: ["leader_misty", "cerulean"],
+        name: "Misty (Líder Cerulean)",
+        anime: "Líder de Ginásio de Kanto (Água)",
+        title: "A Sereia Moleca de Cerulean",
+        region: "Kanto",
+        gender: "female",
+        desc: "Líder oficial do Ginásio Aquático de Cerulean. Ofensiva veloz com Starmie e Gyarados.",
+        portraitUrl: "/img/trainers/leader_misty.png",
+        sheetUrl: "/img/trainers/pp_Leader_misty.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_misty.png",
+        topMain: "#0284c7",
+    },
+    {
+        id: "surge",
+        aliases: ["leader_surge", "ltsurge", "vermilion"],
+        name: "Lt. Surge (Líder Vermilion)",
+        anime: "Líder de Ginásio de Kanto (Elétrico)",
+        title: "O Relâmpago Americano",
+        region: "Kanto",
+        gender: "male",
+        desc: "Comandante elétrico do Ginásio de Vermilion. Uniforme camuflado tático e Raichu de elite.",
+        portraitUrl: "/img/trainers/leader_surge.png",
+        sheetUrl: "/img/trainers/pp_Leader_surge.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_surge.png",
+        topMain: "#eab308",
+    },
+    {
+        id: "erika",
+        aliases: ["leader_erika", "celadon"],
+        name: "Erika (Líder Celadon)",
+        anime: "Líder de Ginásio de Kanto (Planta)",
+        title: "A Princesa Amante da Natureza",
+        region: "Kanto",
+        gender: "female",
+        desc: "Líder do Jardim Botânico de Celadon. Traje tradicional de quimono e mestra de Vileplume.",
+        portraitUrl: "/img/trainers/leader_erika.png",
+        sheetUrl: "/img/trainers/pp_Leader_erika.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_erika.png",
+        topMain: "#16a34a",
+    },
+    {
+        id: "koga",
+        aliases: ["leader_koga", "fuchsia"],
+        name: "Koga (Líder Fuchsia)",
+        anime: "Líder de Ginásio de Kanto (Veneno)",
+        title: "O Mestre Ninja Venenoso",
+        region: "Kanto",
+        gender: "male",
+        desc: "Mestre Shinobi do Dojo de Fuchsia. Armadura ninja e técnicas secretas de toxina e ilusão.",
+        portraitUrl: "/img/trainers/leader_koga.png",
+        sheetUrl: "/img/trainers/pp_Leader_koga.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_koga.png",
+        topMain: "#7e22ce",
+    },
+    {
+        id: "sabrina",
+        aliases: ["leader_sabrina", "saffron"],
+        name: "Sabrina (Líder Saffron)",
+        anime: "Líder de Ginásio de Kanto (Psíquico)",
+        title: "A Dama dos Poderes Psíquicos",
+        region: "Kanto",
+        gender: "female",
+        desc: "Prodígio telecinética do Santuário de Saffron. Sintonia absoluta com Alakazam e Espeon.",
+        portraitUrl: "/img/trainers/leader_sabrina.png",
+        sheetUrl: "/img/trainers/pp_Leader_sabrina.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_sabrina.png",
+        topMain: "#db2777",
+    },
+    {
+        id: "blaine",
+        aliases: ["leader_blaine", "cinnabar_gym"],
+        name: "Blaine (Líder Cinnabar)",
+        anime: "Líder de Ginásio de Kanto (Fogo)",
+        title: "O Mestre dos Enigmas Ardentes",
+        region: "Kanto",
+        gender: "male",
+        desc: "Cientista veterano da Caldeira Vulcânica de Cinnabar. Bigode branco, óculos escuros e Magmar.",
+        portraitUrl: "/img/trainers/leader_blaine.png",
+        sheetUrl: "/img/trainers/pp_Leader_blaine.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_blaine.png",
+        topMain: "#ea580c",
+    },
+    {
+        id: "giovanni",
+        aliases: ["leader_giovanni", "viridian"],
+        name: "Giovanni (Líder Viridian)",
+        anime: "Líder de Ginásio de Kanto (Terra)",
+        title: "O Chefe Supremo da Terra",
+        region: "Kanto",
+        gender: "male",
+        desc: "Imponente líder do Ginásio de Viridian. Terno executivo escuro e poder sísmico com Rhydon.",
+        portraitUrl: "/img/trainers/leader_giovanni.png",
+        sheetUrl: "/img/trainers/pp_Leader_giovanni.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_giovanni.png",
+        topMain: "#334155",
+    },
+    {
+        id: "falkner",
+        aliases: ["leader_falkner", "violet"],
+        name: "Falkner (Líder Violet)",
+        anime: "Líder de Ginásio de Johto (Voador)",
+        title: "O Mestre Elegante dos Pokémon Voadores",
+        region: "Johto",
+        gender: "male",
+        desc: "Guardião do Pagode Celeste de Violet City. Domínio das correntes de vento com Pidgeot.",
+        portraitUrl: "/img/trainers/leader_falkner.png",
+        sheetUrl: "/img/trainers/pp_Leader_falkner.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_falkner.png",
+        topMain: "#2563eb",
+    },
+    {
+        id: "bugsy",
+        aliases: ["leader_bugsy", "azalea"],
+        name: "Bugsy (Líder Azalea)",
+        anime: "Líder de Ginásio de Johto (Inseto)",
+        title: "A Enciclopédia Viva dos Insetos",
+        region: "Johto",
+        gender: "male",
+        desc: "Pesquisador prodígio da Colmeia Florestal de Azalea. Estrategista veloz com Scyther.",
+        portraitUrl: "/img/trainers/leader_bugsy.png",
+        sheetUrl: "/img/trainers/pp_Leader_bugsy.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_bugsy.png",
+        topMain: "#65a30d",
+    },
+    {
+        id: "whitney",
+        aliases: ["leader_whitney", "goldenrod"],
+        name: "Whitney (Líder Goldenrod)",
+        anime: "Líder de Ginásio de Johto (Normal)",
+        title: "A Garota Incrivelmente Bela",
         region: "Johto",
         gender: "female",
-        desc: "Última líder de ginásio de Johto. Traje azul cobalto e capa cerimonial dos dragões.",
-        portraitUrl: "/img/trainers/hgss_clair.png",
-        sheetUrl: "/img/trainers/pp_TrainerFemale04.png",
-        iconUrl: "/img/trainers/icon_pp_TrainerFemale04.png",
-        topMain: "#3b82f6",
+        desc: "Estrela energética do Ginásio de Goldenrod. Famosa pelo seu implacável Miltank!",
+        portraitUrl: "/img/trainers/leader_whitney.png",
+        sheetUrl: "/img/trainers/pp_Leader_whitney.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_whitney.png",
+        topMain: "#ec4899",
     },
     {
         id: "morty",
-        aliases: ["morty_ghost", "hgss_morty"],
-        name: "Morty Líder Fantasma",
-        anime: "Ginásio Ecruteak HGSS",
-        title: "Vidente da Torre Queimada",
+        aliases: ["morty_ghost", "hgss_morty", "leader_morty", "ecruteak"],
+        name: "Morty (Líder Ecruteak)",
+        anime: "Líder de Ginásio de Johto (Fantasma)",
+        title: "O Vidente Místico do Futuro",
         region: "Johto",
         gender: "male",
-        desc: "Místico de Ecruteak com cachecol roxo e sintonia com os Pokémon espectrais e Ho-Oh.",
-        portraitUrl: "/img/trainers/hgss_morty.png",
-        sheetUrl: "/img/trainers/pp_TrainerMale07.png",
-        iconUrl: "/img/trainers/icon_pp_TrainerMale07.png",
+        desc: "Místico de Ecruteak com faixa roxa e sintonia espiritual com Gengar e as chamas fátuas.",
+        portraitUrl: "/img/trainers/leader_morty.png",
+        sheetUrl: "/img/trainers/pp_Leader_morty.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_morty.png",
         topMain: "#6366f1",
+    },
+    {
+        id: "chuck",
+        aliases: ["leader_chuck", "cianwood"],
+        name: "Chuck (Líder Cianwood)",
+        anime: "Líder de Ginásio de Johto (Lutador)",
+        title: "Seus Punhos Falam por Ele",
+        region: "Johto",
+        gender: "male",
+        desc: "Mestre marcial que treina sob a cachoeira de Cianwood ao lado de Poliwrath e Machamp.",
+        portraitUrl: "/img/trainers/leader_chuck.png",
+        sheetUrl: "/img/trainers/pp_Leader_chuck.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_chuck.png",
+        topMain: "#b91c1c",
+    },
+    {
+        id: "jasmine",
+        aliases: ["jasmine_steel", "hgss_jasmine", "leader_jasmine", "olivine"],
+        name: "Jasmine (Líder Olivine)",
+        anime: "Líder de Ginásio de Johto (Aço)",
+        title: "A Garota da Defesa Blindada de Aço",
+        region: "Johto",
+        gender: "female",
+        desc: "Líder bondosa do Farol e Ginásio de Olivine. Defesa impenetrável com seu imenso Steelix.",
+        portraitUrl: "/img/trainers/leader_jasmine.png",
+        sheetUrl: "/img/trainers/pp_Leader_jasmine.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_jasmine.png",
+        topMain: "#64748b",
+    },
+    {
+        id: "pryce",
+        aliases: ["leader_pryce", "mahogany"],
+        name: "Pryce (Líder Mahogany)",
+        anime: "Líder de Ginásio de Johto (Gelo)",
+        title: "O Professor da Dureza do Inverno",
+        region: "Johto",
+        gender: "male",
+        desc: "Veterano lendário do Palácio Glacial de Mahogany. Domina nevascas com Piloswine e Lapras.",
+        portraitUrl: "/img/trainers/leader_pryce.png",
+        sheetUrl: "/img/trainers/pp_Leader_pryce.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_pryce.png",
+        topMain: "#0891b2",
+    },
+    {
+        id: "clair",
+        aliases: ["clair_gym", "hgss_clair", "leader_clair", "blackthorn"],
+        name: "Clair (Líder Blackthorn)",
+        anime: "Líder de Ginásio de Johto (Dragão)",
+        title: "A Abençoada Mestra dos Dragões",
+        region: "Johto",
+        gender: "female",
+        desc: "Última líder de ginásio de Johto no Santuário de Lava de Blackthorn. Comanda Kingdra e Dragonite.",
+        portraitUrl: "/img/trainers/leader_clair.png",
+        sheetUrl: "/img/trainers/pp_Leader_clair.png",
+        iconUrl: "/img/trainers/icon_pp_Leader_clair.png",
+        topMain: "#3b82f6",
     },
     {
         id: "leaf",
@@ -10587,10 +10769,12 @@ function renderCentralAvatarsTab(container) {
     const cardsHtml = ANIME_TRAINER_MODELS.map((m, idx) => {
         const isCurrent = m.id === activeId;
         const imgUrl = getTrainerModelDataUrl(m.id);
+        const skinIcon = m.iconUrl && m.iconUrl !== imgUrl ? m.iconUrl : null;
         return `<div class="avatar-model-card ${isCurrent ? "is-selected" : ""}" onclick="selectTrainerAvatarModel('${m.id}')">
             <span class="avatar-anime-tag">#${idx + 1} • ${m.anime}</span>
-            <div class="avatar-preview-stage">
-                <img src="${imgUrl}" alt="${m.name}" style="image-rendering:pixelated;max-height:68px;object-fit:contain;">
+            <div class="avatar-preview-stage" style="display:flex;align-items:center;justify-content:center;gap:8px;">
+                <img src="${imgUrl}" alt="${m.name}" title="Retrato Oficial" style="image-rendering:pixelated;max-height:64px;object-fit:contain;">
+                ${skinIcon ? `<img src="${skinIcon}" alt="${m.name} Overworld" title="Skin Overworld 4-Direções" style="image-rendering:pixelated;max-height:54px;object-fit:contain;border-left:1px dashed rgba(255,255,255,0.2);padding-left:6px;">` : ""}
             </div>
             <div class="avatar-model-name">${m.name}</div>
             <div class="avatar-model-desc">${m.desc}</div>
@@ -10602,8 +10786,8 @@ function renderCentralAvatarsTab(container) {
 
     container.innerHTML = `
         <div class="hub-section-banner">
-            <span>🎨 GUARDA-ROUPA DE AVATARES (10 TREINADORES OFICIAIS DE HEARTGOLD & POKÉPIXEL)</span>
-            <span style="font-size:10px;color:#fde047;">Sprites oficiais 4-direcionais no mapa e retratos oficiais no HUD e perfil!</span>
+            <span>🎨 GUARDA-ROUPA DE AVATARES (${ANIME_TRAINER_MODELS.length} TREINADORES & LÍDERES DE GINÁSIO OFICIAIS)</span>
+            <span style="font-size:10px;color:#fde047;">Retratos 100% fiéis + Skins Overworld 4-direcionais para todos os Líderes de Kanto e Johto!</span>
         </div>
         <div class="avatar-models-grid">
             ${cardsHtml}
@@ -13492,6 +13676,33 @@ function enterChallengeArena(chType, options = {}) {
 
     const cfg = { ...(arenaDefs[chType] || arenaDefs.gvg), ...options, chType };
 
+    // Hydrate full 6-Pokémon Gym Leader data if entering a Gym Challenge
+    if (cfg.chType === "gyms") {
+        const gymList = (typeof ENDGAME_STATE !== "undefined" && Array.isArray(ENDGAME_STATE.gyms)) ? ENDGAME_STATE.gyms : [];
+        const gymDef = gymList.find(g => g.id === (cfg.gymId || "pewter")) || gymList[0];
+        if (gymDef) {
+            cfg.gymId = gymDef.id;
+            cfg.gymRegion = gymDef.region || "Kanto";
+            cfg.title = cfg.gymTitle || `${gymDef.name.toUpperCase()} — ${gymDef.mapName.toUpperCase()}`;
+            cfg.sub = cfg.gymSub || `Líder ${gymDef.leader} (${gymDef.type}) • Equipe Oficial de 6 Pokémon • ${gymDef.badge}`;
+            cfg.leaderName = gymDef.leader;
+            cfg.leaderSkinId = gymDef.skinId || gymDef.id;
+            cfg.leaderSprite = gymDef.leaderSprite;
+            cfg.leaderSkinIcon = gymDef.skinIcon;
+            cfg.leaderQuote = gymDef.quote;
+            cfg.badgeName = gymDef.badge;
+            cfg.badgeImg = gymDef.badgeImg;
+            cfg.typeColor = gymDef.typeColor || "#fde047";
+            cfg.mapName = gymDef.mapName;
+            if (!Array.isArray(cfg.gymTeam) || cfg.gymTeam.length < 6) {
+                cfg.gymTeam = (gymDef.team || []).map(m => ({ ...m }));
+            }
+        }
+        cfg.currentMonIndex = 0;
+        cfg.leaderSpeech = cfg.leaderQuote || `Prepare-se para enfrentar meus 6 Pokémon!`;
+        cfg.leaderSpeechTick = (STATE.tibia && STATE.tibia.frame) || 0;
+    }
+
     if (options.skipAnimation) {
         STATE.tibia.isCentralHub = false;
         STATE.tibia.activeChallenge = cfg;
@@ -13504,8 +13715,8 @@ function enterChallengeArena(chType, options = {}) {
 
     showTransitLoadscreen({
         destTitle: cfg.title,
-        modeTag: cfg.chType === "gvg" ? "⚔️ GUERRA DE GUILDAS (GV-G) ⚔️" : "⚔️ DESAFIO DA LIGA POKÉMON ⚔️",
-        pillMode: cfg.chType === "gvg" ? "🏰 Disputa de Território" : "🏛️ Arena Temática de Combate",
+        modeTag: cfg.chType === "gvg" ? "⚔️ GUERRA DE GUILDAS (GV-G) ⚔️" : cfg.chType === "gyms" ? `🏛️ GINÁSIO OFICIAL (${(cfg.gymRegion || 'KANTO').toUpperCase()}) 🏛️` : "⚔️ DESAFIO DA LIGA POKÉMON ⚔️",
+        pillMode: cfg.chType === "gvg" ? "🏰 Disputa de Território" : cfg.chType === "gyms" ? `🔴 Batalha Oficial 6 Pokémon (${cfg.leaderName || 'Líder'})` : "🏛️ Arena Temática de Combate",
         subText: cfg.sub,
         ballType: chType === "worldboss" || chType === "elite4" || chType === "gvg" ? "master" : "ultra",
         durationMs: 750,
@@ -13516,7 +13727,7 @@ function enterChallengeArena(chType, options = {}) {
             updateChallengeBannerUi(cfg);
             switchTab("hunt");
             renderBattleArena(true);
-            showToast(`⚔️ Você entrou no mapa: ${cfg.title}!`);
+            showToast(`🏛️ Você entrou em: ${cfg.title}! Enfrente os 6 Pokémon de ${cfg.leaderName || 'Líder'}!`);
         }
     });
 }
@@ -13563,11 +13774,37 @@ function updateChallengeBannerUi(cfg) {
         parent.appendChild(banner);
     }
     const isGvg = cfg.chType === "gvg";
-    const subText = isGvg ? `🏰 [${cfg.rivalGuild || "Rival"}] vs [${(typeof ENDGAME_STATE !== "undefined" && ENDGAME_STATE.gvg?.guildName) || "Nossa Guilda"}]` : cfg.sub;
+    const isGym = cfg.chType === "gyms" && Array.isArray(cfg.gymTeam) && cfg.gymTeam.length > 0;
+    let subText = isGvg ? `🏰 [${cfg.rivalGuild || "Rival"}] vs [${(typeof ENDGAME_STATE !== "undefined" && ENDGAME_STATE.gvg?.guildName) || "Nossa Guilda"}]` : cfg.sub;
+
+    let gymRosterHtml = "";
+    if (isGym) {
+        const curIdx = cfg.currentMonIndex || 0;
+        const curMon = cfg.gymTeam[curIdx] || cfg.gymTeam[0];
+        const ballsHtml = cfg.gymTeam.map((m, idx) => {
+            const defeated = idx < curIdx;
+            const active = idx === curIdx;
+            const bg = defeated ? "rgba(71,85,105,0.45)" : active ? "rgba(239,68,68,0.9)" : "rgba(220,38,38,0.55)";
+            const border = active ? "#fde047" : defeated ? "#475569" : "#f87171";
+            return `<span title="#${idx + 1} ${m.name} (Lv.${m.lv})" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${bg};border:1.5px solid ${border};font-size:10px;opacity:${defeated ? '0.45' : '1'};box-shadow:${active ? '0 0 8px #fde047' : 'none'};">${defeated ? '✕' : (m.isAce ? '★' : '🔴')}</span>`;
+        }).join("");
+        gymRosterHtml = `
+            <div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap;">
+                <span style="font-size:10.5px;font-weight:900;color:#fde047;">Líder ${cfg.leaderName}:</span>
+                <div style="display:inline-flex;gap:4px;align-items:center;">${ballsHtml}</div>
+                <span style="font-size:10.5px;color:#38bdf8;font-weight:800;">Pokémon ${curIdx + 1}/${cfg.gymTeam.length}: ${curMon.name} (Lv.${curMon.lv})</span>
+            </div>
+        `;
+    }
+
     banner.innerHTML = `
-        <div class="challenge-banner-info">
-            <span class="challenge-banner-title">⚔️ ${cfg.title}</span>
-            <span class="challenge-banner-sub">${subText}</span>
+        <div class="challenge-banner-info" style="display:flex;align-items:center;gap:10px;">
+            ${cfg.leaderSprite ? `<img src="${cfg.leaderSprite}" style="width:42px;height:42px;object-fit:contain;image-rendering:pixelated;background:rgba(15,23,42,0.8);border-radius:8px;border:1.5px solid ${cfg.typeColor || '#fde047'};padding:2px;">` : ""}
+            <div>
+                <span class="challenge-banner-title">⚔️ ${cfg.title}</span>
+                <span class="challenge-banner-sub" style="display:block;">${subText}</span>
+                ${gymRosterHtml}
+            </div>
         </div>
         <button class="challenge-banner-exit-btn" onclick="leaveChallengeArena()">🚪 Sair da Arena</button>
     `;
@@ -13579,20 +13816,62 @@ function removeChallengeBannerUi() {
     if (banner) banner.remove();
 }
 
+function spawnGymTeamMember(cfg, index) {
+    const tb = STATE.tibia;
+    const team = cfg.gymTeam || [];
+    const entry = team[index] || { species: cfg.bossSpecies || "onix", name: cfg.bossName || "Onix", lv: cfg.minLv || 25, isAce: true };
+    const sp = STATE.speciesById[entry.species] || STATE.speciesById["onix"] || STATE.species[0] || { id: entry.species, name: entry.name, elements: ["normal"] };
+    const lv = entry.lv || cfg.minLv || 25;
+    // Balanced HP per stage so the player fights all 6 Pokémon in an exciting sequential battle
+    const baseHp = Math.round((8500 + lv * 260) * (entry.isAce ? 1.45 : 1.0));
+
+    const mon = {
+        uid: `gym_${cfg.gymId || 'pewter'}_${index}_` + Math.random().toString(36).substr(2, 5),
+        species_id: sp.id,
+        dex_id: sp.dex_id || 95,
+        name: `${entry.name} de ${cfg.leaderName || 'Líder'} (${index + 1}/${team.length || 6})`,
+        elements: sp.elements || ["normal"],
+        level: lv,
+        hp: baseHp,
+        max_hp: baseHp,
+        is_shiny: Boolean(entry.isAce && Math.random() < 0.35),
+        quality: entry.isAce ? "Lendário" : "Épico",
+        gx: 8,
+        gy: 5,
+        px: 8 * SQM_SIZE,
+        py: 5 * SQM_SIZE,
+        dir: 0,
+        stepTimer: 35,
+        attackTimer: 0,
+        targetId: "player",
+        gymStageIndex: index,
+        isGymAce: Boolean(entry.isAce),
+    };
+
+    tb.monsters = [mon];
+    tb.targetId = mon.uid;
+    STATE.wildEnemy = mon;
+    return mon;
+}
+
 function spawnChallengeEntities(cfg) {
     const tb = STATE.tibia;
     tb.monsters = [];
     tb.corpses = [];
 
-    // Build dedicated open arena collision matrix (walls only on boundary)
+    // Build custom collision matrix per Gym / Challenge
     const matrix = [];
     for (let r = 0; r < GRID_ROWS; r++) {
         const row = [];
         for (let c = 0; c < GRID_COLS; c++) {
             if (r === 0 || r === GRID_ROWS - 1 || c === 0 || c === GRID_COLS - 1) {
-                row.push(1); // Boundary walls
+                row.push(1); // Outer boundary walls
+            } else if (cfg.chType === "gyms" && ((c === 2 || c === 13) && (r === 3 || r === 7))) {
+                row.push(1); // Thematic Gym pillars / statues / boulders on the flanks
+            } else if (cfg.chType === "gyms" && c === 8 && r === 2) {
+                row.push(1); // Gym Leader Pedestal tile
             } else {
-                row.push(0); // Clean arena walking floor
+                row.push(0); // Walkable battlefield floor
             }
         }
         matrix.push(row);
@@ -13600,35 +13879,41 @@ function spawnChallengeEntities(cfg) {
     tb.mapMatrix = matrix;
     tb.pzOrigin = null;
 
-    // Spawn the Challenge Boss
-    const sp = STATE.speciesById[cfg.bossSpecies] || STATE.species[0] || { id: cfg.bossSpecies, name: cfg.bossSpecies, elements: ["normal"] };
-    const bossHp = cfg.curHp || cfg.bossHp || 50000;
-    const maxHp = cfg.bossHp || 50000;
+    if (cfg.chType === "gyms" && Array.isArray(cfg.gymTeam) && cfg.gymTeam.length > 0) {
+        cfg.currentMonIndex = 0;
+        const firstMon = spawnGymTeamMember(cfg, 0);
+        addCombatLog(`<span style="color:#fde047;font-weight:900;">🏛️ DESAFIO DE GINÁSIO INICIADO! ${cfg.leaderName} enviou seu 1º Pokémon (1/${cfg.gymTeam.length}): ${firstMon.name} (Lv.${firstMon.level})!</span>`);
+    } else {
+        // Spawn single Challenge Boss
+        const sp = STATE.speciesById[cfg.bossSpecies] || STATE.species[0] || { id: cfg.bossSpecies, name: cfg.bossSpecies, elements: ["normal"] };
+        const bossHp = cfg.curHp || cfg.bossHp || 50000;
+        const maxHp = cfg.bossHp || 50000;
 
-    const bossMon = {
-        uid: "boss_" + Math.random().toString(36).substr(2, 6),
-        species_id: sp.id,
-        dex_id: sp.dex_id || 150,
-        name: cfg.bossName || sp.name,
-        elements: sp.elements || ["normal"],
-        level: cfg.bossLevel || 80,
-        hp: bossHp,
-        max_hp: maxHp,
-        is_shiny: cfg.chType === "worldboss" || Math.random() < 0.25,
-        quality: cfg.chType === "worldboss" ? "Mítico" : "Lendário",
-        gx: 8,
-        gy: 5,
-        px: 8 * SQM_SIZE,
-        py: 5 * SQM_SIZE,
-        dir: 1,
-        stepTimer: 40,
-        attackTimer: 0,
-        targetId: "player",
-    };
+        const bossMon = {
+            uid: "boss_" + Math.random().toString(36).substr(2, 6),
+            species_id: sp.id,
+            dex_id: sp.dex_id || 150,
+            name: cfg.bossName || sp.name,
+            elements: sp.elements || ["normal"],
+            level: cfg.bossLevel || 80,
+            hp: bossHp,
+            max_hp: maxHp,
+            is_shiny: cfg.chType === "worldboss" || Math.random() < 0.25,
+            quality: cfg.chType === "worldboss" ? "Mítico" : "Lendário",
+            gx: 8,
+            gy: 5,
+            px: 8 * SQM_SIZE,
+            py: 5 * SQM_SIZE,
+            dir: 1,
+            stepTimer: 40,
+            attackTimer: 0,
+            targetId: "player",
+        };
 
-    tb.monsters.push(bossMon);
-    tb.targetId = bossMon.uid;
-    STATE.wildEnemy = bossMon;
+        tb.monsters.push(bossMon);
+        tb.targetId = bossMon.uid;
+        STATE.wildEnemy = bossMon;
+    }
 
     // Reset trainer position at arena entry (bottom-center)
     tb.trainer.gx = 8;
@@ -13637,17 +13922,17 @@ function spawnChallengeEntities(cfg) {
     tb.trainer.targetGy = 9;
     tb.trainer.px = 8 * SQM_SIZE;
     tb.trainer.py = 9 * SQM_SIZE;
-    tb.trainer.dir = 0;
+    tb.trainer.dir = 3; // Facing North toward the Gym Leader
 
     // Position companion beside trainer
     if (tb.summon) {
         tb.summon.gx = 7;
-        tb.summon.gy = 9;
+        tb.summon.gy = 8;
         tb.summon.targetGx = 7;
-        tb.summon.targetGy = 9;
+        tb.summon.targetGy = 8;
         tb.summon.px = 7 * SQM_SIZE;
-        tb.summon.py = 9 * SQM_SIZE;
-        tb.summon.dir = 0;
+        tb.summon.py = 8 * SQM_SIZE;
+        tb.summon.dir = 3;
     }
 }
 
@@ -13655,6 +13940,32 @@ function handleChallengeVictory(ch, enemy) {
     STATE.tibia.monsters = STATE.tibia.monsters.filter((m) => m.uid !== enemy.uid);
     STATE.tibia.targetId = null;
     STATE.wildEnemy = null;
+
+    // Sequential 6-Pokémon Gym Battle Check!
+    if (ch.chType === "gyms" && Array.isArray(ch.gymTeam) && ch.currentMonIndex < ch.gymTeam.length - 1) {
+        ch.currentMonIndex += 1;
+        const nextIdx = ch.currentMonIndex;
+        const totalMons = ch.gymTeam.length;
+        const nextEntry = ch.gymTeam[nextIdx];
+
+        spawnFloatingText(enemy.gx, enemy.gy, `💥 DERROTADO! (${nextIdx}/${totalMons})`, "#fb923c");
+        if (typeof spawnSpellVfx === "function") {
+            spawnSpellVfx("fire", 8, 2, 8, 5, { name: "Pokéball" }, false);
+        }
+
+        const nextMon = spawnGymTeamMember(ch, nextIdx);
+        const isLastAce = nextIdx === totalMons - 1;
+        ch.leaderSpeech = isLastAce
+            ? `Impressionante! Mas você jamais vencerá meu Pokémon Principal (6/6): Vai, ${nextEntry.name}!`
+            : `Você derrubou um, mas ainda tenho ${totalMons - nextIdx} Pokémon! Vai, ${nextEntry.name} (${nextIdx + 1}/${totalMons})!`;
+        ch.leaderSpeechTick = STATE.tibia.frame;
+
+        updateChallengeBannerUi(ch);
+        addCombatLog(`<span style="color:${isLastAce ? '#facc15' : '#38bdf8'};font-weight:900;">🔴 ${ch.leaderName} lançou seu ${nextIdx + 1}º Pokémon (${nextIdx + 1}/${totalMons}): ${nextMon.name} (Lv.${nextMon.level})!</span>`);
+        showToast(`🔴 ${ch.leaderName} enviou ${nextEntry.name} (Pokémon ${nextIdx + 1}/${totalMons})!`);
+        renderHud();
+        return;
+    }
 
     spawnFloatingText(enemy.gx, enemy.gy, "🏆 VITÓRIA!", "#facc15");
 
@@ -13681,7 +13992,6 @@ function handleChallengeVictory(ch, enemy) {
             STATE.player.exp_next = getTrainerNextExp(STATE.player.level);
         }
 
-        // Grant EXP to party
         for (let i = 0; i < STATE.player.party.length; i++) {
             const mon = STATE.player.party[i];
             mon.exp += expReward;
@@ -13712,9 +14022,9 @@ function handleChallengeVictory(ch, enemy) {
         if (!STATE.player.badges.includes(gymId)) {
             STATE.player.badges.push(gymId);
         }
-        const goldReward = 18000;
-        const diaReward = 10;
-        const expReward = 3500;
+        const goldReward = 25000;
+        const diaReward = 20;
+        const expReward = 6000;
         STATE.player.gold = (STATE.player.gold || 0) + goldReward;
         STATE.player.diamonds = (STATE.player.diamonds || 0) + diaReward;
         STATE.player.exp += expReward;
@@ -13723,19 +14033,30 @@ function handleChallengeVictory(ch, enemy) {
             STATE.player.level += 1;
             STATE.player.exp_next = getTrainerNextExp(STATE.player.level);
         }
-        addCombatLog(`<span style="color:#fbbf24;font-weight:900;">🏆 GINÁSIO VENCIDO! Você derrotou ${ch.bossName} e conquistou a Insígnia Oficial!</span>`);
-        showToast("🏆 Insígnia Conquistada! Parabéns!");
+        for (let i = 0; i < STATE.player.party.length; i++) {
+            const mon = STATE.player.party[i];
+            mon.exp += expReward;
+            while (mon.exp >= mon.exp_next && mon.level < 100) {
+                mon.exp -= mon.exp_next;
+                levelUpPokemon(mon, 1);
+            }
+        }
+        ch.leaderSpeech = `Incrível! Você derrotou todos os meus 6 Pokémon! Esta ${ch.badgeName || 'Insígnia'} é sua por direito!`;
+        ch.leaderSpeechTick = STATE.tibia.frame;
+        addCombatLog(`<span style="color:#fbbf24;font-weight:900;">🏆 GINÁSIO VENCIDO (6/6)! Você derrotou todos os 6 Pokémon de ${ch.leaderName || ch.bossName} e conquistou a ${ch.badgeName || 'Insígnia Oficial'}!</span>`);
+        showToast(`🏆 Vitória 6v6 contra ${ch.leaderName || 'Líder'}! ${ch.badgeName || 'Insígnia'} Conquistada!`);
         scheduleStateSave(1000);
 
         showChallengeVictoryModal({
             icon: "🏅",
-            title: "INSÍGNIA OFICIAL CONQUISTADA!",
-            subtitle: `Você derrotou ${ch.bossName} no ${ch.title}!`,
+            title: `INSÍGNIA CONQUISTADA: ${(ch.badgeName || gymId).toUpperCase()}!`,
+            subtitle: `Você derrotou os 6 Pokémon icônicos de ${ch.leaderName || ch.bossName} em ${ch.title}!`,
             rewards: [
-                { icon: "🏅", label: `Insígnia Oficial (${gymId.toUpperCase()})` },
-                { icon: "💰", label: `+$${goldReward.toLocaleString()} Ouro` },
+                { icon: "🏅", label: `${ch.badgeName || 'Insígnia Oficial'} (${gymId.toUpperCase()})` },
+                { icon: "🔴", label: `Equipe Completa Derrotada (6/6 Pokémon)` },
+                { icon: "💰", label: `+$${goldReward.toLocaleString()} Ouro da Liga` },
                 { icon: "💎", label: `+${diaReward} Diamantes` },
-                { icon: "⭐", label: `+${expReward.toLocaleString()} EXP` },
+                { icon: "⭐", label: `+${expReward.toLocaleString()} EXP p/ Time` },
             ]
         });
     } else {
@@ -13790,12 +14111,316 @@ function closeChallengeVictoryModal() {
     if (modal) modal.style.display = "none";
 }
 
+// =========================================================================
+// BESPOKE CUSTOM MAP RENDERER FOR ALL 16 OFFICIAL POKÉMON GYMS
+// =========================================================================
+const GYM_MAP_THEMES = {
+    pewter:       { f1: "#44403c", f2: "#292524", wall: "#1c1917", ring: "#a8a29e", accent: "#d6d3d1", glow: "rgba(214,211,209,0.28)", icon: "🪨", label: "PEWTER ROCK CANYON" },
+    cerulean:     { f1: "#0369a1", f2: "#0284c7", wall: "#0c4a6e", ring: "#38bdf8", accent: "#e0f2fe", glow: "rgba(56,189,248,0.32)", icon: "💧", label: "CERULEAN AQUA DOME" },
+    vermilion:    { f1: "#1e293b", f2: "#0f172a", wall: "#090d16", ring: "#facc15", accent: "#fef08a", glow: "rgba(250,204,21,0.32)", icon: "⚡", label: "VERMILION POWER GRID" },
+    celadon:      { f1: "#14532d", f2: "#166534", wall: "#052e16", ring: "#4ade80", accent: "#f472b6", glow: "rgba(74,222,128,0.28)", icon: "🌸", label: "CELADON BOTANICAL GARDEN" },
+    fuchsia:      { f1: "#3b3728", f2: "#29261b", wall: "#1e1b4b", ring: "#a855f7", accent: "#e879f9", glow: "rgba(168,85,247,0.32)", icon: "🥷", label: "FUCHSIA SHINOBI DOJO" },
+    saffron:      { f1: "#1e1b4b", f2: "#311042", wall: "#0f0720", ring: "#ec4899", accent: "#22d3ee", glow: "rgba(236,72,153,0.35)", icon: "🔮", label: "SAFFRON TELEPORT SANCTUM" },
+    cinnabar_gym: { f1: "#450a0a", f2: "#7f1d1d", wall: "#1c0404", ring: "#f97316", accent: "#fde047", glow: "rgba(249,115,22,0.38)", icon: "🌋", label: "CINNABAR VOLCANO CALDERA" },
+    viridian:     { f1: "#18181b", f2: "#09090b", wall: "#000000", ring: "#eab308", accent: "#ef4444", glow: "rgba(234,179,8,0.32)", icon: "🌍", label: "VIRIDIAN TECTONIC HQ" },
+    violet:       { f1: "#1e3a8a", f2: "#1d4ed8", wall: "#0f172a", ring: "#93c5fd", accent: "#ffffff", glow: "rgba(147,197,253,0.32)", icon: "🕊️", label: "VIOLET SKY PAGODA" },
+    azalea:       { f1: "#365314", f2: "#1a2e05", wall: "#14532d", ring: "#a3e635", accent: "#fde047", glow: "rgba(163,230,53,0.30)", icon: "🕸️", label: "AZALEA HIVE CANOPY" },
+    goldenrod:    { f1: "#831843", f2: "#500724", wall: "#3b0764", ring: "#f472b6", accent: "#fbcfe8", glow: "rgba(244,114,182,0.32)", icon: "💖", label: "GOLDENROD CLEFAIRY COURT" },
+    ecruteak:     { f1: "#0f0720", f2: "#1e1b4b", wall: "#05020a", ring: "#818cf8", accent: "#38bdf8", glow: "rgba(129,140,248,0.35)", icon: "👻", label: "ECRUTEAK SPIRIT BRIDGE" },
+    cianwood:     { f1: "#451a03", f2: "#290f02", wall: "#1c1917", ring: "#f87171", accent: "#38bdf8", glow: "rgba(248,113,113,0.32)", icon: "🥋", label: "CIANWOOD WATERFALL DOJO" },
+    olivine:      { f1: "#334155", f2: "#1e293b", wall: "#0f172a", ring: "#cbd5e1", accent: "#fde047", glow: "rgba(203,213,225,0.32)", icon: "⚙️", label: "OLIVINE STEEL FORTRESS" },
+    mahogany:     { f1: "#083344", f2: "#164e63", wall: "#041e29", ring: "#67e8f9", accent: "#ffffff", glow: "rgba(103,232,249,0.36)", icon: "❄️", label: "MAHOGANY GLACIAL RINK" },
+    blackthorn:   { f1: "#1e1b4b", f2: "#450a0a", wall: "#09090b", ring: "#6366f1", accent: "#f97316", glow: "rgba(99,102,241,0.36)", icon: "🐉", label: "BLACKTHORN DRAGON SHRINE" },
+};
+
+function drawGymCustomMap(ctx, tb, ch) {
+    const f = tb.frame || 0;
+    const W = GRID_COLS * SQM_SIZE;
+    const H = GRID_ROWS * SQM_SIZE;
+    const cx = (GRID_COLS / 2) * SQM_SIZE;
+    const cy = (GRID_ROWS / 2) * SQM_SIZE;
+    const gymId = ch.gymId || "pewter";
+    const theme = GYM_MAP_THEMES[gymId] || GYM_MAP_THEMES.pewter;
+
+    ctx.save();
+
+    // 1. Base Tile Grid & Perimeter Architecture
+    for (let r = 0; r < GRID_ROWS; r++) {
+        for (let c = 0; c < GRID_COLS; c++) {
+            const x = c * SQM_SIZE;
+            const y = r * SQM_SIZE;
+            const isBorder = r === 0 || r === GRID_ROWS - 1 || c === 0 || c === GRID_COLS - 1;
+            const isCenterDeck = c >= 4 && c <= 11 && r >= 1 && r <= 9;
+
+            if (isBorder) {
+                ctx.fillStyle = theme.wall;
+                ctx.fillRect(x, y, SQM_SIZE, SQM_SIZE);
+                ctx.strokeStyle = "rgba(255,255,255,0.08)";
+                ctx.strokeRect(x + 2, y + 2, SQM_SIZE - 4, SQM_SIZE - 4);
+            } else {
+                // Special outer moat/pool vs inner platform for Water, Lava, Sky, Ghost, Ice gyms
+                if ((gymId === "cerulean" || gymId === "cianwood") && !isCenterDeck) {
+                    const wave = Math.sin(f * 0.08 + c * 0.9 + r * 0.7) * 12;
+                    ctx.fillStyle = (r + c) % 2 === 0 ? "#0284c7" : "#0369a1";
+                    ctx.fillRect(x, y, SQM_SIZE, SQM_SIZE);
+                    ctx.strokeStyle = "rgba(186, 230, 253, 0.35)";
+                    ctx.beginPath();
+                    ctx.moveTo(x + 6, y + 24 + wave * 0.3);
+                    ctx.quadraticCurveTo(x + 24, y + 16 - wave * 0.3, x + 42, y + 24 + wave * 0.3);
+                    ctx.stroke();
+                } else if ((gymId === "cinnabar_gym" || gymId === "blackthorn") && !isCenterDeck) {
+                    ctx.fillStyle = (r + c + Math.floor(f * 0.05)) % 2 === 0 ? "#991b1b" : "#c2410c";
+                    ctx.fillRect(x, y, SQM_SIZE, SQM_SIZE);
+                    ctx.fillStyle = "rgba(253, 224, 71, 0.35)";
+                    ctx.beginPath();
+                    ctx.arc(x + 24, y + 24, 6 + Math.sin(f * 0.1 + c * r) * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (gymId === "ecruteak" && !isCenterDeck) {
+                    ctx.fillStyle = "#05020a";
+                    ctx.fillRect(x, y, SQM_SIZE, SQM_SIZE);
+                } else {
+                    ctx.fillStyle = (r + c) % 2 === 0 ? theme.f1 : theme.f2;
+                    ctx.fillRect(x, y, SQM_SIZE, SQM_SIZE);
+                    ctx.strokeStyle = "rgba(255,255,255,0.05)";
+                    ctx.strokeRect(x, y, SQM_SIZE, SQM_SIZE);
+                }
+            }
+        }
+    }
+
+    // 2. Gym-Specific Architectural Features & Props
+    if (gymId === "pewter") {
+        // Stepped Sandstone Quarry Ring & Ancient Fossil Display Pedestals
+        ctx.fillStyle = "rgba(87, 83, 78, 0.65)";
+        ctx.fillRect(4 * SQM_SIZE, 2 * SQM_SIZE, 8 * SQM_SIZE, 7 * SQM_SIZE);
+        ctx.strokeStyle = "#a8a29e";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(4 * SQM_SIZE, 2 * SQM_SIZE, 8 * SQM_SIZE, 7 * SQM_SIZE);
+        // Giant Boulders & Fossil Displays at (2,3), (13,3), (2,7), (13,7)
+        for (const [gc, gr, label] of [[2, 3, "🦴 KABUTO"], [13, 3, "🐚 OMANYTE"], [2, 7, "🪨 ROCHA"], [13, 7, "🪨 ROCHA"]]) {
+            const bx = gc * SQM_SIZE, by = gr * SQM_SIZE;
+            ctx.fillStyle = "#57534e";
+            ctx.beginPath();
+            ctx.arc(bx + 24, by + 24, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#d6d3d1";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.font = getGameCanvasFont("ui", 8, "900");
+            ctx.fillStyle = "#fde047";
+            ctx.textAlign = "center";
+            ctx.fillText(label, bx + 24, by + 27);
+        }
+    } else if (gymId === "cerulean") {
+        // White & Cyan Olympic Diving Platform Deck + Side Bridges + Lifebuoys
+        ctx.fillStyle = "rgba(224, 242, 254, 0.16)";
+        ctx.fillRect(4 * SQM_SIZE, 1 * SQM_SIZE, 8 * SQM_SIZE, 9 * SQM_SIZE);
+        ctx.strokeStyle = "#38bdf8";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(4 * SQM_SIZE, 1 * SQM_SIZE, 8 * SQM_SIZE, 9 * SQM_SIZE);
+        // Floating Lifebuoys & Diving Boards at (2,3), (13,3), (2,7), (13,7)
+        for (const [gc, gr] of [[2, 3], [13, 3], [2, 7], [13, 7]]) {
+            const bx = gc * SQM_SIZE + 24, by = gr * SQM_SIZE + 24;
+            ctx.strokeStyle = "#ef4444";
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(bx, by, 14, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 3;
+            ctx.setLineDash([6, 6]);
+            ctx.beginPath();
+            ctx.arc(bx, by, 14, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    } else if (gymId === "vermilion") {
+        // High-Voltage Power Conduits & Iconic Electric Trash Cans
+        ctx.strokeStyle = "rgba(250, 204, 21, 0.45)";
+        ctx.lineWidth = 2;
+        for (let r = 2; r <= 8; r += 2) {
+            ctx.beginPath();
+            ctx.moveTo(2 * SQM_SIZE, r * SQM_SIZE + 24);
+            ctx.lineTo(14 * SQM_SIZE, r * SQM_SIZE + 24);
+            ctx.stroke();
+        }
+        // Iconic Trash Cans with Electric Locks on Left & Right
+        for (const [gc, gr] of [[2, 3], [2, 5], [2, 7], [13, 3], [13, 5], [13, 7]]) {
+            const bx = gc * SQM_SIZE, by = gr * SQM_SIZE;
+            ctx.fillStyle = "#475569";
+            ctx.fillRect(bx + 10, by + 8, 28, 32);
+            ctx.strokeStyle = "#facc15";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(bx + 10, by + 8, 28, 32);
+            ctx.fillStyle = "#fde047";
+            ctx.font = getGameCanvasFont("ui", 11, "900");
+            ctx.textAlign = "center";
+            ctx.fillText("⚡", bx + 24, by + 28);
+        }
+    } else if (gymId === "celadon") {
+        // Botanical Wood Deck & Blooming Sakura Trees + Flowerbeds
+        ctx.fillStyle = "rgba(120, 53, 15, 0.45)";
+        ctx.fillRect(4 * SQM_SIZE, 2 * SQM_SIZE, 8 * SQM_SIZE, 7 * SQM_SIZE);
+        ctx.strokeStyle = "#4ade80";
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(4 * SQM_SIZE, 2 * SQM_SIZE, 8 * SQM_SIZE, 7 * SQM_SIZE);
+        for (const [gc, gr] of [[2, 3], [13, 3], [2, 7], [13, 7]]) {
+            const bx = gc * SQM_SIZE + 24, by = gr * SQM_SIZE + 24;
+            ctx.fillStyle = "#ec4899";
+            ctx.beginPath();
+            ctx.arc(bx, by, 19, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#fbcfe8";
+            ctx.beginPath();
+            ctx.arc(bx - 5, by - 5, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.font = getGameCanvasFont("ui", 12, "900");
+            ctx.textAlign = "center";
+            ctx.fillText("🌸", bx, by + 4);
+        }
+    } else if (gymId === "fuchsia") {
+        // Poison Moats on c=1,14 & Translucent Glowing Invisible Ninja Walls
+        ctx.fillStyle = "rgba(126, 34, 206, 0.55)";
+        ctx.fillRect(1 * SQM_SIZE, 1 * SQM_SIZE, SQM_SIZE, 9 * SQM_SIZE);
+        ctx.fillRect(14 * SQM_SIZE, 1 * SQM_SIZE, SQM_SIZE, 9 * SQM_SIZE);
+        const wallAlpha = 0.25 + Math.sin(f * 0.08) * 0.15;
+        ctx.strokeStyle = `rgba(232, 121, 249, ${wallAlpha + 0.3})`;
+        ctx.fillStyle = `rgba(168, 85, 247, ${wallAlpha})`;
+        ctx.lineWidth = 2;
+        for (const [gc, gr, gw, gh] of [[2, 3, 2, 1], [12, 3, 2, 1], [2, 7, 2, 1], [12, 7, 2, 1]]) {
+            ctx.fillRect(gc * SQM_SIZE, gr * SQM_SIZE, gw * SQM_SIZE, gh * SQM_SIZE);
+            ctx.strokeRect(gc * SQM_SIZE, gr * SQM_SIZE, gw * SQM_SIZE, gh * SQM_SIZE);
+        }
+    } else if (gymId === "saffron") {
+        // Neon Psychic Grid & 4 Spinning Warp Teleporter Pads
+        for (const [gc, gr, col] of [[2, 3, "#22d3ee"], [13, 3, "#f472b6"], [2, 7, "#facc15"], [13, 7, "#a855f7"]]) {
+            const bx = gc * SQM_SIZE + 24, by = gr * SQM_SIZE + 24;
+            const rPulse = 14 + Math.sin(f * 0.12 + gc) * 4;
+            ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+            ctx.fillRect(gc * SQM_SIZE + 4, gr * SQM_SIZE + 4, 40, 40);
+            ctx.strokeStyle = col;
+            ctx.lineWidth = 2.5;
+            ctx.strokeRect(gc * SQM_SIZE + 4, gr * SQM_SIZE + 4, 40, 40);
+            ctx.beginPath();
+            ctx.arc(bx, by, rPulse, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.font = getGameCanvasFont("ui", 9, "900");
+            ctx.fillStyle = col;
+            ctx.textAlign = "center";
+            ctx.fillText("WARP", bx, by + 3);
+        }
+    } else if (gymId === "cinnabar_gym") {
+        // Volcanic Obsidian Platform & 4 Quiz Machine Podiums / Lava Braziers
+        ctx.fillStyle = "rgba(24, 24, 27, 0.88)";
+        ctx.fillRect(4 * SQM_SIZE, 1 * SQM_SIZE, 8 * SQM_SIZE, 9 * SQM_SIZE);
+        ctx.strokeStyle = "#f97316";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(4 * SQM_SIZE, 1 * SQM_SIZE, 8 * SQM_SIZE, 9 * SQM_SIZE);
+        for (const [gc, gr] of [[2, 3], [13, 3], [2, 7], [13, 7]]) {
+            const bx = gc * SQM_SIZE, by = gr * SQM_SIZE;
+            ctx.fillStyle = "#1e293b";
+            ctx.fillRect(bx + 6, by + 6, 36, 36);
+            ctx.strokeStyle = "#fde047";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(bx + 6, by + 6, 36, 36);
+            ctx.font = getGameCanvasFont("ui", 11, "900");
+            ctx.fillStyle = "#fde047";
+            ctx.textAlign = "center";
+            ctx.fillText("❓ QUIZ", bx + 24, by + 28);
+        }
+    } else if (gymId === "viridian") {
+        // Directional Spin-Arrow Tiles & Tectonic Marble Pillars
+        const arrows = [[2, 3, "▲"], [2, 5, "►"], [2, 7, "▼"], [13, 3, "▼"], [13, 5, "◄"], [13, 7, "▲"]];
+        for (const [gc, gr, arr] of arrows) {
+            const bx = gc * SQM_SIZE, by = gr * SQM_SIZE;
+            ctx.fillStyle = "rgba(234, 179, 8, 0.22)";
+            ctx.fillRect(bx + 6, by + 6, 36, 36);
+            ctx.strokeStyle = "#eab308";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(bx + 6, by + 6, 36, 36);
+            ctx.font = getGameCanvasFont("ui", 14, "900");
+            ctx.fillStyle = "#fde047";
+            ctx.textAlign = "center";
+            ctx.fillText(arr, bx + 24, by + 30);
+        }
+    } else {
+        // Bespoke Side Pillars & Thematic Floor Deck for Johto Gyms
+        ctx.fillStyle = "rgba(15, 23, 42, 0.55)";
+        ctx.fillRect(4 * SQM_SIZE, 1 * SQM_SIZE, 8 * SQM_SIZE, 9 * SQM_SIZE);
+        ctx.strokeStyle = theme.ring;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(4 * SQM_SIZE, 1 * SQM_SIZE, 8 * SQM_SIZE, 9 * SQM_SIZE);
+        for (const [gc, gr] of [[2, 3], [13, 3], [2, 7], [13, 7]]) {
+            const bx = gc * SQM_SIZE + 24, by = gr * SQM_SIZE + 24;
+            ctx.fillStyle = theme.wall;
+            ctx.beginPath();
+            ctx.arc(bx, by, 18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = theme.accent;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.font = getGameCanvasFont("ui", 13, "900");
+            ctx.textAlign = "center";
+            ctx.fillText(theme.icon, bx, by + 5);
+        }
+    }
+
+    // 3. Central Battlefield Markings, Elemental Crest & Map Watermark
+    ctx.beginPath();
+    ctx.arc(cx, cy, 102, 0, Math.PI * 2);
+    ctx.fillStyle = theme.glow;
+    ctx.fill();
+    ctx.strokeStyle = theme.ring;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(4 * SQM_SIZE, cy);
+    ctx.lineTo(12 * SQM_SIZE, cy);
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 1.8;
+    ctx.setLineDash([8, 6]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Center Pokéball + Gym Emblem Medallion
+    ctx.beginPath();
+    ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(15, 23, 42, 0.82)";
+    ctx.fill();
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.font = getGameCanvasFont("ui", 18, "900");
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = theme.accent;
+    ctx.fillText(theme.icon, cx, cy);
+
+    // Map Architecture Title Plate at Bottom Border
+    ctx.fillStyle = "rgba(2, 6, 23, 0.85)";
+    ctx.fillRect(cx - 150, H - 22, 300, 18);
+    ctx.strokeStyle = theme.ring;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(cx - 150, H - 22, 300, 18);
+    ctx.font = getGameCanvasFont("ui", 8.5, "900");
+    ctx.fillStyle = theme.accent;
+    ctx.fillText(`🏛️ ${theme.label} • LÍDER ${(ch.leaderName || 'OFICIAL').toUpperCase()}`, cx, H - 12);
+
+    ctx.restore();
+}
+
 function drawChallengeArenaBackground(ctx, tb, ch) {
+    if (ch.chType === "gyms") {
+        drawGymCustomMap(ctx, tb, ch);
+        return;
+    }
+
     const f = tb.frame;
     const W = GRID_COLS * SQM_SIZE;
     const H = GRID_ROWS * SQM_SIZE;
 
-    // Base Floor Palettes per Challenge Type
     const palettes = {
         gvg: { f1: "#1e293b", f2: "#0f172a", border: "#f59e0b", trim: "#fbbf24" },
         pvp: { f1: "#0f172a", f2: "#020617", border: "#38bdf8", trim: "#fde047" },
@@ -13808,14 +14433,11 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
 
     const pal = palettes[ch.chType] || palettes.gvg;
 
-    // Draw Floor Grid Tiles
     for (let r = 0; r < GRID_ROWS; r++) {
         for (let c = 0; c < GRID_COLS; c++) {
             const x = c * SQM_SIZE;
             const y = r * SQM_SIZE;
             const isAlt = (r + c) % 2 === 0;
-
-            // Border walls vs arena fighting floor
             const isBorder = r === 0 || r === GRID_ROWS - 1 || c === 0 || c === GRID_COLS - 1;
             if (isBorder) {
                 ctx.fillStyle = pal.f2;
@@ -13826,21 +14448,16 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
             } else {
                 ctx.fillStyle = isAlt ? pal.f1 : pal.f2;
                 ctx.fillRect(x, y, SQM_SIZE, SQM_SIZE);
-
-                // Subtle grid seams
                 ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
                 ctx.strokeRect(x, y, SQM_SIZE, SQM_SIZE);
             }
         }
     }
 
-    // Specific Thematic Centerpieces
     if (ch.chType === "gvg") {
         const cx = (GRID_COLS / 2) * SQM_SIZE;
         const cy = (GRID_ROWS / 2) * SQM_SIZE;
         ctx.save();
-
-        // 1. Grand Castle Coliseum Center Seal
         ctx.beginPath();
         ctx.arc(cx, cy, 120, 0, Math.PI * 2);
         ctx.strokeStyle = "rgba(245, 158, 11, 0.55)";
@@ -13855,7 +14472,6 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // 2. Center Territory Obelisk / Relic Pedestal
         ctx.beginPath();
         ctx.arc(cx, cy, 32, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(245, 158, 11, 0.15)";
@@ -13864,15 +14480,12 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
         ctx.lineWidth = 3;
         ctx.stroke();
 
-        // Guild Crossed Swords Crest in center
         ctx.font = getGameCanvasFont("ui", 18, "900");
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#fbbf24";
         ctx.fillText("⚔️", cx, cy);
 
-        // 3. Guild Banners along top and bottom battlements
-        // Top Banner (Rival Guild)
         ctx.fillStyle = "rgba(220, 38, 38, 0.75)";
         ctx.fillRect(4 * SQM_SIZE, 0, 8 * SQM_SIZE, 20);
         ctx.strokeStyle = "#fbbf24";
@@ -13882,7 +14495,6 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
         ctx.fillStyle = "#ffffff";
         ctx.fillText(`🛡️ GUILDA RIVAL: ${ch.rivalGuild || "OPONENTE"}`, cx, 14);
 
-        // Bottom Banner (Player's Guild)
         ctx.fillStyle = "rgba(37, 99, 235, 0.75)";
         ctx.fillRect(4 * SQM_SIZE, H - 20, 8 * SQM_SIZE, 20);
         ctx.strokeStyle = "#60a5fa";
@@ -13891,7 +14503,6 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
         ctx.fillStyle = "#ffffff";
         ctx.fillText(`⚔️ SUA GUILDA: ${(typeof ENDGAME_STATE !== "undefined" && ENDGAME_STATE.gvg?.guildName) || "POKÉMASTERS ELITE"}`, cx, H - 7);
 
-        // 4. Corner Braziers with Animated Flames
         const braziers = [
             { x: 2 * SQM_SIZE, y: 2 * SQM_SIZE },
             { x: (GRID_COLS - 3) * SQM_SIZE, y: 2 * SQM_SIZE },
@@ -13905,7 +14516,6 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
             ctx.lineWidth = 1.5;
             ctx.strokeRect(b.x + 8, b.y + 16, SQM_SIZE - 16, SQM_SIZE - 20);
 
-            // Animated flame glow
             const flamePulse = 0.8 + Math.sin(f * 0.15 + b.x) * 0.25;
             ctx.fillStyle = `rgba(249, 115, 22, ${0.75 * flamePulse})`;
             ctx.beginPath();
@@ -13916,43 +14526,8 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
             ctx.arc(b.x + 24, b.y + 14, 4 * flamePulse, 0, Math.PI * 2);
             ctx.fill();
         }
-
-        ctx.restore();
-    } else if (ch.chType === "gyms") {
-        // Official League Battlefield Markings (Dividing Line & Center Ring)
-        const cx = (GRID_COLS / 2) * SQM_SIZE;
-        const cy = (GRID_ROWS / 2) * SQM_SIZE;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(cx, cy, 105, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(129, 140, 248, 0.4)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(1 * SQM_SIZE, cy);
-        ctx.lineTo((GRID_COLS - 1) * SQM_SIZE, cy);
-        ctx.strokeStyle = "rgba(165, 180, 252, 0.35)";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([8, 8]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.strokeStyle = "rgba(250, 204, 21, 0.55)";
-        ctx.lineWidth = 2;
-        ctx.strokeRect((GRID_COLS / 2 - 2) * SQM_SIZE, (GRID_ROWS - 3) * SQM_SIZE, 4 * SQM_SIZE, 1.8 * SQM_SIZE);
-        ctx.strokeRect((GRID_COLS / 2 - 2) * SQM_SIZE, 1.2 * SQM_SIZE, 4 * SQM_SIZE, 1.8 * SQM_SIZE);
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, 26, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(238, 242, 255, 0.12)";
-        ctx.fill();
-        ctx.strokeStyle = "#818cf8";
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
         ctx.restore();
     } else if (ch.chType === "pvp") {
-        // Grand Center Pokéball Ring
         const cx = (GRID_COLS / 2) * SQM_SIZE;
         const cy = (GRID_ROWS / 2) * SQM_SIZE;
         ctx.save();
@@ -13971,7 +14546,6 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
         ctx.stroke();
         ctx.restore();
     } else if (ch.chType === "worldboss") {
-        // Glowing Magma & Psionic Rift in Center
         const cx = (GRID_COLS / 2) * SQM_SIZE;
         const cy = (GRID_ROWS / 2) * SQM_SIZE;
         const pulse = 1.0 + Math.sin(f * 0.08) * 0.15;
@@ -13986,7 +14560,6 @@ function drawChallengeArenaBackground(ctx, tb, ch) {
         ctx.fill();
         ctx.restore();
     } else if (ch.chType === "elite4") {
-        // Royal Red Velvet Center Carpet
         const carpetX = 6 * SQM_SIZE;
         const carpetW = 4 * SQM_SIZE;
         ctx.fillStyle = "rgba(185, 28, 28, 0.65)";
@@ -14001,47 +14574,144 @@ function drawChallengeAtmosphereFX(ctx, tb, ch) {
     const f = tb.frame;
     const W = GRID_COLS * SQM_SIZE;
     const H = GRID_ROWS * SQM_SIZE;
+    const theme = ch.chType === "gyms" ? (GYM_MAP_THEMES[ch.gymId] || GYM_MAP_THEMES.pewter) : null;
 
     ctx.save();
-    // Glowing drifting motes & stadium lights
-    const count = ch.chType === "worldboss" ? 28 : ch.chType === "gvg" ? 24 : 14;
+    const count = ch.chType === "worldboss" ? 28 : ch.chType === "gvg" ? 24 : 18;
     for (let i = 0; i < count; i++) {
         const mx = (Math.sin(f * 0.02 + i * 1.5) * 0.5 + 0.5) * W;
         const my = (Math.cos(f * 0.025 + i * 1.8) * 0.5 + 0.5) * H;
         const mAlpha = 0.25 + Math.sin(f * 0.05 + i) * 0.2;
-        ctx.fillStyle = ch.chType === "worldboss"
+        ctx.fillStyle = theme
+            ? theme.ring
+            : ch.chType === "worldboss"
             ? `rgba(244, 63, 94, ${mAlpha})`
             : ch.chType === "gvg"
             ? `rgba(250, 204, 21, ${mAlpha})`
             : `rgba(253, 224, 71, ${mAlpha})`;
+        ctx.globalAlpha = Math.max(0.15, Math.min(0.85, mAlpha));
         ctx.beginPath();
-        ctx.arc(mx, my, ch.chType === "gvg" ? 2.5 : 2, 0, Math.PI * 2);
+        ctx.arc(mx, my, 2.5, 0, Math.PI * 2);
         ctx.fill();
     }
     ctx.restore();
 }
 
 function drawChallengeEntities(ctx, tb, ch) {
-    // If a Gym Leader or Rival Trainer sprite is configured, draw them at the top pedestal (gx: 8, gy: 2)
-    if (ch.leaderSprite) {
-        const lx = 8 * SQM_SIZE;
-        const ly = 2 * SQM_SIZE;
+    if (!ch.leaderSprite && !ch.leaderSkinId) return;
+
+    const lx = 8 * SQM_SIZE;
+    const ly = 2 * SQM_SIZE;
+    const theme = ch.chType === "gyms" ? (GYM_MAP_THEMES[ch.gymId] || GYM_MAP_THEMES.pewter) : null;
+
+    ctx.save();
+
+    // 1. Grand Gym Leader Pedestal at (gx: 8, gy: 2)
+    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+    ctx.beginPath();
+    ctx.ellipse(lx + 24, ly + 40, 26, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = theme ? theme.ring : "#fde047";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // 2. Render the Gym Leader's 100% Accurate Overworld Trainer Skin on the Pedestal
+    const skinKey = ch.leaderSkinId || ch.gymId;
+    if (skinKey && typeof draw32BitAnimeTrainerOnCanvas === "function") {
+        draw32BitAnimeTrainerOnCanvas(ctx, skinKey, lx, ly, 0, tb.frame, false);
+    } else if (ch.leaderSprite) {
         const leaderImg = getCachedImage(ch.leaderSprite);
         if (leaderImg && leaderImg.complete && leaderImg.naturalWidth > 0) {
             ctx.drawImage(leaderImg, lx + 4, ly - 8, 40, 48);
         }
-        // Nameplate for Leader
-        ctx.font = getGameCanvasFont("ui", 9, "900");
-        ctx.textAlign = "center";
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 3;
-        const nameText = ch.chType === "gvg"
-            ? `Capitão ${ch.rivalGuild || "Rival"}`
-            : (ch.bossName ? ch.bossName.split(" - ")[0] : "Líder de Ginásio");
-        ctx.strokeText(nameText, lx + 24, ly - 10);
-        ctx.fillStyle = ch.chType === "gvg" ? "#f87171" : "#fde047";
-        ctx.fillText(nameText, lx + 24, ly - 10);
     }
+
+    // 3. Official Portrait Medallion + Nameplate + 6-Pokéball Live Roster HUD above Pedestal
+    const hudW = 196;
+    const hudH = ch.chType === "gyms" ? 36 : 22;
+    const hudX = lx + 24 - hudW / 2;
+    const hudY = ly - 48;
+
+    ctx.fillStyle = "rgba(2, 6, 23, 0.90)";
+    ctx.fillRect(hudX, hudY, hudW, hudH);
+    ctx.strokeStyle = theme ? theme.ring : "#fde047";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+    // Mini Official Portrait inside HUD Box
+    if (ch.leaderSprite) {
+        const pImg = getCachedImage(ch.leaderSprite);
+        if (pImg && pImg.complete && pImg.naturalWidth > 0) {
+            ctx.drawImage(pImg, hudX + 3, hudY + 2, 32, 32);
+        }
+    }
+
+    const nameText = ch.chType === "gvg"
+        ? `Capitão ${ch.rivalGuild || "Rival"}`
+        : ch.leaderName
+        ? `Líder ${ch.leaderName} (${ch.badgeName || "Ginásio"})`
+        : (ch.bossName ? ch.bossName.split(" - ")[0] : "Líder de Ginásio");
+
+    ctx.font = getGameCanvasFont("ui", 8.5, "900");
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#fde047";
+    ctx.fillText(nameText, hudX + 38, hudY + 13);
+
+    // Draw 6 Pokéball Indicators for Gym Leaders
+    if (ch.chType === "gyms" && Array.isArray(ch.gymTeam)) {
+        const curIdx = ch.currentMonIndex || 0;
+        for (let i = 0; i < ch.gymTeam.length; i++) {
+            const bx = hudX + 44 + i * 16;
+            const by = hudY + 26;
+            const defeated = i < curIdx;
+            const active = i === curIdx;
+            ctx.beginPath();
+            ctx.arc(bx, by, 5.5, 0, Math.PI * 2);
+            ctx.fillStyle = defeated ? "#334155" : active ? "#ef4444" : "#dc2626";
+            ctx.fill();
+            ctx.strokeStyle = active ? "#fde047" : "#0f172a";
+            ctx.lineWidth = active ? 2 : 1;
+            ctx.stroke();
+
+            if (!defeated) {
+                ctx.fillStyle = "#ffffff";
+                ctx.beginPath();
+                ctx.arc(bx, by, 2, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                ctx.strokeStyle = "#94a3b8";
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(bx - 3, by - 3);
+                ctx.lineTo(bx + 3, by + 3);
+                ctx.moveTo(bx + 3, by - 3);
+                ctx.lineTo(bx - 3, by + 3);
+                ctx.stroke();
+            }
+        }
+        ctx.font = getGameCanvasFont("ui", 8, "900");
+        ctx.fillStyle = "#38bdf8";
+        ctx.fillText(`${curIdx + 1}/${ch.gymTeam.length}`, hudX + 144, hudY + 29);
+    }
+
+    // 4. Live Speech Bubble when Gym Leader announces a Pokémon
+    if (ch.leaderSpeech && tb.frame - (ch.leaderSpeechTick || 0) < 260) {
+        const spText = String(ch.leaderSpeech).slice(0, 68);
+        ctx.font = getGameCanvasFont("ui", 8, "800");
+        const tw = Math.min(280, Math.max(150, ctx.measureText(spText).width + 18));
+        const sx = lx + 24 - tw / 2;
+        const sy = hudY - 22;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+        ctx.fillRect(sx, sy, tw, 18);
+        ctx.strokeStyle = "#0f172a";
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(sx, sy, tw, 18);
+        ctx.fillStyle = "#0f172a";
+        ctx.textAlign = "center";
+        ctx.fillText(spText, lx + 24, sy + 12);
+    }
+
+    ctx.restore();
 }
 
 window.enterChallengeArena = enterChallengeArena;
