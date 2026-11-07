@@ -10443,3 +10443,22 @@ body:not(.is-hud-editing-mode) .topbar-drag-grip {
     border-radius: 3px;
     display: inline-block;
 }
+
+
+/* ==========================================================================
+   FIX: ENSURE UPDATE LOG & ADMIN PLAYER EDITOR MODALS ARE 100% INTERACTIVE
+   ========================================================================== */
+.update-log-modal-overlay:not(.is-hidden),
+#admin-player-editor-modal:not(.is-hidden) {
+    pointer-events: auto !important;
+    z-index: 100060 !important;
+}
+
+.update-log-window,
+#admin-player-editor-modal .update-log-window,
+#admin-player-editor-modal .update-log-body,
+#admin-player-editor-modal input,
+#admin-player-editor-modal select,
+#admin-player-editor-modal button {
+    pointer-events: auto !important;
+}

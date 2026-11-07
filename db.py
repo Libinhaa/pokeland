@@ -517,14 +517,29 @@ def get_player_save(user_id: int) -> dict or None:
             return None
 
 
-def save_player_save(user_id: int, player_data: dict, config_data: dict = None) -> bool:
+def save_player_save(user_id: int, player_data: dict, config_data: dict = None, is_admin_write: bool = False):
     now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    if is_admin_write and isinstance(player_data, dict):
+        player_data["admin_rev"] = int(time.time() * 1000)
+
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT player_data, config_data FROM player_saves WHERE user_id = ?", (user_id,))
         row = cursor.fetchone()
 
         if row:
+            if not is_admin_write and isinstance(player_data, dict) and row["player_data"]:
+                try:
+                    existing_p = json.loads(row["player_data"])
+                    db_rev = int(existing_p.get("admin_rev") or 0)
+                    client_rev = int(player_data.get("admin_rev") or 0)
+                    if db_rev > client_rev:
+                        # Admin modified this account more recently than client's in-memory state.
+                        # Do not overwrite DB with stale client auto-save; return authoritative DB state.
+                        return {"ok": True, "admin_sync_player": sanitize_player_data(existing_p)}
+                except Exception:
+                    pass
+
             p_json = json.dumps(player_data, ensure_ascii=False) if player_data is not None else row["player_data"]
             c_json = json.dumps(config_data, ensure_ascii=False) if config_data is not None else row["config_data"]
             cursor.execute(
@@ -1050,6 +1065,7 @@ def get_registered_users_list(limit: int = 200) -> list:
                     u_dict["gold"] = pdata.get("gold", 0)
                     u_dict["diamonds"] = pdata.get("diamonds", 0)
                     u_dict["party_count"] = len(pdata.get("party", []))
+                    u_dict["has_master_key"] = bool(pdata.get("has_master_key"))
                     u_dict["has_save"] = True
                 except Exception:
                     pass
@@ -1383,8 +1399,8 @@ def execute_p2p_trade_db(user_a_id: int, user_b_id: int, offer_a: dict, offer_b:
         if sid and sid not in p_a.setdefault("pokedex_caught", []):
             p_a["pokedex_caught"].append(sid)
 
-    save_player_save(user_a_id, p_a, save_a.get("config"))
-    save_player_save(user_b_id, p_b, save_b.get("config"))
+    save_player_save(user_a_id, p_a, save_a.get("config"), is_admin_write=True)
+    save_player_save(user_b_id, p_b, save_b.get("config"), is_admin_write=True)
 
     return {
         "ok": True,
@@ -1398,12 +1414,30 @@ def execute_p2p_trade_db(user_a_id: int, user_b_id: int, offer_a: dict, offer_b:
 # POKELAND ADMIN BOARD & GOD-MODE SYSTEM (DATABASE OPERATIONS)
 # ==============================================================================
 
-def admin_update_player_account(user_id: int, role: str = None, level: int = None, gold: int = None, diamonds: int = None) -> dict:
-    if role is not None and role in ("player", "moderator", "admin", "banned"):
-        with get_connection() as conn:
-            cursor = conn.cursor()
+def admin_update_player_account(
+    user_id: int,
+    role: str = None,
+    level: int = None,
+    gold: int = None,
+    diamonds: int = None,
+    username: str = None,
+    avatar_model: str = None,
+    has_master_key: bool = None
+) -> dict:
+    clean_username = username.strip() if isinstance(username, str) and username.strip() else None
+    clean_avatar = avatar_model.strip() if isinstance(avatar_model, str) and avatar_model.strip() else None
+
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        if role is not None and role in ("player", "moderator", "admin", "banned"):
             cursor.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
-            conn.commit()
+        if clean_username:
+            cursor.execute("SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?", (clean_username, user_id))
+            if not cursor.fetchone():
+                cursor.execute("UPDATE users SET username = ? WHERE id = ?", (clean_username, user_id))
+        if clean_avatar:
+            cursor.execute("UPDATE users SET avatar_model = ? WHERE id = ?", (clean_avatar, user_id))
+        conn.commit()
 
     save_obj = get_player_save(user_id)
     if not save_obj or not save_obj.get("player"):
@@ -1418,33 +1452,48 @@ def admin_update_player_account(user_id: int, role: str = None, level: int = Non
         p = sanitize_player_data(save_obj["player"])
         cfg = save_obj.get("config")
 
+    if clean_username:
+        p["name"] = clean_username
+    if clean_avatar:
+        p["avatar_model"] = clean_avatar
     if level is not None:
         p["level"] = max(1, min(500, int(level)))
     if gold is not None:
         p["gold"] = max(0, int(gold))
     if diamonds is not None:
         p["diamonds"] = max(0, int(diamonds))
-    save_player_save(user_id, p, cfg)
+    if has_master_key is not None:
+        p["has_master_key"] = bool(has_master_key)
 
-    return {"ok": True, "message": "Conta e dados salvos do jogador atualizados com sucesso!", "player": p, "user_id": user_id, "role": role}
+    save_player_save(user_id, p, cfg, is_admin_write=True)
+
+    return {
+        "ok": True,
+        "message": "Conta e dados salvos do jogador atualizados com sucesso!",
+        "player": p,
+        "user_id": user_id,
+        "role": role,
+        "username": p.get("name"),
+        "avatar_model": p.get("avatar_model")
+    }
 
 def admin_heal_player_party(user_id: int) -> dict:
     save_obj = get_player_save(user_id)
     if not save_obj or not save_obj.get("player"):
         return {"ok": False, "error": "Save do jogador não encontrado."}
-    p = save_obj["player"]
+    p = sanitize_player_data(save_obj["player"])
     party = p.get("party", [])
     for m in party:
         max_hp = m.get("max_hp") or (m.get("stats", {}).get("hp", 100))
         m["hp"] = max_hp
-    save_player_save(user_id, p, save_obj.get("config"))
-    return {"ok": True, "message": f"Equipe de {len(party)} Pokémon totalmente curada e revivida!"}
+    save_player_save(user_id, p, save_obj.get("config"), is_admin_write=True)
+    return {"ok": True, "message": f"Equipe de {len(party)} Pokémon totalmente curada e revivida!", "player": p}
 
 def admin_inject_item_into_player(user_id: int, item_id: str, qty: int) -> dict:
     save_obj = get_player_save(user_id)
     if not save_obj or not save_obj.get("player"):
         return {"ok": False, "error": "Save do jogador não encontrado."}
-    p = save_obj["player"]
+    p = sanitize_player_data(save_obj["player"])
     inv = p.setdefault("inventory", {})
     cur_qty = inv.get(item_id, 0)
     new_qty = max(0, cur_qty + int(qty))
@@ -1452,14 +1501,14 @@ def admin_inject_item_into_player(user_id: int, item_id: str, qty: int) -> dict:
         inv[item_id] = new_qty
     else:
         inv.pop(item_id, None)
-    save_player_save(user_id, p, save_obj.get("config"))
-    return {"ok": True, "message": f"Item {item_id} injetado com sucesso! Nova quantidade: {new_qty}."}
+    save_player_save(user_id, p, save_obj.get("config"), is_admin_write=True)
+    return {"ok": True, "message": f"Item {item_id} injetado com sucesso! Nova quantidade: {new_qty}.", "player": p}
 
 def admin_inject_pokemon_into_player(user_id: int, pokemon_data: dict, target_storage: str = "party") -> dict:
     save_obj = get_player_save(user_id)
     if not save_obj or not save_obj.get("player"):
         return {"ok": False, "error": "Save do jogador não encontrado."}
-    p = save_obj["player"]
+    p = sanitize_player_data(save_obj["player"])
     if target_storage == "party" and len(p.setdefault("party", [])) < 6:
         p["party"].append(pokemon_data)
         dest_str = "Equipe Ativa"
@@ -1469,19 +1518,19 @@ def admin_inject_pokemon_into_player(user_id: int, pokemon_data: dict, target_st
     sid = pokemon_data.get("species_id")
     if sid and sid not in p.setdefault("pokedex_caught", []):
         p["pokedex_caught"].append(sid)
-    save_player_save(user_id, p, save_obj.get("config"))
-    return {"ok": True, "message": f"Pokémon {pokemon_data.get('name')} gerado com sucesso em {dest_str}!"}
+    save_player_save(user_id, p, save_obj.get("config"), is_admin_write=True)
+    return {"ok": True, "message": f"Pokémon {pokemon_data.get('name')} gerado com sucesso em {dest_str}!", "player": p}
 
 def admin_reset_player_position(user_id: int, map_id: int = 0, gx: int = 8, gy: int = 8) -> dict:
     save_obj = get_player_save(user_id)
     if not save_obj or not save_obj.get("player"):
         return {"ok": False, "error": "Save do jogador não encontrado."}
-    p = save_obj["player"]
+    p = sanitize_player_data(save_obj["player"])
     p["map_id"] = map_id
     p["gx"] = gx
     p["gy"] = gy
-    save_player_save(user_id, p, save_obj.get("config"))
-    return {"ok": True, "message": "Posição do jogador resetada para a Praça Central (x:8, y:8)."}
+    save_player_save(user_id, p, save_obj.get("config"), is_admin_write=True)
+    return {"ok": True, "message": "Posição do jogador resetada para a Praça Central (x:8, y:8).", "player": p}
 
 def admin_toggle_ban_user(user_id: int, banned: bool = True) -> dict:
     with get_connection() as conn:
@@ -1490,7 +1539,8 @@ def admin_toggle_ban_user(user_id: int, banned: bool = True) -> dict:
         cursor.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, user_id))
         if banned:
             cursor.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
-        return {"ok": True, "message": f"Status da conta atualizado: role = {new_role}."}
+        conn.commit()
+        return {"ok": True, "message": f"Status da conta atualizado: role = {new_role}.", "role": new_role}
 
 def admin_get_server_diagnostics() -> dict:
     import os

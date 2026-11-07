@@ -1856,8 +1856,11 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             if p_data and isinstance(p_data, dict):
                 p_data.setdefault("offline_farm", {})["last_active"] = int(time.time() * 1000)
             if user:
-                db.save_player_save(user["id"], p_data, c_data)
-                return self.send_json({"ok": True, "storage": "sqlite", "user_id": user["id"]})
+                save_res = db.save_player_save(user["id"], p_data, c_data)
+                resp = {"ok": True, "storage": "sqlite", "user_id": user["id"]}
+                if isinstance(save_res, dict) and save_res.get("admin_sync_player"):
+                    resp["admin_sync_player"] = save_res["admin_sync_player"]
+                return self.send_json(resp)
             else:
                 if p_data:
                     save_json(SAVE_FILE, p_data)
@@ -2093,7 +2096,19 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             level = body.get("level")
             gold = body.get("gold")
             diamonds = body.get("diamonds")
-            res = db.admin_update_player_account(target_user_id, role, level, gold, diamonds)
+            username = body.get("username")
+            avatar_model = body.get("avatar_model")
+            has_master_key = body.get("has_master_key")
+            res = db.admin_update_player_account(
+                target_user_id,
+                role=role,
+                level=level,
+                gold=gold,
+                diamonds=diamonds,
+                username=username,
+                avatar_model=avatar_model,
+                has_master_key=has_master_key
+            )
             return self.send_json(res)
 
         if parsed.path == "/api/admin/user/heal":
@@ -2186,7 +2201,7 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
             else:
                 return self.send_json({"ok": False, "error": "Kit desconhecido."})
 
-            db.save_player_save(user["id"], p, save_obj.get("config"))
+            db.save_player_save(user["id"], p, save_obj.get("config"), is_admin_write=True)
             return self.send_json({"ok": True, "message": msg, "player": p})
 
         if parsed.path == "/api/admin/server/reload":
@@ -2246,13 +2261,13 @@ class GameRequestHandler(SimpleHTTPRequestHandler):
                             player["pc_box"].append(mon)
                         player["pokedex_caught"].append(god_sid)
                 if user:
-                    db.save_player_save(user["id"], player)
+                    db.save_player_save(user["id"], player, is_admin_write=True)
                 else:
                     save_json(SAVE_FILE, player)
             elif preset == "reset_save":
                 new_p = default_player(species_by_id)
                 if user:
-                    db.save_player_save(user["id"], new_p)
+                    db.save_player_save(user["id"], new_p, is_admin_write=True)
                 else:
                     save_json(SAVE_FILE, new_p)
             return self.send_json(build_bootstrap(user=user))

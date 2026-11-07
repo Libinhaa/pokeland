@@ -1883,11 +1883,18 @@ async function syncStateToServer(immediate = false) {
     } catch (e) {}
     const headers = getAuthHeaders();
     try {
-        await fetch("/api/save", {
+        const res = await fetch("/api/save", {
             method: "POST",
             headers,
             body: JSON.stringify({ player: STATE.player, config: STATE.config }),
         });
+        if (res.ok) {
+            const resData = await res.json().catch(() => null);
+            if (resData && resData.admin_sync_player && STATE.player) {
+                Object.assign(STATE.player, sanitizeClientPlayer(resData.admin_sync_player));
+                renderAll(true);
+            }
+        }
     } catch (e) {
         console.warn("[PokéLand] Save deferred:", e);
     }
@@ -1936,7 +1943,10 @@ function switchTab(tabName) {
     if (tabName === "bag" && typeof renderBagModal === "function") renderBagModal();
     if (tabName === "shop" && typeof renderGoldShop === "function") renderGoldShop();
     if (tabName === "cashshop" && typeof renderCashShop === "function") renderCashShop();
-    if (tabName === "admin") { refreshAdminBadges(); }
+    if (tabName === "admin") {
+        refreshAdminBadges();
+        if (typeof loadAdminUsers === "function") loadAdminUsers();
+    }
     if (tabName === "market") {
         if (typeof switchMarketSubmenu === "function") switchMarketSubmenu(typeof CURRENT_MARKET_SUB !== "undefined" ? CURRENT_MARKET_SUB : "browse");
         if (typeof syncMarketAdminVisibility === "function") syncMarketAdminVisibility();
@@ -11699,9 +11709,10 @@ function switchAdminSubmenu(subTab) {
 
 async function refreshAdminBadges() {
     try {
+        const headers = typeof getAuthHeaders === "function" ? getAuthHeaders() : {};
         const [fbRes, userRes] = await Promise.all([
-            fetch("/api/admin/feedback"),
-            fetch("/api/admin/users")
+            fetch("/api/admin/feedback", { headers }),
+            fetch("/api/admin/users", { headers })
         ]);
         if (fbRes.ok) {
             const fbData = await fbRes.json();
@@ -11721,6 +11732,12 @@ async function refreshAdminBadges() {
                 if (badge) badge.textContent = userData.users.length;
                 const stat = document.getElementById("admin-users-stat-total");
                 if (stat) stat.textContent = `${userData.users.length} contas`;
+                if (typeof renderAdminUsersTable === "function") {
+                    renderAdminUsersTable(_cachedAdminUsers);
+                }
+                if (typeof populateAdminUsersDropdown === "function") {
+                    populateAdminUsersDropdown();
+                }
             }
         }
     } catch (err) {
@@ -11852,54 +11869,15 @@ async function loadAdminUsers(forceToast = false) {
 }
 
 function filterAdminUsers() {
-    const search = (document.getElementById("admin-users-search")?.value || "").toLowerCase().trim();
-    const filtered = _cachedAdminUsers.filter((u) => {
-        if (!search) return true;
-        return (u.username || "").toLowerCase().includes(search) ||
-               String(u.id) === search ||
-               (u.role || "").toLowerCase().includes(search);
-    });
-    renderAdminUsers(filtered);
+    if (typeof filterAdminUsersTable === "function") {
+        return filterAdminUsersTable();
+    }
 }
 
 function renderAdminUsers(list) {
-    const tbody = document.getElementById("admin-users-tbody");
-    if (!tbody) return;
-
-    if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:30px;">Nenhuma conta encontrada com o termo pesquisado.</td></tr>`;
-        return;
+    if (typeof renderAdminUsersTable === "function") {
+        return renderAdminUsersTable(list);
     }
-
-    tbody.innerHTML = list.map((u) => {
-        const skin = u.avatar_model || "ethan_gold";
-        const rolePill = u.role === "admin"
-            ? `<span style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid #ef4444;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700;">ADMIN</span>`
-            : `<span style="background:rgba(100,116,139,0.2);color:#94a3b8;border:1px solid #475569;padding:2px 7px;border-radius:4px;font-size:10.5px;">PLAYER</span>`;
-
-        const portrait = (typeof getTrainerModelDataUrl === "function") ? getTrainerModelDataUrl(skin) : "/img/trainers/hgss_ethan.png";
-        return `
-            <tr style="border-bottom:1px solid #21262d;">
-                <td style="padding:10px 12px;color:#64748b;font-weight:600;">#${u.id}</td>
-                <td style="padding:10px 12px;">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <img src="${portrait}" alt="${skin}" style="width:32px;height:32px;image-rendering:pixelated;object-fit:contain;background:rgba(255,255,255,0.05);border-radius:4px;border:1px solid #30363d;" onerror="this.src=\'/img/trainers/hgss_ethan.png\'">
-                        <div>
-                            <div style="font-weight:700;color:#f3f4f6;">${escapeHtml(u.username)}</div>
-                            <div style="font-size:10.5px;color:#64748b;">skin: ${skin}</div>
-                        </div>
-                    </div>
-                </td>
-                <td style="padding:10px 12px;">${rolePill}</td>
-                <td style="padding:10px 12px;color:#fde047;font-weight:700;">Lv. ${u.level || 1}</td>
-                <td style="padding:10px 12px;color:#fbbf24;">💰 ${(u.gold || 0).toLocaleString()}</td>
-                <td style="padding:10px 12px;color:#38bdf8;">💎 ${(u.diamonds || 0).toLocaleString()}</td>
-                <td style="padding:10px 12px;color:#e2e8f0;">🎒 ${u.party_count || 0}/6</td>
-                <td style="padding:10px 12px;color:#64748b;font-size:11.5px;">${u.created_at || "—"}</td>
-                <td style="padding:10px 12px;color:#64748b;font-size:11.5px;">${u.last_login || "—"}</td>
-            </tr>
-        `;
-    }).join("");
 }
 
 // =========================================================
@@ -16118,6 +16096,7 @@ function syncAdminCheatsUI() {
 window.syncAdminCheatsUI = syncAdminCheatsUI;
 
 async function grantAdminQuickKit(kitType) {
+    cancelPendingAutoSaveForAdmin();
     try {
         const res = await fetch("/api/admin/grant-kit", {
             method: "POST",
@@ -16128,12 +16107,10 @@ async function grantAdminQuickKit(kitType) {
         if (data && data.ok) {
             showToast(`🎁 ${data.message}`);
             if (data.player && STATE.player) {
-                STATE.player.gold = data.player.gold;
-                STATE.player.diamonds = data.player.diamonds;
-                STATE.player.inventory = data.player.inventory;
-                if (data.player.pokedex_caught) STATE.player.pokedex_caught = data.player.pokedex_caught;
+                Object.assign(STATE.player, sanitizeClientPlayer(data.player));
             }
-            renderAll();
+            renderAll(true);
+            loadAdminUsers();
         } else {
             showToast(`⚠️ ${data?.error || "Erro ao conceder kit."}`);
         }
@@ -16201,7 +16178,7 @@ function renderAdminUsersTable(list) {
 
         const portrait = (typeof getTrainerModelDataUrl === "function") ? getTrainerModelDataUrl(skin) : "/img/trainers/ethan_gold.png";
         return `
-            <tr style="border-bottom:1px solid #1e293b;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+            <tr style="border-bottom:1px solid #1e293b;transition:background 0.15s;cursor:pointer;" onclick="openPlayerEditorModal(${u.id})" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
                 <td style="padding:10px 12px;color:#64748b;font-weight:600;">#${u.id}</td>
                 <td style="padding:10px 12px;">
                     <div style="display:flex;align-items:center;gap:10px;">
@@ -16219,7 +16196,7 @@ function renderAdminUsersTable(list) {
                 <td style="padding:10px 12px;color:#cbd5e1;">🎒 ${u.party_count || 0}/6</td>
                 <td style="padding:10px 12px;color:#64748b;font-size:11px;">${(u.last_login || "").substring(0, 16) || "—"}</td>
                 <td style="padding:10px 12px;text-align:right;">
-                    <button class="btn btn-sm btn-primary" onclick="openPlayerEditorModal(${u.id})" style="font-weight:700;padding:4px 10px;">⚙️ Editar</button>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="event.stopPropagation(); openPlayerEditorModal(${u.id})" style="font-weight:700;padding:4px 10px;">⚙️ Editar</button>
                 </td>
             </tr>
         `;
@@ -16235,26 +16212,96 @@ function populateAdminUsersDropdown() {
     sel.value = curVal || "self";
 }
 
+function cancelPendingAutoSaveForAdmin() {
+    if (typeof _saveDebounceTimer !== "undefined" && _saveDebounceTimer) {
+        clearTimeout(_saveDebounceTimer);
+        _saveDebounceTimer = null;
+    }
+    if (typeof _hasPendingSave !== "undefined") {
+        _hasPendingSave = false;
+    }
+}
+
+function applyAdminUpdatedPlayerToSelf(targetUserId, updatedPlayer, updatedRole, updatedUsername, updatedAvatar) {
+    cancelPendingAutoSaveForAdmin();
+    const targetUser = _cachedAdminUsers.find(u => Number(u.id) === Number(targetUserId));
+    const isSelf = STATE.currentUser && (
+        Number(STATE.currentUser.id) === Number(targetUserId) ||
+        (targetUser && targetUser.username && STATE.currentUser.username && targetUser.username.toLowerCase() === STATE.currentUser.username.toLowerCase())
+    );
+    if (!isSelf || !STATE.player) return false;
+
+    if (updatedPlayer && typeof updatedPlayer === "object") {
+        Object.assign(STATE.player, sanitizeClientPlayer(updatedPlayer));
+    }
+    if (updatedRole) {
+        STATE.currentUser.role = updatedRole;
+    }
+    if (updatedUsername) {
+        STATE.currentUser.username = updatedUsername;
+        STATE.player.name = updatedUsername;
+    }
+    if (updatedAvatar) {
+        STATE.currentUser.avatar_model = updatedAvatar;
+        STATE.player.avatar_model = updatedAvatar;
+    }
+    try {
+        localStorage.setItem("pokepixel_user", JSON.stringify(STATE.currentUser));
+        localStorage.setItem("pokepixel_local_save_backup", JSON.stringify({
+            player: STATE.player,
+            config: STATE.config,
+            timestamp: Date.now()
+        }));
+    } catch (e) {}
+    renderAll(true);
+    return true;
+}
+
 function openPlayerEditorModal(userId) {
     const user = _cachedAdminUsers.find(u => Number(u.id) === Number(userId));
     if (!user) return;
-    _activeAdminEditUserId = userId;
+    _activeAdminEditUserId = Number(user.id);
 
-    document.getElementById("adm-edit-user-id").value = user.id;
+    const isSelf = STATE.currentUser && (
+        Number(STATE.currentUser.id) === Number(user.id) ||
+        (user.username && STATE.currentUser.username && user.username.toLowerCase() === STATE.currentUser.username.toLowerCase())
+    );
+
+    const idEl = document.getElementById("adm-edit-user-id");
+    if (idEl) idEl.value = user.id;
+
     const titleEl = document.getElementById("adm-edit-title");
     if (titleEl) titleEl.textContent = `Editar Treinador: ${user.username} (#${user.id})`;
+
+    const nameInp = document.getElementById("adm-edit-username");
+    if (nameInp) nameInp.value = user.username || "";
+
+    const avatarSel = document.getElementById("adm-edit-avatar");
+    if (avatarSel) {
+        const skinVal = (isSelf && STATE.player?.avatar_model) ? STATE.player.avatar_model : (user.avatar_model || "ethan_gold");
+        if (!Array.from(avatarSel.options).some(opt => opt.value === skinVal)) {
+            const opt = document.createElement("option");
+            opt.value = skinVal;
+            opt.textContent = skinVal;
+            avatarSel.appendChild(opt);
+        }
+        avatarSel.value = skinVal;
+    }
 
     const roleSel = document.getElementById("adm-edit-role");
     if (roleSel) roleSel.value = user.role || "player";
 
     const lvlInp = document.getElementById("adm-edit-level");
-    if (lvlInp) lvlInp.value = user.level || 1;
+    if (lvlInp) lvlInp.value = (isSelf && STATE.player?.level != null) ? STATE.player.level : (user.level || 1);
 
     const goldInp = document.getElementById("adm-edit-gold");
-    if (goldInp) goldInp.value = user.gold || 0;
+    if (goldInp) goldInp.value = (isSelf && STATE.player?.gold != null) ? STATE.player.gold : (user.gold || 0);
 
     const diaInp = document.getElementById("adm-edit-diamonds");
-    if (diaInp) diaInp.value = user.diamonds || 0;
+    if (diaInp) diaInp.value = (isSelf && STATE.player?.diamonds != null) ? STATE.player.diamonds : (user.diamonds || 0);
+
+    const mkChk = document.getElementById("adm-edit-master-key");
+    if (mkChk) mkChk.checked = Boolean((isSelf && STATE.player?.has_master_key != null) ? STATE.player.has_master_key : user.has_master_key);
 
     const banBtn = document.getElementById("btn-adm-ban-toggle");
     if (banBtn) {
@@ -16287,6 +16334,7 @@ function openPlayerEditorModal(userId) {
     if (modal) {
         modal.classList.remove("is-hidden");
         modal.style.display = "flex";
+        modal.style.pointerEvents = "auto";
     }
 }
 window.openPlayerEditorModal = openPlayerEditorModal;
@@ -16301,15 +16349,24 @@ function closePlayerEditorModal() {
 window.closePlayerEditorModal = closePlayerEditorModal;
 
 async function savePlayerAccountEdits() {
-    const uId = _activeAdminEditUserId;
+    const uId = _activeAdminEditUserId || parseInt(document.getElementById("adm-edit-user-id")?.value, 10);
     if (!uId) return;
 
+    cancelPendingAutoSaveForAdmin();
+
+    const rawLevel = parseInt(document.getElementById("adm-edit-level")?.value, 10);
+    const rawGold = parseInt(document.getElementById("adm-edit-gold")?.value, 10);
+    const rawDiamonds = parseInt(document.getElementById("adm-edit-diamonds")?.value, 10);
+
     const payload = {
-        user_id: uId,
-        role: document.getElementById("adm-edit-role")?.value,
-        level: parseInt(document.getElementById("adm-edit-level")?.value, 10),
-        gold: parseInt(document.getElementById("adm-edit-gold")?.value, 10),
-        diamonds: parseInt(document.getElementById("adm-edit-diamonds")?.value, 10)
+        user_id: Number(uId),
+        username: (document.getElementById("adm-edit-username")?.value || "").trim() || undefined,
+        avatar_model: document.getElementById("adm-edit-avatar")?.value || undefined,
+        role: document.getElementById("adm-edit-role")?.value || "player",
+        level: isNaN(rawLevel) ? 1 : rawLevel,
+        gold: isNaN(rawGold) ? 0 : rawGold,
+        diamonds: isNaN(rawDiamonds) ? 0 : rawDiamonds,
+        has_master_key: Boolean(document.getElementById("adm-edit-master-key")?.checked)
     };
 
     try {
@@ -16321,16 +16378,8 @@ async function savePlayerAccountEdits() {
         const data = await res.json();
         if (data && data.ok) {
             showToast("💾 Alterações na conta salvas com sucesso!");
-            const targetUser = _cachedAdminUsers.find(u => Number(u.id) === Number(uId));
-            const isSelf = STATE.currentUser && (Number(STATE.currentUser.id) === Number(uId) || (targetUser && targetUser.username === STATE.currentUser.username));
-            if (isSelf && STATE.player) {
-                if (!isNaN(payload.level)) STATE.player.level = payload.level;
-                if (!isNaN(payload.gold)) STATE.player.gold = payload.gold;
-                if (!isNaN(payload.diamonds)) STATE.player.diamonds = payload.diamonds;
-                if (payload.role) STATE.currentUser.role = payload.role;
-                renderAll(true);
-            }
-            loadAdminUsers();
+            applyAdminUpdatedPlayerToSelf(uId, data.player, payload.role, data.username || payload.username, data.avatar_model || payload.avatar_model);
+            await loadAdminUsers();
             closePlayerEditorModal();
         } else {
             showToast(`⚠️ ${data?.error || "Erro ao salvar alterações."}`);
@@ -16343,6 +16392,7 @@ window.savePlayerAccountEdits = savePlayerAccountEdits;
 
 async function adminHealPlayerPartyAction() {
     if (!_activeAdminEditUserId) return;
+    cancelPendingAutoSaveForAdmin();
     try {
         const res = await fetch("/api/admin/user/heal", {
             method: "POST",
@@ -16350,13 +16400,12 @@ async function adminHealPlayerPartyAction() {
             body: JSON.stringify({ user_id: _activeAdminEditUserId })
         });
         const data = await res.json();
-        showToast(data.message || "Equipe do jogador curada!");
-        const isSelf = STATE.currentUser && Number(STATE.currentUser.id) === Number(_activeAdminEditUserId);
-        if (isSelf && STATE.player && Array.isArray(STATE.player.party)) {
-            STATE.player.party.forEach(m => {
-                m.hp = m.max_hp || m.stats?.hp || 100;
-            });
-            renderAll(true);
+        if (data && data.ok) {
+            showToast(data.message || "Equipe do jogador curada!");
+            applyAdminUpdatedPlayerToSelf(_activeAdminEditUserId, data.player);
+            loadAdminUsers();
+        } else {
+            showToast(`⚠️ ${data?.error || "Falha ao curar jogador."}`);
         }
     } catch (e) {
         showToast("⚠️ Falha ao curar jogador.");
@@ -16366,6 +16415,7 @@ window.adminHealPlayerPartyAction = adminHealPlayerPartyAction;
 
 async function adminResetPlayerPosAction() {
     if (!_activeAdminEditUserId) return;
+    cancelPendingAutoSaveForAdmin();
     try {
         const res = await fetch("/api/admin/user/reset-pos", {
             method: "POST",
@@ -16373,7 +16423,12 @@ async function adminResetPlayerPosAction() {
             body: JSON.stringify({ user_id: _activeAdminEditUserId })
         });
         const data = await res.json();
-        showToast(data.message || "Posição resetada para a Praça Central!");
+        if (data && data.ok) {
+            showToast(data.message || "Posição resetada para a Praça Central!");
+            applyAdminUpdatedPlayerToSelf(_activeAdminEditUserId, data.player);
+        } else {
+            showToast(`⚠️ ${data?.error || "Falha ao resetar posição."}`);
+        }
     } catch (e) {
         showToast("⚠️ Falha ao resetar posição.");
     }
@@ -16382,7 +16437,7 @@ window.adminResetPlayerPosAction = adminResetPlayerPosAction;
 
 async function adminTogglePlayerBanAction() {
     if (!_activeAdminEditUserId) return;
-    const user = _cachedAdminUsers.find(u => u.id === _activeAdminEditUserId);
+    const user = _cachedAdminUsers.find(u => Number(u.id) === Number(_activeAdminEditUserId));
     const willBan = user ? (user.role !== "banned") : true;
     try {
         const res = await fetch("/api/admin/user/ban", {
@@ -16392,7 +16447,7 @@ async function adminTogglePlayerBanAction() {
         });
         const data = await res.json();
         showToast(data.message || "Status de banimento atualizado!");
-        loadAdminUsers();
+        await loadAdminUsers();
         closePlayerEditorModal();
     } catch (e) {
         showToast("⚠️ Falha ao alterar banimento.");
@@ -16406,6 +16461,7 @@ async function adminInjectItemToTargetPlayerAction() {
     const qty = parseInt(document.getElementById("adm-edit-inject-item-qty")?.value, 10) || 1;
     if (!itemId) return;
 
+    cancelPendingAutoSaveForAdmin();
     try {
         const res = await fetch("/api/admin/user/give-item", {
             method: "POST",
@@ -16413,7 +16469,13 @@ async function adminInjectItemToTargetPlayerAction() {
             body: JSON.stringify({ user_id: _activeAdminEditUserId, item_id: itemId, qty })
         });
         const data = await res.json();
-        showToast(data.message || `Item ${itemId} injetado com sucesso!`);
+        if (data && data.ok) {
+            showToast(data.message || `Item ${itemId} injetado com sucesso!`);
+            applyAdminUpdatedPlayerToSelf(_activeAdminEditUserId, data.player);
+            loadAdminUsers();
+        } else {
+            showToast(`⚠️ ${data?.error || "Falha ao injetar item."}`);
+        }
     } catch (e) {
         showToast("⚠️ Falha ao injetar item.");
     }
@@ -16428,6 +16490,7 @@ async function adminInjectPokemonToTargetPlayerAction(targetStorage = "party") {
     const shiny = document.getElementById("adm-edit-inject-mon-shiny")?.checked || false;
     if (!sid) return;
 
+    cancelPendingAutoSaveForAdmin();
     try {
         const res = await fetch("/api/admin/user/give-pokemon", {
             method: "POST",
@@ -16442,7 +16505,13 @@ async function adminInjectPokemonToTargetPlayerAction(targetStorage = "party") {
             })
         });
         const data = await res.json();
-        showToast(data.message || "Pokémon injetado com sucesso!");
+        if (data && data.ok) {
+            showToast(data.message || "Pokémon injetado com sucesso!");
+            applyAdminUpdatedPlayerToSelf(_activeAdminEditUserId, data.player);
+            loadAdminUsers();
+        } else {
+            showToast(`⚠️ ${data?.error || "Falha ao injetar Pokémon."}`);
+        }
     } catch (e) {
         showToast("⚠️ Falha ao injetar Pokémon.");
     }
@@ -16561,9 +16630,11 @@ async function adminExecuteInjectItem(itemId) {
         STATE.player.inventory[itemId] = (STATE.player.inventory[itemId] || 0) + qty;
         await syncStateToServer();
         showToast(`🎒 +${qty}x ${itemId} adicionados à sua mochila!`);
-        renderAll();
+        renderAll(true);
+        loadAdminUsers();
     } else {
         const uId = parseInt(target, 10);
+        cancelPendingAutoSaveForAdmin();
         try {
             const res = await fetch("/api/admin/user/give-item", {
                 method: "POST",
@@ -16571,7 +16642,13 @@ async function adminExecuteInjectItem(itemId) {
                 body: JSON.stringify({ user_id: uId, item_id: itemId, qty })
             });
             const data = await res.json();
-            showToast(data.message || `Item ${itemId} injetado com sucesso!`);
+            if (data && data.ok) {
+                showToast(data.message || `Item ${itemId} injetado com sucesso!`);
+                applyAdminUpdatedPlayerToSelf(uId, data.player);
+                loadAdminUsers();
+            } else {
+                showToast(`⚠️ ${data?.error || "Falha ao injetar item no treinador."}`);
+            }
         } catch (e) {
             showToast("⚠️ Falha ao injetar item no treinador.");
         }

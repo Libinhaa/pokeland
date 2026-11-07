@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokéLand</title>
-    <link rel="stylesheet" href="/styles.css?v=pokeland_v29_admin_fix_blackscreen">
+    <link rel="stylesheet" href="/styles.css?v=pokeland_v30_admin_editor_fix">
 </head>
 <body class="fullscreen-mode">
     <!-- =========================================================
@@ -2236,93 +2236,6 @@
             </div>
         </section>
 
-        <!-- =========================================================
-             MODAL DE EDIÇÃO DE CONTA DO JOGADOR (#admin-player-editor-modal)
-             ========================================================= -->
-        <div id="admin-player-editor-modal" class="update-log-modal-overlay is-hidden" onclick="if(event.target===this)closePlayerEditorModal();">
-            <div class="update-log-window" style="width:min(680px,94vw);max-height:min(720px,90vh);">
-                <div class="update-log-header" style="background:linear-gradient(90deg,#1e1b4b 0%,#0f172a 100%);">
-                    <div class="update-log-title-group">
-                        <span style="font-size:20px;">👤</span>
-                        <h3 style="margin:0;font-size:16px;color:#facc15;" id="adm-edit-title">Editar Treinador: Red</h3>
-                    </div>
-                    <button class="modal-close-btn" onclick="closePlayerEditorModal()">✕</button>
-                </div>
-
-                <div class="update-log-body" style="padding:16px;overflow-y:auto;gap:14px;display:flex;flex-direction:column;">
-                    <input type="hidden" id="adm-edit-user-id">
-
-                    <!-- Basic Account Stats -->
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                        <div class="form-row">
-                            <label style="font-size:12px;font-weight:700;">Cargo da Conta:</label>
-                            <select id="adm-edit-role" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;width:100%;">
-                                <option value="player">Jogador (Comum)</option>
-                                <option value="moderator">Moderador</option>
-                                <option value="admin">Administrador (GM)</option>
-                                <option value="banned">⛔ Banido (Acesso Bloqueado)</option>
-                            </select>
-                        </div>
-                        <div class="form-row">
-                            <label style="font-size:12px;font-weight:700;">Nível do Treinador:</label>
-                            <input type="number" id="adm-edit-level" min="1" max="500" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;width:100%;">
-                        </div>
-                        <div class="form-row">
-                            <label style="font-size:12px;font-weight:700;">Saldo de Ouro ($):</label>
-                            <input type="number" id="adm-edit-gold" min="0" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;width:100%;">
-                        </div>
-                        <div class="form-row">
-                            <label style="font-size:12px;font-weight:700;">Saldo de Diamantes (💎):</label>
-                            <input type="number" id="adm-edit-diamonds" min="0" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;width:100%;">
-                        </div>
-                    </div>
-
-                    <!-- Quick Action Buttons for Player -->
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid #1e293b;padding-top:12px;">
-                        <button class="btn btn-green btn-sm" onclick="adminHealPlayerPartyAction()">💖 Curar & Reviver Equipe</button>
-                        <button class="btn btn-amber btn-sm" onclick="adminResetPlayerPosAction()">📍 Teleportar para Praça Central</button>
-                        <button class="btn btn-red btn-sm" id="btn-adm-ban-toggle" onclick="adminTogglePlayerBanAction()">⛔ Banir Conta</button>
-                        <button class="btn btn-primary btn-sm" onclick="savePlayerAccountEdits()" style="margin-left:auto;font-weight:800;">💾 Salvar Alterações</button>
-                    </div>
-
-                    <!-- Inject Item Section -->
-                    <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
-                        <div style="font-weight:800;color:#38bdf8;font-size:12.5px;margin-bottom:8px;">🎒 Injetar Item Direto neste Jogador</div>
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <select id="adm-edit-inject-item" style="flex:1;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;"></select>
-                            <input type="number" id="adm-edit-inject-item-qty" value="10" min="1" max="999" style="width:70px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;text-align:center;">
-                            <button class="btn btn-sm btn-primary" onclick="adminInjectItemToTargetPlayerAction()">Injetar</button>
-                        </div>
-                    </div>
-
-                    <!-- Inject Pokemon Section -->
-                    <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
-                        <div style="font-weight:800;color:#facc15;font-size:12.5px;margin-bottom:8px;">🧬 Injetar Pokémon neste Jogador</div>
-                        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px;">
-                            <select id="adm-edit-inject-mon-sp" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;"></select>
-                            <input type="number" id="adm-edit-inject-mon-lvl" value="100" min="1" max="500" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;text-align:center;" placeholder="Nível">
-                            <select id="adm-edit-inject-mon-qual" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;">
-                                <option value="Comum">Comum</option>
-                                <option value="Raro">Raro</option>
-                                <option value="Épico">Épico</option>
-                                <option value="Lendário">Lendário</option>
-                                <option value="Mítico" selected>Mítico</option>
-                            </select>
-                        </div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <label style="font-size:12px;color:#fde047;cursor:pointer;"><input type="checkbox" id="adm-edit-inject-mon-shiny"> ✨ Shiny</label>
-                            <div style="display:flex;gap:6px;">
-                                <button class="btn btn-sm btn-pink" onclick="adminInjectPokemonToTargetPlayerAction('party')">Na Equipe</button>
-                                <button class="btn btn-sm btn-purple" onclick="adminInjectPokemonToTargetPlayerAction('pc_box')">No PC Box</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        
         <!-- TAB: FLOATING MODAL — GRANDES DESAFIOS & ENDGAME -->
         <section id="tab-mechanics" class="tab-pane floating-modal-pane">
             <div class="floating-modal-window mechanics-modal-window">
@@ -2922,10 +2835,10 @@
 
     <div id="toast" class="toast"></div>
 
-    <script src="/market_and_shops.js?v=pokeland_v29_admin_fix_blackscreen"></script>
-    <script src="/trainer_status.js?v=pokeland_v29_admin_fix_blackscreen"></script>
-    <script src="/endgame_mechanics.js?v=pokeland_v29_admin_fix_blackscreen"></script>
-    <script src="/app.js?v=pokeland_v29_admin_fix_blackscreen"></script>
+    <script src="/market_and_shops.js?v=pokeland_v30_admin_editor_fix"></script>
+    <script src="/trainer_status.js?v=pokeland_v30_admin_editor_fix"></script>
+    <script src="/endgame_mechanics.js?v=pokeland_v30_admin_editor_fix"></script>
+    <script src="/app.js?v=pokeland_v30_admin_editor_fix"></script>
 
     <!-- Modal: Configurações do Chat & Comunicação -->
     <div id="modal-chat-settings" class="floating-modal-backdrop" style="display:none;" onclick="if(event.target===this) closeChatSettingsModal()">
@@ -3303,6 +3216,117 @@
                     <button class="btn-updatelog-confirm" onclick="confirmUpdateLogEntry()">
                         🚀 Entendido, Entrar no Jogo!
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MODAL DE EDIÇÃO DE CONTA DO JOGADOR (#admin-player-editor-modal)
+         (Located OUTSIDE <main class="fullscreen-hud-layer"> so pointer-events work!)
+         ========================================================= -->
+    <div id="admin-player-editor-modal" class="update-log-modal-overlay is-hidden" style="z-index:100060;pointer-events:auto;" onclick="if(event.target===this)closePlayerEditorModal();">
+        <div class="update-log-window" style="width:min(700px,95vw);max-height:min(780px,92vh);pointer-events:auto;border:2px solid #6366f1;box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 30px rgba(99,102,241,0.35);">
+            <div class="update-log-header" style="background:linear-gradient(90deg,#1e1b4b 0%,#0f172a 100%);border-bottom:1px solid #3730a3;">
+                <div class="update-log-title-group">
+                    <span style="font-size:20px;">👤</span>
+                    <h3 style="margin:0;font-size:16px;color:#facc15;" id="adm-edit-title">Editar Treinador: Red</h3>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closePlayerEditorModal()" title="Fechar">✕</button>
+            </div>
+
+            <div class="update-log-body" style="padding:16px;overflow-y:auto;gap:14px;display:flex;flex-direction:column;">
+                <input type="hidden" id="adm-edit-user-id">
+
+                <!-- Basic Account Stats -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-row">
+                        <label style="font-size:12px;font-weight:700;color:#cbd5e1;">Nome do Treinador:</label>
+                        <input type="text" id="adm-edit-username" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:7px 10px;font-size:12.5px;width:100%;">
+                    </div>
+                    <div class="form-row">
+                        <label style="font-size:12px;font-weight:700;color:#cbd5e1;">Avatar / Skin do Treinador:</label>
+                        <select id="adm-edit-avatar" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:7px 10px;font-size:12.5px;width:100%;">
+                            <option value="ethan_gold">Ethan (HeartGold)</option>
+                            <option value="red_classic">Red (Kanto Classic)</option>
+                            <option value="leaf_green">Leaf (FireRed)</option>
+                            <option value="lyra_crystal">Lyra (SoulSilver)</option>
+                            <option value="brendan_emerald">Brendan (Emerald)</option>
+                            <option value="may_sapphire">May (Sapphire)</option>
+                            <option value="lucas_platinum">Lucas (Platinum)</option>
+                            <option value="dawn_pearl">Dawn (Pearl)</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label style="font-size:12px;font-weight:700;color:#cbd5e1;">Cargo da Conta:</label>
+                        <select id="adm-edit-role" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:7px 10px;font-size:12.5px;width:100%;">
+                            <option value="player">Jogador (Comum)</option>
+                            <option value="moderator">Moderador</option>
+                            <option value="admin">Administrador (GM)</option>
+                            <option value="banned">⛔ Banido (Acesso Bloqueado)</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label style="font-size:12px;font-weight:700;color:#cbd5e1;">Nível do Treinador:</label>
+                        <input type="number" id="adm-edit-level" min="1" max="500" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:7px 10px;font-size:12.5px;width:100%;">
+                    </div>
+                    <div class="form-row">
+                        <label style="font-size:12px;font-weight:700;color:#fbbf24;">Saldo de Ouro ($):</label>
+                        <input type="number" id="adm-edit-gold" min="0" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:7px 10px;font-size:12.5px;width:100%;">
+                    </div>
+                    <div class="form-row">
+                        <label style="font-size:12px;font-weight:700;color:#38bdf8;">Saldo de Diamantes (💎):</label>
+                        <input type="number" id="adm-edit-diamonds" min="0" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:7px 10px;font-size:12.5px;width:100%;">
+                    </div>
+                </div>
+
+                <!-- VIP / Master Key Option -->
+                <div style="display:flex;align-items:center;justify-content:space-between;background:#090d16;padding:10px 14px;border-radius:8px;border:1px solid #1e293b;">
+                    <label for="adm-edit-master-key" style="font-size:12.5px;font-weight:700;color:#facc15;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                        <span>🗝️ Chave Mestra VIP (Acesso às Ilhas Lendárias & Safari Especial)</span>
+                    </label>
+                    <input type="checkbox" id="adm-edit-master-key" style="width:18px;height:18px;cursor:pointer;">
+                </div>
+
+                <!-- Quick Action Buttons for Player -->
+                <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid #1e293b;padding-top:12px;align-items:center;">
+                    <button type="button" class="btn btn-green btn-sm" onclick="adminHealPlayerPartyAction()">💖 Curar & Reviver Equipe</button>
+                    <button type="button" class="btn btn-amber btn-sm" onclick="adminResetPlayerPosAction()">📍 Teleportar p/ Praça</button>
+                    <button type="button" class="btn btn-red btn-sm" id="btn-adm-ban-toggle" onclick="adminTogglePlayerBanAction()">⛔ Banir Conta</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="btn-adm-save-account" onclick="savePlayerAccountEdits()" style="margin-left:auto;font-weight:800;padding:8px 16px;font-size:13px;">💾 Salvar Alterações</button>
+                </div>
+
+                <!-- Inject Item Section -->
+                <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                    <div style="font-weight:800;color:#38bdf8;font-size:12.5px;margin-bottom:8px;">🎒 Injetar Item Direto neste Jogador</div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <select id="adm-edit-inject-item" style="flex:1;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;"></select>
+                        <input type="number" id="adm-edit-inject-item-qty" value="10" min="1" max="999" style="width:70px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;text-align:center;">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="adminInjectItemToTargetPlayerAction()">Injetar</button>
+                    </div>
+                </div>
+
+                <!-- Inject Pokemon Section -->
+                <div style="background:#090d16;padding:12px;border-radius:8px;border:1px solid #1e293b;">
+                    <div style="font-weight:800;color:#facc15;font-size:12.5px;margin-bottom:8px;">🧬 Injetar Pokémon neste Jogador</div>
+                    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+                        <select id="adm-edit-inject-mon-sp" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;"></select>
+                        <input type="number" id="adm-edit-inject-mon-lvl" value="100" min="1" max="500" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;text-align:center;" placeholder="Nível">
+                        <select id="adm-edit-inject-mon-qual" style="background:#1e293b;border:1px solid #334155;color:#fff;border-radius:6px;padding:6px;font-size:12px;">
+                            <option value="Comum">Comum</option>
+                            <option value="Raro">Raro</option>
+                            <option value="Épico">Épico</option>
+                            <option value="Lendário">Lendário</option>
+                            <option value="Mítico" selected>Mítico</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <label style="font-size:12px;color:#fde047;cursor:pointer;"><input type="checkbox" id="adm-edit-inject-mon-shiny"> ✨ Shiny</label>
+                        <div style="display:flex;gap:6px;">
+                            <button type="button" class="btn btn-sm btn-pink" onclick="adminInjectPokemonToTargetPlayerAction('party')">Na Equipe</button>
+                            <button type="button" class="btn btn-sm btn-purple" onclick="adminInjectPokemonToTargetPlayerAction('pc_box')">No PC Box</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
