@@ -1464,7 +1464,17 @@ async function initGame() {
 function applyBootstrapData(data) {
     STATE.currentUser = data.user || null;
     STATE.isGuest = Boolean(data.is_guest);
-    STATE.player = data.player;
+    STATE.player = data.player || {};
+    STATE.player.level = Number(STATE.player.level) || 1;
+    STATE.player.gold = Number(STATE.player.gold) || 0;
+    STATE.player.diamonds = Number(STATE.player.diamonds) || 0;
+    if (!Array.isArray(STATE.player.pokedex_caught)) STATE.player.pokedex_caught = [];
+    if (!Array.isArray(STATE.player.party)) STATE.player.party = [];
+    if (!Array.isArray(STATE.player.pc_box)) STATE.player.pc_box = [];
+    if (!STATE.player.inventory || typeof STATE.player.inventory !== "object") STATE.player.inventory = {};
+    if (!STATE.player.stats || typeof STATE.player.stats !== "object") STATE.player.stats = {};
+    if (!Array.isArray(STATE.player.badges)) STATE.player.badges = [];
+    if (!STATE.player.activeBuffs || typeof STATE.player.activeBuffs !== "object") STATE.player.activeBuffs = {};
     STATE.config = data.config;
     STATE.worlds = data.worlds;
     STATE.zones = data.zones;
@@ -2631,9 +2641,10 @@ function renderHud() {
         brandImg.onmouseleave = () => hidePokemonHoverCard();
     }
 
-    document.getElementById("hud-gold").textContent = `$${p.gold.toLocaleString()}`;
-    document.getElementById("hud-diamonds").textContent = p.diamonds.toLocaleString();
-    document.getElementById("hud-dex-count").textContent = `${p.pokedex_caught.length} / ${STATE.species.length}`;
+    document.getElementById("hud-gold").textContent = `$${(p.gold || 0).toLocaleString()}`;
+    document.getElementById("hud-diamonds").textContent = (p.diamonds || 0).toLocaleString();
+    const caughtCount = Array.isArray(p.pokedex_caught) ? p.pokedex_caught.length : 0;
+    document.getElementById("hud-dex-count").textContent = `${caughtCount} / ${(STATE.species || []).length}`;
     document.getElementById("hud-key-pill").style.display = p.has_master_key || c.unlock_legendary_islands ? "flex" : "none";
 }
 
@@ -3372,17 +3383,19 @@ function tibiaGameLoop(timestamp) {
     if (dt > 80) dt = 16.667;
     const timeScale = Math.min(2.2, Math.max(0.45, dt / 16.667));
 
-    updateTibiaSimulation(timeScale);
+    try {
+        updateTibiaSimulation(timeScale);
 
-    // Background tab optimization: skip heavy canvas draws when tab is hidden to save GPU/CPU
-    if (document.hidden) {
+        // Background tab optimization: skip heavy canvas draws when tab is hidden to save GPU/CPU
+        if (!document.hidden) {
+            drawTibiaMainCanvas();
+            drawTibiaMinimap();
+        }
+    } catch (err) {
+        console.error("Game loop tick error:", err);
+    } finally {
         requestAnimationFrame(tibiaGameLoop);
-        return;
     }
-
-    drawTibiaMainCanvas();
-    drawTibiaMinimap();
-    requestAnimationFrame(tibiaGameLoop);
 }
 
 // Pre-allocated fast structures for zero-allocation BFS pathfinding
@@ -4101,7 +4114,8 @@ function drawTibiaMainCanvas() {
             ctx.restore();
         }
 
-        const isCaughtDex = STATE.player.pokedex_caught.includes(mon.species_id);
+        const caughtList = Array.isArray(STATE.player?.pokedex_caught) ? STATE.player.pokedex_caught : [];
+        const isCaughtDex = caughtList.includes(mon.species_id);
         drawCreatureOnTile(ctx, mon.species_id, mon.dex_id, mon.is_shiny, mon.px, mon.py, mon.dir, true, mon.quality, mon);
         drawTibiaNameplateAndHpBar(
             ctx,
@@ -16222,7 +16236,7 @@ function populateAdminUsersDropdown() {
 }
 
 function openPlayerEditorModal(userId) {
-    const user = _cachedAdminUsers.find(u => u.id === userId);
+    const user = _cachedAdminUsers.find(u => Number(u.id) === Number(userId));
     if (!user) return;
     _activeAdminEditUserId = userId;
 
@@ -16307,6 +16321,15 @@ async function savePlayerAccountEdits() {
         const data = await res.json();
         if (data && data.ok) {
             showToast("💾 Alterações na conta salvas com sucesso!");
+            const targetUser = _cachedAdminUsers.find(u => Number(u.id) === Number(uId));
+            const isSelf = STATE.currentUser && (Number(STATE.currentUser.id) === Number(uId) || (targetUser && targetUser.username === STATE.currentUser.username));
+            if (isSelf && STATE.player) {
+                if (!isNaN(payload.level)) STATE.player.level = payload.level;
+                if (!isNaN(payload.gold)) STATE.player.gold = payload.gold;
+                if (!isNaN(payload.diamonds)) STATE.player.diamonds = payload.diamonds;
+                if (payload.role) STATE.currentUser.role = payload.role;
+                renderAll(true);
+            }
             loadAdminUsers();
             closePlayerEditorModal();
         } else {
@@ -16328,6 +16351,13 @@ async function adminHealPlayerPartyAction() {
         });
         const data = await res.json();
         showToast(data.message || "Equipe do jogador curada!");
+        const isSelf = STATE.currentUser && Number(STATE.currentUser.id) === Number(_activeAdminEditUserId);
+        if (isSelf && STATE.player && Array.isArray(STATE.player.party)) {
+            STATE.player.party.forEach(m => {
+                m.hp = m.max_hp || m.stats?.hp || 100;
+            });
+            renderAll(true);
+        }
     } catch (e) {
         showToast("⚠️ Falha ao curar jogador.");
     }

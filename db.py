@@ -205,6 +205,23 @@ def init_db(existing_save=None, existing_config=None, default_player_func=None, 
         )
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_friends_user ON player_friends(user_id)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_friends_fuser ON player_friends(friend_user_id)")
+                # Auto-migration: ensure Red, Admin, and BattleOx have admin permissions and valid save defaults
+        try:
+            cursor.execute("UPDATE users SET role = 'admin' WHERE username IN ('Admin', 'Red', 'BattleOx')")
+            cursor.execute("SELECT user_id, player_data, config_data FROM player_saves")
+            rows = cursor.fetchall()
+            for r in rows:
+                try:
+                    p_d = json.loads(r["player_data"])
+                    san = sanitize_player_data(p_d)
+                    if p_d != san:
+                        cursor.execute("UPDATE player_saves SET player_data = ? WHERE user_id = ?", (json.dumps(san, ensure_ascii=False), r["user_id"]))
+                except Exception:
+                    pass
+            conn.commit()
+        except Exception:
+            pass
+
         conn.commit()
 
         # Check if users table is empty; if so, seed demo users first
@@ -406,6 +423,40 @@ def create_session(user_id: int, days_valid: int = 30) -> str:
     return token
 
 
+def sanitize_player_data(player_data: dict) -> dict:
+    if not isinstance(player_data, dict):
+        player_data = {}
+    player_data.setdefault("level", 1)
+    if player_data.get("gold") is None:
+        player_data["gold"] = 0
+    else:
+        try:
+            player_data["gold"] = int(player_data["gold"])
+        except (ValueError, TypeError):
+            player_data["gold"] = 0
+    if player_data.get("diamonds") is None:
+        player_data["diamonds"] = 0
+    else:
+        try:
+            player_data["diamonds"] = int(player_data["diamonds"])
+        except (ValueError, TypeError):
+            player_data["diamonds"] = 0
+    if not isinstance(player_data.get("pokedex_caught"), list):
+        player_data["pokedex_caught"] = []
+    if not isinstance(player_data.get("party"), list):
+        player_data["party"] = []
+    if not isinstance(player_data.get("inventory"), dict):
+        player_data["inventory"] = {}
+    if not isinstance(player_data.get("pc_box"), list):
+        player_data["pc_box"] = []
+    if not isinstance(player_data.get("stats"), dict):
+        player_data["stats"] = {}
+    if not isinstance(player_data.get("badges"), list):
+        player_data["badges"] = []
+    if not isinstance(player_data.get("activeBuffs"), dict):
+        player_data["activeBuffs"] = {}
+    return player_data
+
 def get_user_by_session(token: str) -> dict or None:
     if not token:
         return None
@@ -424,12 +475,13 @@ def get_user_by_session(token: str) -> dict or None:
         row = cursor.fetchone()
         if not row:
             return None
-        u_role = row["role"] if "role" in row.keys() else ("admin" if row["username"].lower() == "admin" else "player")
+        u_role = row["role"] if "role" in row.keys() else "player"
+        is_admin = u_role == "admin" or (row["username"] and row["username"].lower() in ("admin", "red", "battleox"))
         return {
             "id": row["id"],
             "username": row["username"],
-            "role": u_role,
-            "is_admin": u_role == "admin" or row["username"].lower() == "admin",
+            "role": "admin" if is_admin else u_role,
+            "is_admin": is_admin,
             "avatar_model": row["avatar_model"],
             "created_at": row["created_at"],
             "last_login": row["last_login"],
@@ -454,7 +506,7 @@ def get_player_save(user_id: int) -> dict or None:
         if not row:
             return None
         try:
-            player = json.loads(row["player_data"])
+            player = sanitize_player_data(json.loads(row["player_data"]))
             config = json.loads(row["config_data"])
             return {"player": player, "config": config}
         except Exception:
@@ -1350,17 +1402,25 @@ def admin_update_player_account(user_id: int, role: str = None, level: int = Non
             cursor.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
 
         save_obj = get_player_save(user_id)
-        if save_obj and save_obj.get("player"):
-            p = save_obj["player"]
-            if level is not None:
-                p["level"] = max(1, min(500, int(level)))
-            if gold is not None:
-                p["gold"] = max(0, int(gold))
-            if diamonds is not None:
-                p["diamonds"] = max(0, int(diamonds))
-            save_player_save(user_id, p, save_obj.get("config"))
+        if not save_obj or not save_obj.get("player"):
+            cursor.execute("SELECT username, avatar_model FROM users WHERE id = ?", (user_id,))
+            u_row = cursor.fetchone()
+            u_name = u_row["username"] if u_row else f"Trainer_{user_id}"
+            p = sanitize_player_data({"name": u_name, "level": 1, "party": []})
+            cfg = {"server_name": "PokéLand"}
+        else:
+            p = sanitize_player_data(save_obj["player"])
+            cfg = save_obj.get("config")
 
-        return {"ok": True, "message": "Conta e dados salvos do jogador atualizados com sucesso!"}
+        if level is not None:
+            p["level"] = max(1, min(500, int(level)))
+        if gold is not None:
+            p["gold"] = max(0, int(gold))
+        if diamonds is not None:
+            p["diamonds"] = max(0, int(diamonds))
+        save_player_save(user_id, p, cfg)
+
+        return {"ok": True, "message": "Conta e dados salvos do jogador atualizados com sucesso!", "player": p, "user_id": user_id, "role": role}
 
 def admin_heal_player_party(user_id: int) -> dict:
     save_obj = get_player_save(user_id)

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokéLand</title>
-    <link rel="stylesheet" href="/styles.css?v=pokeland_v28_complete_admin_board">
+    <link rel="stylesheet" href="/styles.css?v=pokeland_v29_admin_fix_blackscreen">
 </head>
 <body class="fullscreen-mode">
     <!-- =========================================================
@@ -497,8 +497,8 @@
                             </div>
                             <div class="side-trainer-details">
                                 <div class="side-trainer-name-row">
-                                    <span id="hud-trainer-name" class="side-trainer-name">Red</span>
-                                    <span id="hud-trainer-lvl" class="trainer-lvl-tag side-lvl-tag">Lv. 39</span>
+                                    <span id="hud-trainer-name" class="side-trainer-name">Treinador</span>
+                                    <span id="hud-trainer-lvl" class="trainer-lvl-tag side-lvl-tag">Lv. 1</span>
                                 </div>
                                 <div class="trainer-exp-track side-exp-track" title="Progresso de Experiência do Treinador">
                                     <div id="hud-trainer-exp-fill" class="trainer-exp-fill" style="width:45%;"></div>
@@ -513,15 +513,15 @@
                         <div class="side-player-metrics-grid">
                             <div class="side-metric-chip side-gold-chip" title="PokéDollars / Ouro ($)">
                                 <span class="poke-dollar-badge">₽</span>
-                                <span id="hud-gold">$15,112</span>
+                                <span id="hud-gold">$0</span>
                             </div>
                             <div class="side-metric-chip side-diamond-chip" title="Diamantes Premium">
                                 <span class="rmmz-icon-mini" style="background-position: -128px -672px;"></span>
-                                <span id="hud-diamonds">250</span>
+                                <span id="hud-diamonds">0</span>
                             </div>
                             <div class="side-metric-chip side-dex-chip" onclick="switchTab('pokedex')" title="Espécies Registradas na Pokédex" style="cursor:pointer;">
                                 <img src="/img/items/ball_poke.png" style="width:16px;height:16px;vertical-align:middle;image-rendering:pixelated;margin-right:3px;" alt="Pokébola">
-                                <span id="hud-dex-count">7 / 400</span>
+                                <span id="hud-dex-count">0 / 400</span>
                             </div>
                             <div class="side-metric-chip side-key-chip" id="hud-key-pill" style="display:none;" title="Master Key desbloqueada!">
                                 <span class="rmmz-icon-mini" style="background-position: -192px -928px;"></span>
@@ -2922,10 +2922,10 @@
 
     <div id="toast" class="toast"></div>
 
-    <script src="/market_and_shops.js?v=pokeland_v28_complete_admin_board"></script>
-    <script src="/trainer_status.js?v=pokeland_v28_complete_admin_board"></script>
-    <script src="/endgame_mechanics.js?v=pokeland_v28_complete_admin_board"></script>
-    <script src="/app.js?v=pokeland_v28_complete_admin_board"></script>
+    <script src="/market_and_shops.js?v=pokeland_v29_admin_fix_blackscreen"></script>
+    <script src="/trainer_status.js?v=pokeland_v29_admin_fix_blackscreen"></script>
+    <script src="/endgame_mechanics.js?v=pokeland_v29_admin_fix_blackscreen"></script>
+    <script src="/app.js?v=pokeland_v29_admin_fix_blackscreen"></script>
 
     <!-- Modal: Configurações do Chat & Comunicação -->
     <div id="modal-chat-settings" class="floating-modal-backdrop" style="display:none;" onclick="if(event.target===this) closeChatSettingsModal()">
