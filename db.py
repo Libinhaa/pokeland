@@ -1285,146 +1285,148 @@ def get_player_public_profile(username_or_id) -> dict:
 
 
 def execute_p2p_trade_db(user_a_id: int, user_b_id: int, offer_a: dict, offer_b: dict) -> dict:
-    with get_connection() as conn:
-        save_a = get_player_save(user_a_id)
-        save_b = get_player_save(user_b_id)
-        if not save_a or not save_b:
-            return {"ok": False, "error": "Erro ao carregar dados salvos dos jogadores."}
+    save_a = get_player_save(user_a_id)
+    save_b = get_player_save(user_b_id)
+    if not save_a or not save_b:
+        return {"ok": False, "error": "Erro ao carregar dados salvos dos jogadores."}
 
-        p_a = save_a["player"]
-        p_b = save_b["player"]
+    p_a = save_a["player"]
+    p_b = save_b["player"]
 
-        gold_a = max(0, int(offer_a.get("gold", 0)))
-        gold_b = max(0, int(offer_b.get("gold", 0)))
-        items_a = offer_a.get("items", [])  # list of {"item_id": id, "qty": qty}
-        items_b = offer_b.get("items", [])
-        mon_a_uid = offer_a.get("mon_uid")
-        mon_b_uid = offer_b.get("mon_uid")
+    gold_a = max(0, int(offer_a.get("gold", 0)))
+    gold_b = max(0, int(offer_b.get("gold", 0)))
+    items_a = offer_a.get("items", [])  # list of {"item_id": id, "qty": qty}
+    items_b = offer_b.get("items", [])
+    mon_a_uid = offer_a.get("mon_uid")
+    mon_b_uid = offer_b.get("mon_uid")
 
-        # 1. Validate Gold
-        if (p_a.get("gold") or 0) < gold_a:
-            return {"ok": False, "error": "Treinador 1 não possui ouro suficiente."}
-        if (p_b.get("gold") or 0) < gold_b:
-            return {"ok": False, "error": "Treinador 2 não possui ouro suficiente."}
+    # 1. Validate Gold
+    if (p_a.get("gold") or 0) < gold_a:
+        return {"ok": False, "error": "Treinador 1 não possui ouro suficiente."}
+    if (p_b.get("gold") or 0) < gold_b:
+        return {"ok": False, "error": "Treinador 2 não possui ouro suficiente."}
 
-        # 2. Validate Items
-        inv_a = p_a.setdefault("inventory", {})
-        for it in items_a:
-            iid = it.get("item_id")
-            iqty = int(it.get("qty", 1))
-            if inv_a.get(iid, 0) < iqty:
-                return {"ok": False, "error": f"Item '{iid}' insuficiente no inventário do Treinador 1."}
+    # 2. Validate Items
+    inv_a = p_a.setdefault("inventory", {})
+    for it in items_a:
+        iid = it.get("item_id")
+        iqty = int(it.get("qty", 1))
+        if inv_a.get(iid, 0) < iqty:
+            return {"ok": False, "error": f"Item '{iid}' insuficiente no inventário do Treinador 1."}
 
-        inv_b = p_b.setdefault("inventory", {})
-        for it in items_b:
-            iid = it.get("item_id")
-            iqty = int(it.get("qty", 1))
-            if inv_b.get(iid, 0) < iqty:
-                return {"ok": False, "error": f"Item '{iid}' insuficiente no inventário do Treinador 2."}
+    inv_b = p_b.setdefault("inventory", {})
+    for it in items_b:
+        iid = it.get("item_id")
+        iqty = int(it.get("qty", 1))
+        if inv_b.get(iid, 0) < iqty:
+            return {"ok": False, "error": f"Item '{iid}' insuficiente no inventário do Treinador 2."}
 
-        # 3. Validate & Retrieve Pokémon
-        mon_a_obj = None
-        if mon_a_uid:
-            all_a = p_a.get("party", []) + p_a.get("pc_box", [])
-            mon_a_obj = next((m for m in all_a if m.get("uid") == mon_a_uid), None)
-            if not mon_a_obj:
-                return {"ok": False, "error": "Pokémon oferecido pelo Treinador 1 não encontrado."}
-            if len(p_a.get("party", [])) <= 1 and mon_a_obj in p_a.get("party", []) and len(p_a.get("pc_box", [])) == 0:
-                return {"ok": False, "error": "Não é permitido trocar o único Pokémon do Treinador 1!"}
+    # 3. Validate & Retrieve Pokémon
+    mon_a_obj = None
+    if mon_a_uid:
+        all_a = p_a.get("party", []) + p_a.get("pc_box", [])
+        mon_a_obj = next((m for m in all_a if m.get("uid") == mon_a_uid), None)
+        if not mon_a_obj:
+            return {"ok": False, "error": "Pokémon oferecido pelo Treinador 1 não encontrado."}
+        if len(p_a.get("party", [])) <= 1 and mon_a_obj in p_a.get("party", []) and len(p_a.get("pc_box", [])) == 0:
+            return {"ok": False, "error": "Não é permitido trocar o único Pokémon do Treinador 1!"}
 
-        mon_b_obj = None
-        if mon_b_uid:
-            all_b = p_b.get("party", []) + p_b.get("pc_box", [])
-            mon_b_obj = next((m for m in all_b if m.get("uid") == mon_b_uid), None)
-            if not mon_b_obj:
-                return {"ok": False, "error": "Pokémon oferecido pelo Treinador 2 não encontrado."}
-            if len(p_b.get("party", [])) <= 1 and mon_b_obj in p_b.get("party", []) and len(p_b.get("pc_box", [])) == 0:
-                return {"ok": False, "error": "Não é permitido trocar o único Pokémon do Treinador 2!"}
+    mon_b_obj = None
+    if mon_b_uid:
+        all_b = p_b.get("party", []) + p_b.get("pc_box", [])
+        mon_b_obj = next((m for m in all_b if m.get("uid") == mon_b_uid), None)
+        if not mon_b_obj:
+            return {"ok": False, "error": "Pokémon oferecido pelo Treinador 2 não encontrado."}
+        if len(p_b.get("party", [])) <= 1 and mon_b_obj in p_b.get("party", []) and len(p_b.get("pc_box", [])) == 0:
+            return {"ok": False, "error": "Não é permitido trocar o único Pokémon do Treinador 2!"}
 
-        # EXECUTE ATOMIC EXCHANGE
-        # A. Swap Gold
-        p_a["gold"] = p_a.get("gold", 0) - gold_a + gold_b
-        p_b["gold"] = p_b.get("gold", 0) - gold_b + gold_a
+    # EXECUTE ATOMIC EXCHANGE
+    # A. Swap Gold
+    p_a["gold"] = p_a.get("gold", 0) - gold_a + gold_b
+    p_b["gold"] = p_b.get("gold", 0) - gold_b + gold_a
 
-        # B. Swap Items
-        for it in items_a:
-            iid = it.get("item_id")
-            iqty = int(it.get("qty", 1))
-            inv_a[iid] -= iqty
-            if inv_a[iid] <= 0:
-                del inv_a[iid]
-            inv_b[iid] = inv_b.get(iid, 0) + iqty
+    # B. Swap Items
+    for it in items_a:
+        iid = it.get("item_id")
+        iqty = int(it.get("qty", 1))
+        inv_a[iid] -= iqty
+        if inv_a[iid] <= 0:
+            del inv_a[iid]
+        inv_b[iid] = inv_b.get(iid, 0) + iqty
 
-        for it in items_b:
-            iid = it.get("item_id")
-            iqty = int(it.get("qty", 1))
-            inv_b[iid] -= iqty
-            if inv_b[iid] <= 0:
-                del inv_b[iid]
-            inv_a[iid] = inv_a.get(iid, 0) + iqty
+    for it in items_b:
+        iid = it.get("item_id")
+        iqty = int(it.get("qty", 1))
+        inv_b[iid] -= iqty
+        if inv_b[iid] <= 0:
+            del inv_b[iid]
+        inv_a[iid] = inv_a.get(iid, 0) + iqty
 
-        # C. Swap Pokémon
-        if mon_a_obj:
-            if mon_a_obj in p_a.get("party", []):
-                p_a["party"].remove(mon_a_obj)
-            elif mon_a_obj in p_a.get("pc_box", []):
-                p_a["pc_box"].remove(mon_a_obj)
-            p_b.setdefault("pc_box", []).append(mon_a_obj)
-            sid = mon_a_obj.get("species_id")
-            if sid and sid not in p_b.setdefault("pokedex_caught", []):
-                p_b["pokedex_caught"].append(sid)
+    # C. Swap Pokémon
+    if mon_a_obj:
+        if mon_a_obj in p_a.get("party", []):
+            p_a["party"].remove(mon_a_obj)
+        elif mon_a_obj in p_a.get("pc_box", []):
+            p_a["pc_box"].remove(mon_a_obj)
+        p_b.setdefault("pc_box", []).append(mon_a_obj)
+        sid = mon_a_obj.get("species_id")
+        if sid and sid not in p_b.setdefault("pokedex_caught", []):
+            p_b["pokedex_caught"].append(sid)
 
-        if mon_b_obj:
-            if mon_b_obj in p_b.get("party", []):
-                p_b["party"].remove(mon_b_obj)
-            elif mon_b_obj in p_b.get("pc_box", []):
-                p_b["pc_box"].remove(mon_b_obj)
-            p_a.setdefault("pc_box", []).append(mon_b_obj)
-            sid = mon_b_obj.get("species_id")
-            if sid and sid not in p_a.setdefault("pokedex_caught", []):
-                p_a["pokedex_caught"].append(sid)
+    if mon_b_obj:
+        if mon_b_obj in p_b.get("party", []):
+            p_b["party"].remove(mon_b_obj)
+        elif mon_b_obj in p_b.get("pc_box", []):
+            p_b["pc_box"].remove(mon_b_obj)
+        p_a.setdefault("pc_box", []).append(mon_b_obj)
+        sid = mon_b_obj.get("species_id")
+        if sid and sid not in p_a.setdefault("pokedex_caught", []):
+            p_a["pokedex_caught"].append(sid)
 
-        save_player_save(user_a_id, p_a, save_a.get("config"))
-        save_player_save(user_b_id, p_b, save_b.get("config"))
+    save_player_save(user_a_id, p_a, save_a.get("config"))
+    save_player_save(user_b_id, p_b, save_b.get("config"))
 
-        return {
-            "ok": True,
-            "message": "Troca realizada com sucesso!",
-            "received_gold": gold_b,
-            "received_items": items_b,
-            "received_mon": mon_b_obj.get("name") if mon_b_obj else None
-        }
+    return {
+        "ok": True,
+        "message": "Troca realizada com sucesso!",
+        "received_gold": gold_b,
+        "received_items": items_b,
+        "received_mon": mon_b_obj.get("name") if mon_b_obj else None
+    }
 
 # ==============================================================================
 # POKELAND ADMIN BOARD & GOD-MODE SYSTEM (DATABASE OPERATIONS)
 # ==============================================================================
 
 def admin_update_player_account(user_id: int, role: str = None, level: int = None, gold: int = None, diamonds: int = None) -> dict:
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        if role is not None and role in ("player", "moderator", "admin", "banned"):
+    if role is not None and role in ("player", "moderator", "admin", "banned"):
+        with get_connection() as conn:
+            cursor = conn.cursor()
             cursor.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
+            conn.commit()
 
-        save_obj = get_player_save(user_id)
-        if not save_obj or not save_obj.get("player"):
+    save_obj = get_player_save(user_id)
+    if not save_obj or not save_obj.get("player"):
+        with get_connection() as conn:
+            cursor = conn.cursor()
             cursor.execute("SELECT username, avatar_model FROM users WHERE id = ?", (user_id,))
             u_row = cursor.fetchone()
-            u_name = u_row["username"] if u_row else f"Trainer_{user_id}"
-            p = sanitize_player_data({"name": u_name, "level": 1, "party": []})
-            cfg = {"server_name": "PokéLand"}
-        else:
-            p = sanitize_player_data(save_obj["player"])
-            cfg = save_obj.get("config")
+        u_name = u_row["username"] if u_row else f"Trainer_{user_id}"
+        p = sanitize_player_data({"name": u_name, "level": 1, "party": []})
+        cfg = {"server_name": "PokéLand"}
+    else:
+        p = sanitize_player_data(save_obj["player"])
+        cfg = save_obj.get("config")
 
-        if level is not None:
-            p["level"] = max(1, min(500, int(level)))
-        if gold is not None:
-            p["gold"] = max(0, int(gold))
-        if diamonds is not None:
-            p["diamonds"] = max(0, int(diamonds))
-        save_player_save(user_id, p, cfg)
+    if level is not None:
+        p["level"] = max(1, min(500, int(level)))
+    if gold is not None:
+        p["gold"] = max(0, int(gold))
+    if diamonds is not None:
+        p["diamonds"] = max(0, int(diamonds))
+    save_player_save(user_id, p, cfg)
 
-        return {"ok": True, "message": "Conta e dados salvos do jogador atualizados com sucesso!", "player": p, "user_id": user_id, "role": role}
+    return {"ok": True, "message": "Conta e dados salvos do jogador atualizados com sucesso!", "player": p, "user_id": user_id, "role": role}
 
 def admin_heal_player_party(user_id: int) -> dict:
     save_obj = get_player_save(user_id)
